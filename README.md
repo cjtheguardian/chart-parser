@@ -63,6 +63,10 @@ List<RaceResult> raceResults = ChartParser.create().parse(Paths.get("ARP_2016-07
 
 `chart-parser` is a [Maven-based](https://maven.apache.org/) Java open-source project. Running `mvn clean install` will compile the code, run [all tests](https://github.com/robinhowlett/chart-parser/tree/master/src/test/java/com/robinhowlett/chartparser), and install the built artificat to the local repository.
 
+### JavaDoc
+
+JavaDocs are available at [http://www.robinhowlett.com/chart-parser/index.html](http://www.robinhowlett.com/chart-parser/index.html)
+
 ## Notes
 
 This software is open-source and released under the [MIT License](https://github.com/robinhowlett/chart-parser/blob/master/LICENSE). 
