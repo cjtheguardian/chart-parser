@@ -21,9 +21,11 @@ or even to be used as code in an SDK:
 
 ## How it works
 
-PDFs are parsed using a customized [`PDFTextStripper`](https://pdfbox.apache.org/docs/2.0.3/javadocs/org/apache/pdfbox/text/PDFTextStripper.html) instance from [Apache PDFBox](https://pdfbox.apache.org/).
+PDFs are parsed using [`ChartStripper`](https://github.com/robinhowlett/chart-parser/blob/master/src/main/java/com/robinhowlett/chartparser/charts/text/ChartStripper.java), a customized [`PDFTextStripper`](https://pdfbox.apache.org/docs/2.0.3/javadocs/org/apache/pdfbox/text/PDFTextStripper.html) instance from the [Apache PDFBox](https://pdfbox.apache.org/) library.
 
 It works by extracting out the x-y position, scale, font size, and unicode value of each character within the PDF file into CSV, and determining the relevant field that text would belong to.
+
+https://github.com/robinhowlett/chart-parser/blob/master/src/main/java/com/robinhowlett/chartparser/ChartParser.java#L474
 
 ## Highlights
 
