@@ -19,7 +19,7 @@ public class PointsOfCallService {
 
     public PointsOfCall getPointsOfCallForDistance(Breed breed, RaceDistance raceDistance) {
         PointsOfCallTreeSet pointsOfCall = repository.findByBreed(breed, raceDistance.getText());
-        return pointsOfCall.floor(createForFloor(raceDistance.getValue()));
+        return pointsOfCall.floor(createForFloor(raceDistance.getFeet()));
     }
 
     private static PointsOfCall createForFloor(int pointOfCallInFeet) {

@@ -10,8 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * The value of the {@link Starter} (expressed within a {@link Double} {@code value} field) and a
- * boolean to note if the starter was favorite
+ * The value of the {@link Starter} (expressed within a {@link Double} {@code value} field), a
+ * boolean to note if the starter was favorite, and (if applicable) the 1-based index of starter in
+ * terms of odds order (e.g. 2nd fav has a "choice" value of 2)
  */
 public class Odds {
 
@@ -19,6 +20,7 @@ public class Odds {
 
     private final Double value;
     private final boolean favorite;
+    private Integer choice;
 
     public Odds(final Double value, boolean favorite) {
         this.value = value;
@@ -37,7 +39,8 @@ public class Odds {
             try {
                 odds = Double.parseDouble(text);
             } catch (NumberFormatException e) {
-                LOGGER.warn(String.format("Unable to parse value: %s, due to %s", text, e.getMessage()));
+                LOGGER.warn(String.format("Unable to parse value: %s, due to %s", text, e
+                        .getMessage()));
                 odds = null;
             }
         }
@@ -52,11 +55,20 @@ public class Odds {
         return favorite;
     }
 
+    public Integer getChoice() {
+        return choice;
+    }
+
+    public void setChoice(Integer choice) {
+        this.choice = choice;
+    }
+
     @Override
     public String toString() {
         return "Odds{" +
                 "value=" + value +
                 ", favorite=" + favorite +
+                ", choice=" + choice +
                 '}';
     }
 
@@ -65,16 +77,18 @@ public class Odds {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Odds odds1 = (Odds) o;
+        Odds odds = (Odds) o;
 
-        if (favorite != odds1.favorite) return false;
-        return value != null ? value.equals(odds1.value) : odds1.value == null;
+        if (favorite != odds.favorite) return false;
+        if (value != null ? !value.equals(odds.value) : odds.value != null) return false;
+        return choice != null ? choice.equals(odds.choice) : odds.choice == null;
     }
 
     @Override
     public int hashCode() {
         int result = value != null ? value.hashCode() : 0;
         result = 31 * result + (favorite ? 1 : 0);
+        result = 31 * result + (choice != null ? choice.hashCode() : 0);
         return result;
     }
 }

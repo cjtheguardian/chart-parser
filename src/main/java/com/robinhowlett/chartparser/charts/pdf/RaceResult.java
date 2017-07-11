@@ -23,6 +23,7 @@ import com.robinhowlett.chartparser.tracks.Track;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -431,7 +432,74 @@ public class RaceResult {
             starters = calculateIndividualFractionalsAndSplits(starters, fractionals,
                     raceTypeNameBlackTypeBreed, distanceSurfaceTrackRecord);
 
+            starters = updateStartersWithOddsChoiceIndicies(starters);
+
             return new RaceResult(this);
+        }
+
+        List<Starter> updateStartersWithOddsChoiceIndicies(List<Starter> starters) {
+            if (starters != null) {
+                List<Double> odds = new ArrayList<>();
+
+                // for each Starter that has an Odds value, add it to the odds List
+                starters.stream()
+                        .filter(starter -> (starter.getOdds() != null))
+                        .forEach(starter -> odds.add(starter.getOdds()));
+
+                // sort the odds (ascending)
+                odds.sort(Comparator.comparingDouble(Double::doubleValue));
+
+                // remove duplicates from the odds list by replacing them with nulls
+                List<Double> truncatedOdds = new ArrayList<>();
+                for (Double choice : odds) {
+                    if (truncatedOdds.contains(choice)) {
+                        truncatedOdds.add(null);
+                    } else {
+                        truncatedOdds.add(choice);
+                    }
+                }
+
+                // update each starter that has an Odds value with the 1-based choice index
+                // e.g. the favorite is 1, the third favorite is 3, the tenth favorite is 10
+                starters.stream()
+                        .filter(starter -> (starter.getOdds() != null))
+                        .forEach(starter -> {
+                            int choiceIndex = odds.indexOf(starter.getOdds());
+                            if (choiceIndex > -1) {
+                                starter.setChoice(choiceIndex + 1); // 1-based
+                            }
+                        });
+            }
+            return starters;
+        }
+
+        // adds the win, show, and place payoffs to the applicable Starters for easier lookups
+        List<Starter> updateStartersWithWinPlaceShowPayoffs(List<Starter> starters,
+                WagerPayoffPools wagerPayoffPools) {
+            if (wagerPayoffPools != null && starters != null) {
+                WinPlaceShowPayoffPool payoffPools = wagerPayoffPools.getWinPlaceShowPayoffPools();
+                if (payoffPools != null) {
+                    List<WinPlaceShowPayoff> winPlaceShowPayoffs =
+                            payoffPools.getWinPlaceShowPayoffs();
+
+                    for (WinPlaceShowPayoff payoff : winPlaceShowPayoffs) {
+                        for (Starter starter : starters) {
+                            if (matchesProgramOrHorseName(payoff, starter)) {
+                                starter.setWinPlaceShowPayoff(payoff);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return starters;
+        }
+
+        // checks if the program numbers match, falling back to the horse name
+        boolean matchesProgramOrHorseName(WinPlaceShowPayoff payoff, Starter starter) {
+            return (payoff.getProgram() != null && payoff.getProgram().equals(starter.getProgram())
+                    || (payoff.getHorse() != null &&
+                    payoff.getHorse().equals(starter.getHorse().getName())));
         }
 
         /**
@@ -472,7 +540,7 @@ public class RaceResult {
                 if (starter.getFinishPosition() != null && starter.getAqha() != null) {
                     if (starter.getAqha() != null &&
                             distanceSurfaceTrackRecord.getRaceDistance() != null) {
-                        int distance = distanceSurfaceTrackRecord.getRaceDistance().getValue();
+                        int distance = distanceSurfaceTrackRecord.getRaceDistance().getFeet();
                         Long individualTimeMillis = starter.getAqha().getIndividualTimeMillis();
 
                         Fractional finishFractional = new Fractional(6, "Fin", distance,
@@ -554,35 +622,6 @@ public class RaceResult {
 
             return new Fractional(fractional.getPoint(), fractional.getText(), fractional.getFeet(),
                     time, individualMillis);
-        }
-
-        // adds the win, show, and place payoffs to the applicable Starters for easier lookups
-        List<Starter> updateStartersWithWinPlaceShowPayoffs(List<Starter> starters,
-                WagerPayoffPools wagerPayoffPools) {
-            if (wagerPayoffPools != null) {
-                WinPlaceShowPayoffPool payoffPools = wagerPayoffPools.getWinPlaceShowPayoffPools();
-                if (payoffPools != null) {
-                    List<WinPlaceShowPayoff> winPlaceShowPayoffs =
-                            payoffPools.getWinPlaceShowPayoffs();
-
-                    for (WinPlaceShowPayoff payoff : winPlaceShowPayoffs) {
-                        for (Starter starter : starters) {
-                            if (matchesProgramOrHorseName(payoff, starter)) {
-                                starter.setWinPlaceShowPayoff(payoff);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            return starters;
-        }
-
-        // checks if the program numbers match, falling back to the horse name
-        boolean matchesProgramOrHorseName(WinPlaceShowPayoff payoff, Starter starter) {
-            return (payoff.getProgram() != null && payoff.getProgram().equals(starter.getProgram())
-                    || (payoff.getHorse() != null &&
-                    payoff.getHorse().equals(starter.getHorse().getName())));
         }
 
         // calculates the Split - the time taken between fractionals e.g. if a Starter recorded a

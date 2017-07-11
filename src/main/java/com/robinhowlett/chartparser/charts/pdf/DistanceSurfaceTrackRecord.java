@@ -16,10 +16,11 @@ import java.util.regex.Pattern;
 import static com.robinhowlett.chartparser.charts.pdf.Purse.PURSE_PATTERN;
 
 /**
- * Parses the textual description of the race value and converts it into a {@link RaceDistance}
- * instance, including calculating the race value in feet. The scheduled and actual surface race
- * on is additionally stored. It also parses and stores, in a {@link TrackRecord} instance, the
- * details of the track record for this value/surface.
+ * Parses the textual description of the race distance and converts it into a {@link RaceDistance}
+ * instance, including calculating the race distance in feet, furlongs, and with compact
+ * description. The scheduled and actual surface race on is additionally stored. It also parses and
+ * stores, in a {@link TrackRecord} instance, the details of the track record for this
+ * distance/surface.
  */
 @JsonPropertyOrder({"distance", "surface", "trackCondition", "scheduledSurface", "offTurf",
         "trackRecord"})
@@ -183,6 +184,7 @@ public class DistanceSurfaceTrackRecord {
 
     private static RaceDistance forMiles(String distanceDescription, Matcher matcher)
             throws ChartParserException {
+        String compact = "m";
         int feet = 0;
         boolean isExact = (matcher.group(1) == null);
 
@@ -194,17 +196,21 @@ public class DistanceSurfaceTrackRecord {
                 case "sixteenth":
                 case "sixteenths":
                     feet = 330; // 5280 divided by 16
+                    compact = "/16m";
                     break;
                 case "eighth":
                 case "eighths":
                     feet = 660;
+                    compact = "/8m";
                     break;
                 case "fourth":
                 case "fourths":
                     feet = 1320;
+                    compact = "/4m";
                     break;
                 case "half":
                     feet = 2640;
+                    compact = "/2m";
                     break;
                 default:
                     throw new ChartParserException(String.format("Unable to parse a fractional " +
@@ -213,16 +219,21 @@ public class DistanceSurfaceTrackRecord {
             String numerator = fraction[0];
             int num = NUMERATORS.indexOf(numerator);
             feet = num * feet;
+            compact = String.format(" %s%s", num, compact);
         }
 
         String wholeMiles = matcher.group(2);
         int mileNumerator = NUMERATORS.indexOf(wholeMiles);
         feet += (mileNumerator * 5280);
-        return new RaceDistance(distanceDescription, isExact, feet);
+
+        compact = (isExact ? "" : "Abt ").concat(String.format("%d%s", mileNumerator, compact));
+
+        return new RaceDistance(distanceDescription, compact, isExact, feet);
     }
 
     private static RaceDistance forFurlongs(String distanceDescription, Matcher matcher)
             throws ChartParserException {
+        String compact = "f";
         int feet = 0;
         boolean isExact = (matcher.group(1) == null);
 
@@ -234,9 +245,11 @@ public class DistanceSurfaceTrackRecord {
                 case "fourth":
                 case "fourths":
                     feet = 165;
+                    compact = "/4f";
                     break;
                 case "half":
                     feet = 330;
+                    compact = "/2f";
                     break;
                 default:
                     throw new ChartParserException(String.format("Unable to parse a fractional " +
@@ -245,12 +258,15 @@ public class DistanceSurfaceTrackRecord {
             String numerator = fraction[0];
             int num = NUMERATORS.indexOf(numerator);
             feet = num * feet;
+            compact = String.format(" %s%s", num, compact);
         }
 
         String wholeFurlongs = matcher.group(2);
         int furlongNumerator = NUMERATORS.indexOf(wholeFurlongs);
         feet += (furlongNumerator * 660);
-        return new RaceDistance(distanceDescription, isExact, feet);
+        compact = (isExact ? "" : "Abt ").concat(String.format("%d%s", furlongNumerator, compact));
+
+        return new RaceDistance(distanceDescription, compact, isExact, feet);
     }
 
     private static RaceDistance forYards(String distanceDescription, Matcher matcher) {
@@ -285,59 +301,75 @@ public class DistanceSurfaceTrackRecord {
             feet += (yardsInHundreds * 300);
         }
 
-        return new RaceDistance(distanceDescription, isExact, feet);
+        String compact = (isExact ? "" : "Abt ").concat(String.format("%dy", (feet / 3)));
+
+        return new RaceDistance(distanceDescription, compact, isExact, feet);
     }
 
     private static RaceDistance forMilesAndYards(String distanceDescription, Matcher matcher) {
+        String compact = null;
         int feet = 0;
         boolean isExact = (matcher.group(1) == null);
 
         String yards = matcher.group(3);
         if (yards != null && !yards.isEmpty()) {
             feet = TENS.indexOf(yards) * 10 * 3;
+            compact = String.format("%dy", feet / 3);
         }
 
         String wholeMiles = matcher.group(2);
         int mileNumerator = NUMERATORS.indexOf(wholeMiles);
         feet += (mileNumerator * 5280);
-        return new RaceDistance(distanceDescription, isExact, feet);
+        compact = (isExact ? "" : "Abt ").concat(String.format("%dm %s", mileNumerator, compact));
+
+        return new RaceDistance(distanceDescription, compact, isExact, feet);
     }
 
     private static RaceDistance forFurlongsAndYards(String distanceDescription, Matcher matcher) {
+        String compact = null;
         int feet = 0;
         boolean isExact = (matcher.group(1) == null);
 
         String yards = matcher.group(3);
         if (yards != null && !yards.isEmpty()) {
             feet = TENS.indexOf(yards) * 10 * 3;
+            compact = String.format("%dy", feet / 3);
         }
 
         String wholeFurlongs = matcher.group(2);
         int furlongNumerator = NUMERATORS.indexOf(wholeFurlongs);
         feet += (furlongNumerator * 660);
-        return new RaceDistance(distanceDescription, isExact, feet);
+        compact = (isExact ? "" : "Abt ").concat(
+                String.format("%df %s", furlongNumerator, compact));
+
+        return new RaceDistance(distanceDescription, compact, isExact, feet);
     }
 
     /**
-     * Stores the textual description of the race value, the value expressed in feet, and
-     * whether the value is exact or estimated
+     * Stores the textual description of the race distance, the distance expressed in feet and
+     * furlongs, a compact description of the race distance and whether the distance is exact or
+     * estimated ("About")
      */
-    @JsonPropertyOrder({"text", "value", "exact", "runUp"})
+    @JsonPropertyOrder({"text", "compact", "feet", "furlongs", "exact", "runUp"})
     public static class RaceDistance {
         private final String text;
+        private final String compact;
         private final boolean exact;
-        private final int value;
+        private final int feet;
+        private final double furlongs;
         private Integer runUp;
 
-        RaceDistance(String text, boolean exact, int value) {
-            this(text, exact, value, null);
+        RaceDistance(String text, String compact, boolean exact, int feet) {
+            this(text, compact, exact, feet, null);
         }
 
         @JsonCreator
-        private RaceDistance(String text, boolean exact, int value, Integer runUp) {
+        private RaceDistance(String text, String compact, boolean exact, int feet, Integer runUp) {
             this.text = text;
+            this.compact = compact;
             this.exact = exact;
-            this.value = value;
+            this.feet = feet;
+            this.furlongs = ((double) feet / 660);
             this.runUp = runUp;
         }
 
@@ -345,12 +377,20 @@ public class DistanceSurfaceTrackRecord {
             return text;
         }
 
+        public String getCompact() {
+            return compact;
+        }
+
         public boolean isExact() {
             return exact;
         }
 
-        public int getValue() {
-            return value;
+        public int getFeet() {
+            return feet;
+        }
+
+        public double getFurlongs() {
+            return furlongs;
         }
 
         public Integer getRunUp() {
@@ -365,8 +405,10 @@ public class DistanceSurfaceTrackRecord {
         public String toString() {
             return "RaceDistance{" +
                     "text='" + text + '\'' +
+                    ", compact='" + compact + '\'' +
                     ", exact=" + exact +
-                    ", value=" + value +
+                    ", feet=" + feet +
+                    ", furlongs=" + furlongs +
                     ", runUp=" + runUp +
                     '}';
         }
@@ -379,16 +421,24 @@ public class DistanceSurfaceTrackRecord {
             RaceDistance that = (RaceDistance) o;
 
             if (exact != that.exact) return false;
-            if (value != that.value) return false;
+            if (feet != that.feet) return false;
+            if (Double.compare(that.furlongs, furlongs) != 0) return false;
             if (text != null ? !text.equals(that.text) : that.text != null) return false;
+            if (compact != null ? !compact.equals(that.compact) : that.compact != null)
+                return false;
             return runUp != null ? runUp.equals(that.runUp) : that.runUp == null;
         }
 
         @Override
         public int hashCode() {
-            int result = text != null ? text.hashCode() : 0;
+            int result;
+            long temp;
+            result = text != null ? text.hashCode() : 0;
+            result = 31 * result + (compact != null ? compact.hashCode() : 0);
             result = 31 * result + (exact ? 1 : 0);
-            result = 31 * result + value;
+            result = 31 * result + feet;
+            temp = Double.doubleToLongBits(furlongs);
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
             result = 31 * result + (runUp != null ? runUp.hashCode() : 0);
             return result;
         }
@@ -531,7 +581,7 @@ public class DistanceSurfaceTrackRecord {
 
     public static class NoRaceDistanceFound extends ChartParserException {
         public NoRaceDistanceFound(String distanceSurfaceTrackRecord) {
-            super(String.format("Unable to identify a valid race value, surface, and/or track " +
+            super(String.format("Unable to identify a valid race feet, surface, and/or track " +
                     "record: %s", distanceSurfaceTrackRecord));
         }
     }

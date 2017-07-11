@@ -44,8 +44,8 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  */
 @JsonPropertyOrder({"lastRaced", "program", "horse", "jockey", "trainer", "owner", "weight",
         "medicationEquipment", "claim", "postPosition", "finishPosition", "officialPosition",
-        "winner", "disqualified", "odds", "favorite", "wagering", "pointsOfCall", "fractionals",
-        "splits", "aqha", "comments"})
+        "winner", "disqualified", "odds", "favorite", "choice", "wagering", "pointsOfCall",
+        "fractionals", "splits", "aqha", "comments"})
 public class Starter {
     private static final Logger LOGGER = LoggerFactory.getLogger(Starter.class);
 
@@ -76,6 +76,7 @@ public class Starter {
     private Aqha aqha;
     private List<Fractional> fractionals;
     private List<Split> splits;
+    private Integer choice; // the n-th betting choice
 
     private Starter(Builder builder) {
         lastRaced = builder.lastRaced;
@@ -149,7 +150,7 @@ public class Starter {
         return odds;
     }
 
-    public Boolean getFavorite() {
+    public Boolean isFavorite() {
         return favorite;
     }
 
@@ -256,6 +257,17 @@ public class Starter {
 
     public void setSplits(List<Split> splits) {
         this.splits = splits;
+    }
+
+    /**
+     * A 1-index based value representing the starter's odds as the n-th betting choice
+     */
+    public Integer getChoice() {
+        return choice;
+    }
+
+    public void setChoice(Integer choice) {
+        this.choice = choice;
     }
 
     public boolean matchesProgramOrName(String program, String horseName) {
@@ -480,7 +492,7 @@ public class Starter {
         if (finishPointOfCall.isPresent()) {
             PointOfCall pointOfCall = finishPointOfCall.get();
             if (!pointOfCall.hasKnownDistance()) {
-                pointOfCall.setFeet(raceDistance.getValue());
+                pointOfCall.setFeet(raceDistance.getFeet());
             }
         }
 
@@ -496,6 +508,7 @@ public class Starter {
 
         Starter starter = (Starter) o;
 
+        if (winner != starter.winner) return false;
         if (lastRaced != null ? !lastRaced.equals(starter.lastRaced) : starter.lastRaced != null)
             return false;
         if (program != null ? !program.equals(starter.program) : starter.program != null)
@@ -517,6 +530,9 @@ public class Starter {
         if (pointsOfCall != null ? !pointsOfCall.equals(starter.pointsOfCall) : starter
                 .pointsOfCall != null)
             return false;
+        if (finishPosition != null ? !finishPosition.equals(starter.finishPosition) : starter
+                .finishPosition != null)
+            return false;
         if (officialPosition != null ? !officialPosition.equals(starter.officialPosition) :
                 starter.officialPosition != null)
             return false;
@@ -524,8 +540,8 @@ public class Starter {
             return false;
         if (owner != null ? !owner.equals(starter.owner) : starter.owner != null) return false;
         if (claim != null ? !claim.equals(starter.claim) : starter.claim != null) return false;
-        if (disqualified != null ? !disqualified.equals(starter.disqualified) : starter.disqualified
-                != null)
+        if (disqualified != null ? !disqualified.equals(starter.disqualified) : starter
+                .disqualified != null)
             return false;
         if (winPlaceShowPayoff != null ? !winPlaceShowPayoff.equals(starter.winPlaceShowPayoff) :
                 starter.winPlaceShowPayoff != null)
@@ -534,7 +550,8 @@ public class Starter {
         if (fractionals != null ? !fractionals.equals(starter.fractionals) : starter.fractionals
                 != null)
             return false;
-        return splits != null ? splits.equals(starter.splits) : starter.splits == null;
+        if (splits != null ? !splits.equals(starter.splits) : starter.splits != null) return false;
+        return choice != null ? choice.equals(starter.choice) : starter.choice == null;
     }
 
     @Override
@@ -550,15 +567,18 @@ public class Starter {
         result = 31 * result + (favorite != null ? favorite.hashCode() : 0);
         result = 31 * result + (comments != null ? comments.hashCode() : 0);
         result = 31 * result + (pointsOfCall != null ? pointsOfCall.hashCode() : 0);
+        result = 31 * result + (finishPosition != null ? finishPosition.hashCode() : 0);
         result = 31 * result + (officialPosition != null ? officialPosition.hashCode() : 0);
         result = 31 * result + (trainer != null ? trainer.hashCode() : 0);
         result = 31 * result + (owner != null ? owner.hashCode() : 0);
         result = 31 * result + (claim != null ? claim.hashCode() : 0);
+        result = 31 * result + (winner ? 1 : 0);
         result = 31 * result + (disqualified != null ? disqualified.hashCode() : 0);
         result = 31 * result + (winPlaceShowPayoff != null ? winPlaceShowPayoff.hashCode() : 0);
         result = 31 * result + (aqha != null ? aqha.hashCode() : 0);
         result = 31 * result + (fractionals != null ? fractionals.hashCode() : 0);
         result = 31 * result + (splits != null ? splits.hashCode() : 0);
+        result = 31 * result + (choice != null ? choice.hashCode() : 0);
         return result;
     }
 
@@ -576,15 +596,18 @@ public class Starter {
                 ", favorite=" + favorite +
                 ", comments='" + comments + '\'' +
                 ", pointsOfCall=" + pointsOfCall +
+                ", finishPosition=" + finishPosition +
                 ", officialPosition=" + officialPosition +
                 ", trainer=" + trainer +
                 ", owner=" + owner +
                 ", claim=" + claim +
+                ", winner=" + winner +
                 ", disqualified=" + disqualified +
                 ", winPlaceShowPayoff=" + winPlaceShowPayoff +
                 ", aqha=" + aqha +
                 ", fractionals=" + fractionals +
                 ", splits=" + splits +
+                ", choice=" + choice +
                 '}';
     }
 

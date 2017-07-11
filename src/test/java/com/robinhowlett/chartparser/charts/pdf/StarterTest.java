@@ -70,10 +70,10 @@ public class StarterTest {
     @Parameterized.Parameters(name = "Page {0}, Starter {1}, Breed {2}")
     public static Collection runningLines() throws IOException {
         return Arrays.asList(new Object[][]{
-                {0, 1, Breed.THOROUGHBRED, new RaceDistance("Six Furlongs", true, 3960),
+                {0, 1, Breed.THOROUGHBRED, new RaceDistance("Six Furlongs", "6f", true, 3960),
                         expectedThoroughbredStarter()},
                 {5, 1, Breed.QUARTER_HORSE, new RaceDistance("Three Hundred And Fifty Yards",
-                        true, 1050), expectedQuarterHorseStarter()}
+                        "350y", true, 1050), expectedQuarterHorseStarter()}
         });
     }
 
@@ -90,7 +90,7 @@ public class StarterTest {
 
         pointsOfCallService = mock(PointsOfCallService.class);
         when(pointsOfCallService.getPointsOfCallForDistance(eq(breed), eq(raceDistance)))
-                .thenReturn(sampleCharts.getPointsOfCall(breed, raceDistance.getValue()));
+                .thenReturn(sampleCharts.getPointsOfCall(breed, raceDistance.getFeet()));
 
         Starter starter = Starter.parseRunningLineData(
                 sampleCharts.getSampleRunningLineCharsByColumn(chartPageIndex, starterIndex),

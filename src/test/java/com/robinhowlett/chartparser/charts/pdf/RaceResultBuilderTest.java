@@ -2,6 +2,7 @@ package com.robinhowlett.chartparser.charts.pdf;
 
 import com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.TrackRecord;
 import com.robinhowlett.chartparser.charts.pdf.running_line.HorseJockey;
+import com.robinhowlett.chartparser.charts.pdf.running_line.Odds;
 import com.robinhowlett.chartparser.charts.pdf.wagering.WagerPayoffPoolsTest;
 import com.robinhowlett.chartparser.fractionals.FractionalPoint;
 import com.robinhowlett.chartparser.fractionals.FractionalPoint.Fractional;
@@ -59,6 +60,71 @@ public class RaceResultBuilderTest {
         // method under test
         starters = raceBuilder.updateStartersWithWinPlaceShowPayoffs(starters,
                 WagerPayoffPoolsTest.expectedWagerPayoffPools());
+
+        assertThat(starters, equalTo(expected));
+    }
+
+    @Test
+    public void updateStartersWithOddsChoiceIndicies_WithFiveStarters_UpdatesChoiceWhenOdds()
+            throws Exception {
+        List<Starter> expected = new ArrayList<Starter>() {{
+            // favorite
+            Starter first = new Starter.Builder().odds(new Odds(2.0, true))
+                    .horseAndJockey(new HorseJockey(new Horse("Prater Sixty Four"),
+                            new Jockey("Karlo", "Lopez"))).build();
+            first.setChoice(1);
+
+            // joint-2nd favorite
+            Starter second = new Starter.Builder().odds(new Odds(4.0, false))
+                    .horseAndJockey(new HorseJockey(new Horse("Candy Sweetheart"),
+                            new Jockey("Dennis", "Collins"))).build();
+            second.setChoice(2);
+
+            // no odds, therefore no choice
+            Starter third = new Starter.Builder()
+                    .horseAndJockey(new HorseJockey(new Horse("Midnightwithdrawal"),
+                            new Jockey("Alfredi", "Triana Jr."))).build();
+
+            // 4th favorite
+            Starter fourth = new Starter.Builder().odds(new Odds(10.0, false))
+                    .horseAndJockey(new HorseJockey(new Horse("Prowers County"),
+                            new Jockey("Carl", "Williams"))).build();
+            fourth.setChoice(4);
+
+            // joint-2nd favorite
+            Starter fifth = new Starter.Builder().odds(new Odds(4.0, false))
+                    .horseAndJockey(new HorseJockey(new Horse("Al Baz (GB)"),
+                            new Jockey("Tracy", "Hebert"))).build();
+            fifth.setChoice(2);
+
+            add(first);
+            add(second);
+            add(third);
+            add(fourth);
+            add(fifth);
+        }};
+
+        RaceResult.Builder raceBuilder = new RaceResult.Builder();
+        List<Starter> starters = new ArrayList<Starter>() {{
+            add(new Starter.Builder().odds(new Odds(2.0, true))
+                    .horseAndJockey(new HorseJockey(new Horse("Prater Sixty Four"),
+                            new Jockey("Karlo", "Lopez"))).build());
+            add(new Starter.Builder().odds(new Odds(4.0, false))
+                    .horseAndJockey(new HorseJockey(new Horse("Candy Sweetheart"),
+                            new Jockey("Dennis", "Collins"))).build());
+            add(new Starter.Builder()
+                    .horseAndJockey(new HorseJockey(new Horse("Midnightwithdrawal"),
+                            new Jockey("Alfredi", "Triana Jr."))).build());
+            add(new Starter.Builder().odds(new Odds(10.0, false))
+                    .horseAndJockey(new HorseJockey(new Horse("Prowers County"),
+                            new Jockey("Carl", "Williams"))).build());
+            add(new Starter.Builder().odds(new Odds(4.0, false))
+                    .horseAndJockey(new HorseJockey(new Horse("Al Baz (GB)"),
+                            new Jockey("Tracy", "Hebert"))).build());
+        }};
+
+        // method under test
+        starters = raceBuilder.updateStartersWithOddsChoiceIndicies(starters);
 
         assertThat(starters, equalTo(expected));
     }
