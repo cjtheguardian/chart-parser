@@ -55,6 +55,12 @@ Parsing a PDF file is simple and can be done in one-line e.g.:
 List<RaceResult> raceResults = ChartParser.create().parse(Paths.get("ARP_2016-07-24_race-charts.pdf").toFile());
 ```
 
+## Documentation
+
+* [JSON API Design](http://www.robinhowlett.com/chart-parser/json-design.html)
+* [JavaDoc](http://www.robinhowlett.com/chart-parser/apidocs/index.html)
+* [Maven Site](http://www.robinhowlett.com/chart-parser/index.html)
+
 ## Compiling
 
 ***IMPORTANT:*** This project relies on enabling [the Java 8 method parameter reflection feature (`-parameters`)](https://docs.oracle.com/javase/tutorial/reflect/member/methodparameterreflection.html) in your JVM settings e.g. 
@@ -62,10 +68,6 @@ List<RaceResult> raceResults = ChartParser.create().parse(Paths.get("ARP_2016-07
 ![intellij-settings](https://i.imgur.com/8S89Byp.png)
 
 `chart-parser` is a [Maven-based](https://maven.apache.org/) Java open-source project. Running `mvn clean install` will compile the code, run [all tests](https://github.com/robinhowlett/chart-parser/tree/master/src/test/java/com/robinhowlett/chartparser), and install the built artificat to the local repository.
-
-### JavaDoc
-
-JavaDocs are available at [http://www.robinhowlett.com/chart-parser/index.html](http://www.robinhowlett.com/chart-parser/index.html)
 
 ## Notes
 
