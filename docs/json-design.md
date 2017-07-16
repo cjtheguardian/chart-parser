@@ -242,7 +242,6 @@
 | scratches[].horse  | object  | A horse scratched from the race |  |  |
 | scratches[].horse.name  | string  | The name of the horse scratched |  | "Cat With a Twist" |
 | scratches[].reason  | string  | The reason the horse was scratched | `null` if not available | "Trainer"<br/>"Veterinarian" |
-| wagering  | object  |  |  |  |
 | fractionals | array | The list of fractional times registered by the leader at each fractional point |  |  |
 | fractionals[] | object | The details of an individual fractional |  |  |
 | fractionals[].point | number | The fractional point in question | Values range from `1` to `6` | `1` |
