@@ -359,6 +359,7 @@ public class RaceResultBuilderTest {
             first.horseAndJockey(new HorseJockey(new Horse("Perkin Desire"),
                     new Jockey("Ramiro", "Garcia")));
             first.individualTimeMillis(18015L);
+            first.speedIndex(83);
             first.pointsOfCall(new ArrayList<PointOfCall>() {{
                 PointOfCall pointOfCall = new PointOfCall(6, "Fin", 1050);
                 pointOfCall.setRelativePosition(new RelativePosition(1,
@@ -368,7 +369,7 @@ public class RaceResultBuilderTest {
             Starter firstStarter = first.build();
             final Fractional[] finFirst = {null};
             firstStarter.setFractionals(new ArrayList<Fractional>() {{
-                finFirst[0] = new Fractional(6, "Fin", 1050, "18.015", 18015L);
+                finFirst[0] = new Fractional(6, "Fin", 1050, "0:18.015", 18015L);
                 add(finFirst[0]);
             }});
             firstStarter.setSplits(new ArrayList<Split>() {{
@@ -380,6 +381,7 @@ public class RaceResultBuilderTest {
             second.horseAndJockey(new HorseJockey(new Horse("Ima Cutie Patutie"),
                     new Jockey("Vince", "Guerra")));
             second.individualTimeMillis(18317L);
+            second.speedIndex(74);
             second.pointsOfCall(new ArrayList<PointOfCall>() {{
                 PointOfCall pointOfCall = new PointOfCall(6, "Fin", 1050);
                 RelativePosition relativePosition = new RelativePosition(2,
@@ -392,7 +394,7 @@ public class RaceResultBuilderTest {
             Starter secondStarter = second.build();
             final Fractional[] finSecond = {null};
             secondStarter.setFractionals(new ArrayList<Fractional>() {{
-                finSecond[0] = new Fractional(6, "Fin", 1050, "18.317", 18317L);
+                finSecond[0] = new Fractional(6, "Fin", 1050, "0:18.317", 18317L);
                 add(finSecond[0]);
             }});
             secondStarter.setSplits(new ArrayList<Split>() {{
@@ -405,7 +407,7 @@ public class RaceResultBuilderTest {
             Starter.Builder first = new Starter.Builder();
             first.horseAndJockey(new HorseJockey(new Horse("Perkin Desire"),
                     new Jockey("Ramiro", "Garcia")));
-            first.individualTimeMillis(18015L)
+            first.individualTimeMillis(18015L).speedIndex(83)
                     .pointsOfCall(new ArrayList<PointOfCall>() {{
                         PointOfCall pointOfCall = new PointOfCall(6, "Fin", 1050);
                         pointOfCall.setRelativePosition(new RelativePosition(1,
@@ -417,7 +419,7 @@ public class RaceResultBuilderTest {
             Starter.Builder second = new Starter.Builder();
             second.horseAndJockey(new HorseJockey(new Horse("Ima Cutie Patutie"),
                     new Jockey("Vince", "Guerra")));
-            second.individualTimeMillis(18317L)
+            second.individualTimeMillis(18317L).speedIndex(74)
                     .pointsOfCall(new ArrayList<PointOfCall>() {{
                         PointOfCall pointOfCall = new PointOfCall(6, "Fin", 1050);
                         RelativePosition relativePosition = new RelativePosition(2,
@@ -450,7 +452,7 @@ public class RaceResultBuilderTest {
         RaceResult raceResult = raceBuilder.build();
 
         // check that the race has the winner's fractionals
-        Fractional fin = new Fractional(6, "Fin", 1050, "18.015", 18015L);
+        Fractional fin = new Fractional(6, "Fin", 1050, "0:18.015", 18015L);
         List<Fractional> expectedFractionals = new ArrayList<Fractional>() {{
             add(fin);
         }};

@@ -1,10 +1,12 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * The rider of the {@link Starter}
  */
+@JsonPropertyOrder({"name"})
 public class Jockey {
     private final String name;
     private final String firstName;

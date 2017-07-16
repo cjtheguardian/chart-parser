@@ -2,6 +2,7 @@ package com.robinhowlett.chartparser.points_of_call;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.robinhowlett.chartparser.charts.pdf.Chart;
 import com.robinhowlett.chartparser.charts.pdf.Starter;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class PointsOfCall {
         private final int point;
         private final String text;
         private Integer feet;
+        private Double furlongs;
         private RelativePosition relativePosition;
 
         @JsonCreator
@@ -44,6 +46,8 @@ public class PointsOfCall {
             this.point = point;
             this.text = text;
             this.feet = feet;
+            this.furlongs = (feet != null ?
+                    Chart.round((double) feet / 660, 2).doubleValue() : null);
         }
 
         public boolean hasKnownDistance() {
@@ -72,6 +76,12 @@ public class PointsOfCall {
 
         public void setFeet(Integer feet) {
             this.feet = feet;
+            this.furlongs = (feet != null ?
+                    Chart.round((double) feet / 660, 2).doubleValue() : null);
+        }
+
+        public Double getFurlongs() {
+            return furlongs;
         }
 
         public RelativePosition getRelativePosition() {
@@ -88,6 +98,7 @@ public class PointsOfCall {
                     "point=" + point +
                     ", text='" + text + '\'' +
                     ", feet=" + feet +
+                    ", furlongs=" + furlongs +
                     ", relativePosition=" + relativePosition +
                     '}';
         }
@@ -102,6 +113,8 @@ public class PointsOfCall {
             if (point != that.point) return false;
             if (text != null ? !text.equals(that.text) : that.text != null) return false;
             if (feet != null ? !feet.equals(that.feet) : that.feet != null) return false;
+            if (furlongs != null ? !furlongs.equals(that.furlongs) : that.furlongs != null)
+                return false;
             return relativePosition != null ? relativePosition.equals(that.relativePosition) : that
                     .relativePosition == null;
         }
@@ -111,6 +124,7 @@ public class PointsOfCall {
             int result = point;
             result = 31 * result + (text != null ? text.hashCode() : 0);
             result = 31 * result + (feet != null ? feet.hashCode() : 0);
+            result = 31 * result + (furlongs != null ? furlongs.hashCode() : 0);
             result = 31 * result + (relativePosition != null ? relativePosition.hashCode() : 0);
             return result;
         }

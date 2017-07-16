@@ -17,7 +17,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  */
 public class PostTimeStartCommentsTimer {
     static final Pattern POST_START_TIMER_PATTERN =
-            Pattern.compile("Off at: (.+)\\|Start: ([^\\|]+)(\\|Timer: (.+))?");
+            Pattern.compile("Off at: (.+)\\|Start: ([^\\|]+)(\\|Timer: ([^\\|\\n]+))?");
 
     private final String postTime;
     private final String startComments;
@@ -35,9 +35,9 @@ public class PostTimeStartCommentsTimer {
         this.timer = timer;
     }
 
-    public static Optional<PostTimeStartCommentsTimer> parse(List<List<ChartCharacter>> sections) {
-        for (List<ChartCharacter> section : sections) {
-            String text = Chart.convertToText(section);
+    public static Optional<PostTimeStartCommentsTimer> parse(List<List<ChartCharacter>> lines) {
+        for (List<ChartCharacter> line : lines) {
+            String text = Chart.convertToText(line);
             Matcher matcher = POST_START_TIMER_PATTERN.matcher(text);
             if (matcher.find()) {
                 String weather = matcher.group(1);

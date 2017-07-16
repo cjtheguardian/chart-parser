@@ -1,6 +1,7 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import java.util.regex.Pattern;
 /**
  * The owner of the {@link Starter}
  */
+@JsonPropertyOrder({"name"})
 public class Trainer {
 
     private static final Pattern TRAINERS_PATTERN = Pattern.compile("Trainers:\\|.+");

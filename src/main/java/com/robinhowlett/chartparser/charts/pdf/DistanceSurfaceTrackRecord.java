@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.robinhowlett.chartparser.exceptions.ChartParserException;
+import com.robinhowlett.chartparser.fractionals.FractionalPoint;
 import com.robinhowlett.chartparser.fractionals.FractionalService;
 
 import java.time.LocalDate;
@@ -140,7 +141,8 @@ public class DistanceSurfaceTrackRecord {
                 String raceDateText = matcher.group(10);
                 LocalDate raceDate = TrackRaceDateRaceNumber.parseRaceDate(raceDateText);
 
-                trackRecord = new TrackRecord(holder, time,
+                trackRecord = new TrackRecord(holder, (recordTime.isPresent() ?
+                        FractionalPoint.convertToTime(recordTime.get()) : null),
                         (recordTime.isPresent() ? recordTime.get() : null), raceDate);
             }
 
@@ -369,7 +371,7 @@ public class DistanceSurfaceTrackRecord {
             this.compact = compact;
             this.exact = exact;
             this.feet = feet;
-            this.furlongs = ((double) feet / 660);
+            this.furlongs = Chart.round((double) feet / 660, 2).doubleValue();
             this.runUp = runUp;
         }
 

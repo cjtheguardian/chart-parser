@@ -2,6 +2,8 @@ package com.robinhowlett.chartparser.fractionals;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.robinhowlett.chartparser.charts.pdf.Chart;
 import com.robinhowlett.chartparser.exceptions.ChartParserException;
 
 import java.util.ArrayList;
@@ -39,10 +41,12 @@ public class FractionalPoint {
     /**
      * A specific fractional point for the {@link FractionalPoint} in question
      */
+    @JsonPropertyOrder({"point", "text", "feet", "furlongs", "time", "millis"})
     public static class Fractional {
         protected final int point;
         protected final String text;
         protected final int feet;
+        protected final double furlongs;
         protected String time;
         protected Long millis;
 
@@ -55,6 +59,7 @@ public class FractionalPoint {
             this.point = point;
             this.text = text;
             this.feet = feet;
+            this.furlongs = Chart.round((double) feet / 660, 2).doubleValue();
             this.time = time;
             this.millis = millis;
         }
@@ -73,6 +78,10 @@ public class FractionalPoint {
 
         public int getFeet() {
             return feet;
+        }
+
+        public double getFurlongs() {
+            return furlongs;
         }
 
         public Long getMillis() {
@@ -101,7 +110,8 @@ public class FractionalPoint {
                     "point=" + point +
                     ", text='" + text + '\'' +
                     ", feet=" + feet +
-                    ", time=" + time +
+                    ", furlongs=" + furlongs +
+                    ", time='" + time + '\'' +
                     ", millis=" + millis +
                     '}';
         }
@@ -115,6 +125,7 @@ public class FractionalPoint {
 
             if (point != that.point) return false;
             if (feet != that.feet) return false;
+            if (Double.compare(that.furlongs, furlongs) != 0) return false;
             if (text != null ? !text.equals(that.text) : that.text != null) return false;
             if (time != null ? !time.equals(that.time) : that.time != null) return false;
             return millis != null ? millis.equals(that.millis) : that.millis == null;
@@ -122,9 +133,13 @@ public class FractionalPoint {
 
         @Override
         public int hashCode() {
-            int result = point;
+            int result;
+            long temp;
+            result = point;
             result = 31 * result + (text != null ? text.hashCode() : 0);
             result = 31 * result + feet;
+            temp = Double.doubleToLongBits(furlongs);
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
             result = 31 * result + (time != null ? time.hashCode() : 0);
             result = 31 * result + (millis != null ? millis.hashCode() : 0);
             return result;
@@ -265,6 +280,7 @@ public class FractionalPoint {
                     "point=" + point +
                     ", text='" + text + '\'' +
                     ", feet=" + feet +
+                    ", furlongs=" + furlongs +
                     ", time='" + time + '\'' +
                     ", millis=" + millis +
                     ", from=" + from +

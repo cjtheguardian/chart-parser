@@ -44,8 +44,8 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  */
 @JsonPropertyOrder({"lastRaced", "program", "horse", "jockey", "trainer", "owner", "weight",
         "medicationEquipment", "claim", "postPosition", "finishPosition", "officialPosition",
-        "winner", "disqualified", "odds", "favorite", "choice", "wagering", "pointsOfCall",
-        "fractionals", "splits", "aqha", "comments"})
+        "winner", "disqualified", "odds", "choice", "favorite", "wagering", "pointsOfCall",
+        "fractionals", "splits", "ratings", "comments",})
 public class Starter {
     private static final Logger LOGGER = LoggerFactory.getLogger(Starter.class);
 
@@ -72,8 +72,7 @@ public class Starter {
     @JsonIgnoreProperties({"program", "horse"})
     @JsonInclude(NON_NULL)
     private WinPlaceShowPayoff winPlaceShowPayoff;
-    @JsonInclude(NON_NULL)
-    private Aqha aqha;
+    private List<Rating> ratings;
     private List<Fractional> fractionals;
     private List<Split> splits;
     private Integer choice; // the n-th betting choice
@@ -93,8 +92,10 @@ public class Starter {
             updateFinishPosition(builder.pointsOfCall);
         }
 
-        if (builder.individualTimeMillis != null || builder.speedIndex != null) {
-            aqha = new Aqha(builder.individualTimeMillis, builder.speedIndex);
+        ratings = new ArrayList<>();
+        if (builder.speedIndex != null && builder.individualTimeMillis != null) {
+            ratings.add(new Rating.AqhaSpeedIndex(builder.speedIndex,
+                    builder.individualTimeMillis));
         }
 
         odds = (builder.odds != null ? builder.odds.getValue() : null);
@@ -154,12 +155,12 @@ public class Starter {
         return favorite;
     }
 
-    public Aqha getAqha() {
-        return aqha;
+    public List<Rating> getRatings() {
+        return ratings;
     }
 
-    public void setAqha(Aqha aqha) {
-        this.aqha = aqha;
+    public void setRatings(List<Rating> ratings) {
+        this.ratings = ratings;
     }
 
     public String getComments() {
@@ -546,7 +547,8 @@ public class Starter {
         if (winPlaceShowPayoff != null ? !winPlaceShowPayoff.equals(starter.winPlaceShowPayoff) :
                 starter.winPlaceShowPayoff != null)
             return false;
-        if (aqha != null ? !aqha.equals(starter.aqha) : starter.aqha != null) return false;
+        if (ratings != null ? !ratings.equals(starter.ratings) : starter.ratings != null)
+            return false;
         if (fractionals != null ? !fractionals.equals(starter.fractionals) : starter.fractionals
                 != null)
             return false;
@@ -575,7 +577,7 @@ public class Starter {
         result = 31 * result + (winner ? 1 : 0);
         result = 31 * result + (disqualified != null ? disqualified.hashCode() : 0);
         result = 31 * result + (winPlaceShowPayoff != null ? winPlaceShowPayoff.hashCode() : 0);
-        result = 31 * result + (aqha != null ? aqha.hashCode() : 0);
+        result = 31 * result + (ratings != null ? ratings.hashCode() : 0);
         result = 31 * result + (fractionals != null ? fractionals.hashCode() : 0);
         result = 31 * result + (splits != null ? splits.hashCode() : 0);
         result = 31 * result + (choice != null ? choice.hashCode() : 0);
@@ -604,7 +606,7 @@ public class Starter {
                 ", winner=" + winner +
                 ", disqualified=" + disqualified +
                 ", winPlaceShowPayoff=" + winPlaceShowPayoff +
-                ", aqha=" + aqha +
+                ", ratings=" + ratings +
                 ", fractionals=" + fractionals +
                 ", splits=" + splits +
                 ", choice=" + choice +
