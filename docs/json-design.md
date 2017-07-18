@@ -37,7 +37,7 @@
 | distance.runUp  | number  | The distance between the starting stalls and the "start" electronic timer | Value is in feet | `30`<br/>`0` |
 | surface  | string  | The surface the race was run on |  | "Dirt"<br/>"Turf"<br/>"Inner turf" |
 | trackCondition  | string  | A description of the track/surface condition |  | "Fast"<br/>"Sloppy (Sealed)"<br/>"Muddy" |
-| surface  | string  | The surface the race was supposed to be run on |  | "Turf" |
+| scheduledSurface  | string  | The surface the race was supposed to be run on |  | "Turf" |
 | offTurf  | boolean  | If the race was scheduled to be run on the turf, but was actually run on the main track |  | `true`<br/>`false` |
 | trackRecord  | object  | The record time for this race distance and surface listed in the chart | |  |
 | trackRecord.holder  | string  | The name of the track record holder | | "No It Ain't" |
