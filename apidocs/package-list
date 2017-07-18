@@ -1,0 +1,10 @@
+com.robinhowlett.chartparser
+com.robinhowlett.chartparser.charts.pdf
+com.robinhowlett.chartparser.charts.pdf.running_line
+com.robinhowlett.chartparser.charts.pdf.wagering
+com.robinhowlett.chartparser.charts.text
+com.robinhowlett.chartparser.exceptions
+com.robinhowlett.chartparser.formats
+com.robinhowlett.chartparser.fractionals
+com.robinhowlett.chartparser.points_of_call
+com.robinhowlett.chartparser.tracks
