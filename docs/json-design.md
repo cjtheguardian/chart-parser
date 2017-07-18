@@ -54,10 +54,7 @@
 | purse.value  | number  | The value of the race | | `9700`<br/>`40000` |
 | purse.text  | string  | Text version of the race prize money | | "$9,700"<br/>"$40,000 Guaranteed" |
 | purse.availableMoney  | string  | Text of the "available money" description | | "$9,700"<br/>"$40,000" |
-| purse.enhancements  | array  | The list of purse enhancements that applied to this race | | Always present; empty if no enhancements |
-| purse.enhancements[]  | object  | An enhancement to the purse | | |
-| purse.enhancements[].type  | string  | The type of the purse enhancement | One of two values | "INCLUDES"<br/>"PLUS" |
-| purse.enhancements[].text  | string  | Description of the purse enhancement | | "$3,000 AQHA-American Quarter Horse Association"<br/>"$500 Other Sources" |
+| purse.enhancements  | string  | A comma-separated list of purse enhancements that applied to this race | `null` if no enhancements | "Includes: $3,000 AQHA-American Quarter Horse Association, Plus: $500 Other Sources" |
 | purse.valueOfRace  | string  | A detailed description of the prize money distribution (if any) | | "$9,700 1st $5,820, 2nd $1,940, 3rd $970, 4th $582, 5th $194, 6th $97, 7th $97" |
 | weather  | object  | The weather conditions present during the race | |  |
 | weather.text  | string  | A short description of the weather conditions | | "Clear" |

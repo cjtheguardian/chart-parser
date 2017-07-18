@@ -55,27 +55,17 @@ public class PurseTest {
     @Test
     public void parse_WithIncludes_ReturnsValidString() throws Exception {
         assertThat(parsePurseText("Includes: $500", purse).getEnhancements(),
-                equalTo(new ArrayList<PurseEnhancement>() {{
-                    add(new PurseEnhancement(INCLUDES, "$500"));
-                }}));
+                equalTo("Includes: $500"));
         assertThat(parsePurseText("Includes: $2,000 Other Sources", purse).getEnhancements(),
-                equalTo(new ArrayList<PurseEnhancement>() {{
-                    add(new PurseEnhancement(INCLUDES, "$500"));
-                    add(new PurseEnhancement(INCLUDES, "$2,000 Other Sources"));
-                }}));
+                equalTo("Includes: $500, Includes: $2,000 Other Sources"));
     }
 
     @Test
     public void parse_WithPlus_ReturnsValidString() throws Exception {
-        assertThat(parsePurseText("Plus: $500", purse).getEnhancements(PLUS),
-                equalTo(new ArrayList<PurseEnhancement>() {{
-                    add(new PurseEnhancement(PLUS, "$500"));
-                }}));
-        assertThat(parsePurseText("Plus: $40,000 Added", purse).getEnhancements(PLUS),
-                equalTo(new ArrayList<PurseEnhancement>() {{
-                    add(new PurseEnhancement(PLUS, "$500"));
-                    add(new PurseEnhancement(PLUS, "$40,000 Added"));
-                }}));
+        assertThat(parsePurseText("Plus: $500", purse).getEnhancements(),
+                equalTo("Plus: $500"));
+        assertThat(parsePurseText("Plus: $40,000 Added", purse).getEnhancements(),
+                equalTo("Plus: $500, Plus: $40,000 Added"));
     }
 
     @Test

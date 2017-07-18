@@ -1,5 +1,8 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.robinhowlett.chartparser.exceptions.ChartParserException;
 
 import org.slf4j.Logger;
@@ -22,6 +25,7 @@ import static java.util.Locale.US;
  * Parses and stores the value amount, textual description, and any other additional information
  * specific to or enhancing the value
  */
+@JsonPropertyOrder({"value", "text", "availableMoney", "enhancements", "valueOfRace"})
 public class Purse {
 
     static final Pattern PURSE_PATTERN =
@@ -40,8 +44,10 @@ public class Purse {
     private Integer value;
     private String text;
     private String availableMoney;
-    private List<PurseEnhancement> enhancements = new ArrayList<>();
     private String valueOfRace;
+
+    @JsonIgnore
+    private List<PurseEnhancement> enhancementsList = new ArrayList<>();
 
     public static Purse parse(final List<List<ChartCharacter>> lines) throws PurseParseException {
         Purse purse = new Purse();
@@ -79,13 +85,13 @@ public class Purse {
         matcher = INCLUDES_PATTERN.matcher(text);
         if (matcher.find()) {
             String includesText = matcher.group(1);
-            purse.getEnhancements().add(new PurseEnhancement(INCLUDES, includesText));
+            purse.enhancementsList.add(new PurseEnhancement(INCLUDES, includesText));
         }
 
         matcher = PLUS_PATTERN.matcher(text);
         if (matcher.find()) {
             String plusText = matcher.group(1);
-            purse.getEnhancements().add(new PurseEnhancement(PLUS, plusText));
+            purse.enhancementsList.add(new PurseEnhancement(PLUS, plusText));
         }
 
         matcher = VALUE_OF_RACE_PATTERN.matcher(text);
@@ -122,12 +128,16 @@ public class Purse {
         this.availableMoney = availableMoney;
     }
 
-    public List<PurseEnhancement> getEnhancements() {
-        return enhancements;
+    @JsonProperty("enhancements")
+    public String getEnhancements() {
+        return (!enhancementsList.isEmpty() ? enhancementsList.stream()
+                .map(purseEnhancement -> String.format("%s: %s",
+                        purseEnhancement.getType().getChartValue(), purseEnhancement.getText()))
+                .collect(Collectors.joining(", ")) : null);
     }
 
     public List<PurseEnhancement> getEnhancements(EnhancementType enhancementType) {
-        return enhancements.stream()
+        return enhancementsList.stream()
                 .filter(enhancement -> enhancement.getType().equals(enhancementType))
                 .collect(Collectors.toList());
     }
@@ -155,7 +165,8 @@ public class Purse {
         if (availableMoney != null ? !availableMoney.equals(purse.availableMoney) :
                 purse.availableMoney != null)
             return false;
-        if (enhancements != null ? !enhancements.equals(purse.enhancements) : purse.enhancements
+        if (enhancementsList != null ? !enhancementsList.equals(purse.enhancementsList) : purse
+                .enhancementsList
                 != null)
             return false;
         return valueOfRace != null ? valueOfRace.equals(purse.valueOfRace) : purse
@@ -167,7 +178,7 @@ public class Purse {
         int result = value != null ? value.hashCode() : 0;
         result = 31 * result + (text != null ? text.hashCode() : 0);
         result = 31 * result + (availableMoney != null ? availableMoney.hashCode() : 0);
-        result = 31 * result + (enhancements != null ? enhancements.hashCode() : 0);
+        result = 31 * result + (enhancementsList != null ? enhancementsList.hashCode() : 0);
         result = 31 * result + (valueOfRace != null ? valueOfRace.hashCode() : 0);
         return result;
     }
@@ -178,7 +189,7 @@ public class Purse {
                 "value=" + value +
                 ", text='" + text + '\'' +
                 ", availableMoney='" + availableMoney + '\'' +
-                ", enhancements=" + enhancements +
+                ", enhancementsList=" + enhancementsList +
                 ", valueOfRace='" + valueOfRace + '\'' +
                 '}';
     }
@@ -231,7 +242,7 @@ public class Purse {
     }
 
     /**
-     * Enum for types of value enhancements e.g. Plus or Includes
+     * Enum for types of value enhancementsList e.g. Plus or Includes
      */
     public enum EnhancementType {
         PLUS("Plus"),
