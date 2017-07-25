@@ -17,7 +17,7 @@ public class DistanceSurfaceTrackRecordTest {
     public void parseDistanceSurface_WithDistanceSurfaceTrackRecord_ParsesCorrectly()
             throws Exception {
         DistanceSurfaceTrackRecord.TrackRecord expectedTrackRecord =
-                new DistanceSurfaceTrackRecord.TrackRecord("No It Ain't", "1:08.190", 68190L,
+                new DistanceSurfaceTrackRecord.TrackRecord(new Horse("No It Ain't"), "1:08.190", 68190L,
                         LocalDate.of(2011, 8, 12));
         DistanceSurfaceTrackRecord expected = new DistanceSurfaceTrackRecord("Six Furlongs",
                 "Dirt", null, expectedTrackRecord);
@@ -31,7 +31,7 @@ public class DistanceSurfaceTrackRecordTest {
     @Test
     public void parseDistanceSurface_WithOffTheTurf_ParsesCorrectly() throws Exception {
         DistanceSurfaceTrackRecord.TrackRecord expectedTrackRecord =
-                new DistanceSurfaceTrackRecord.TrackRecord("No It Ain't", "1:08.190", 68190L,
+                new DistanceSurfaceTrackRecord.TrackRecord(new Horse("No It Ain't"), "1:08.190", 68190L,
                         LocalDate.of(2011, 8, 12));
         DistanceSurfaceTrackRecord expected = new DistanceSurfaceTrackRecord("Six Furlongs",
                 "Dirt", "Turf", expectedTrackRecord);

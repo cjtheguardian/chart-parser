@@ -5,11 +5,13 @@
     "calls": [
       {
         "point": 1,
-        "text": "Start"
+        "text": "Start",
+        "compact": "Start"
       },
       {
         "point": 5,
-        "text": "Str"
+        "text": "Str",
+        "compact": "Str"
       },
       {
         "point": 6,
@@ -23,15 +25,18 @@
     "calls": [
       {
         "point": 1,
-        "text": "Start"
+        "text": "Start",
+        "compact": "Start"
       },
       {
         "point": 2,
-        "text": "Str1"
+        "text": "Str1",
+        "compact": "Str1"
       },
       {
         "point": 5,
-        "text": "Str"
+        "text": "Str",
+        "compact": "Str"
       },
       {
         "point": 6,

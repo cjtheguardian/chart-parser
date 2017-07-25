@@ -8,7 +8,9 @@ import com.robinhowlett.chartparser.fractionals.FractionalPoint;
 import com.robinhowlett.chartparser.fractionals.FractionalService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -141,7 +143,7 @@ public class DistanceSurfaceTrackRecord {
                 String raceDateText = matcher.group(10);
                 LocalDate raceDate = TrackRaceDateRaceNumber.parseRaceDate(raceDateText);
 
-                trackRecord = new TrackRecord(holder, (recordTime.isPresent() ?
+                trackRecord = new TrackRecord(new Horse(holder), (recordTime.isPresent() ?
                         FractionalPoint.convertToTime(recordTime.get()) : null),
                         (recordTime.isPresent() ? recordTime.get() : null), raceDate);
             }
@@ -375,6 +377,66 @@ public class DistanceSurfaceTrackRecord {
             this.runUp = runUp;
         }
 
+        public static String lookupCompact(int feet) {
+            LinkedHashMap<Integer, String> compacts = new LinkedHashMap<Integer, String>() {{
+                put(450, "150y");
+                put(660, "1f");
+                put(1320, "2f");
+                put(1650, "2 1/2f");
+                put(1980, "3f");
+                put(2145, "3 1/4f");
+                put(2310, "3 1/2f");
+                put(2475, "3 3/4f");
+                put(2640, "4f");
+                put(2970, "4 1/2f");
+                put(3000, "1000y");
+                put(3300, "5f");
+                put(3465, "5 1/4f");
+                put(3630, "5 1/2f");
+                put(3960, "6f");
+                put(4290, "6 1/2f");
+                put(4620, "7f");
+                put(4950, "7 1/2f");
+                put(5280, "1m");
+                put(5370, "1m 30y");
+                put(5400, "1m 40y");
+                put(5490, "1m 70y");
+                put(5610, "1 1/16m");
+                put(5940, "1 1/8m");
+                put(6270, "1 3/16m");
+                put(6600, "1 1/4m");
+                put(6930, "1 5/16m");
+                put(7260, "1 3/8m");
+                put(7590, "1 7/16m");
+                put(7920, "1 1/2m");
+                put(8250, "1 9/16m");
+                put(8580, "1 5/8m");
+                put(8910, "1 11/16m");
+                put(9240, "1 3/4m");
+                put(9570, "1 13/16m");
+                put(9900, "1 7/8m");
+                put(10230, "1 15/16m");
+                put(10560, "2m");
+                put(10680, "2m 40y");
+                put(10770, "2m 70y");
+                put(10890, "2 1/16m");
+                put(11220, "2 1/8m");
+                put(11550, "2 3/16m");
+                put(11880, "2 1/4m");
+                put(12210, "2 5/16m");
+                put(15840, "3m");
+                put(17160, "3 1/4f");
+                put(18480, "3 1/2f");
+                put(21120, "4m");
+            }};
+
+            if (compacts.containsKey(feet)) {
+                return compacts.get(feet);
+            }
+
+            return null;
+        }
+
         public String getText() {
             return text;
         }
@@ -451,19 +513,19 @@ public class DistanceSurfaceTrackRecord {
      * milliseconds) and the date when the record was set
      */
     public static class TrackRecord {
-        private final String holder;
+        private final Horse holder;
         private final String time;
         private final Long millis;
         private final LocalDate raceDate;
 
-        public TrackRecord(String holder, String time, Long millis, LocalDate raceDate) {
+        public TrackRecord(Horse holder, String time, Long millis, LocalDate raceDate) {
             this.holder = holder;
             this.time = time;
             this.millis = millis;
             this.raceDate = raceDate;
         }
 
-        public String getHolder() {
+        public Horse getHolder() {
             return holder;
         }
 

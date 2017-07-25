@@ -8,12 +8,7 @@ import com.robinhowlett.chartparser.exceptions.ChartParserException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Stores the {@link Fractional}s for a particular race distance
@@ -41,23 +36,26 @@ public class FractionalPoint {
     /**
      * A specific fractional point for the {@link FractionalPoint} in question
      */
-    @JsonPropertyOrder({"point", "text", "feet", "furlongs", "time", "millis"})
+    @JsonPropertyOrder({"point", "text", "compact", "feet", "furlongs", "time", "millis"})
     public static class Fractional {
         protected final int point;
         protected final String text;
-        protected final int feet;
-        protected final double furlongs;
+        protected String compact;
+        protected int feet;
+        protected double furlongs;
         protected String time;
         protected Long millis;
 
-        public Fractional(int point, String text, int feet) {
-            this(point, text, feet, null, null);
+        public Fractional(int point, String text, String compact, int feet) {
+            this(point, text, compact, feet, null, null);
         }
 
         @JsonCreator
-        public Fractional(int point, String text, int feet, String time, Long millis) {
+        public Fractional(int point, String text, String compact, int feet, String time, Long
+                millis) {
             this.point = point;
             this.text = text;
+            this.compact = compact;
             this.feet = feet;
             this.furlongs = Chart.round((double) feet / 660, 2).doubleValue();
             this.time = time;
@@ -76,20 +74,29 @@ public class FractionalPoint {
             return text;
         }
 
+        public String getCompact() {
+            return compact;
+        }
+
+        public void setCompact(String compact) {
+            this.compact = compact;
+        }
+
         public int getFeet() {
             return feet;
+        }
+
+        public void setFeet(int feet) {
+            this.feet = feet;
+            this.furlongs = Chart.round((double) feet / 660, 2).doubleValue();
         }
 
         public double getFurlongs() {
             return furlongs;
         }
 
-        public Long getMillis() {
-            return millis;
-        }
-
-        public void setMillis(Long millis) {
-            this.millis = millis;
+        public void setFurlongs(double furlongs) {
+            this.furlongs = furlongs;
         }
 
         public String getTime() {
@@ -98,6 +105,14 @@ public class FractionalPoint {
 
         public void setTime(String time) {
             this.time = time;
+        }
+
+        public Long getMillis() {
+            return millis;
+        }
+
+        public void setMillis(Long millis) {
+            this.millis = millis;
         }
 
         public boolean hasTimeAndMillis() {
@@ -109,6 +124,7 @@ public class FractionalPoint {
             return "Fractional{" +
                     "point=" + point +
                     ", text='" + text + '\'' +
+                    ", compact='" + compact + '\'' +
                     ", feet=" + feet +
                     ", furlongs=" + furlongs +
                     ", time='" + time + '\'' +
@@ -127,6 +143,8 @@ public class FractionalPoint {
             if (feet != that.feet) return false;
             if (Double.compare(that.furlongs, furlongs) != 0) return false;
             if (text != null ? !text.equals(that.text) : that.text != null) return false;
+            if (compact != null ? !compact.equals(that.compact) : that.compact != null)
+                return false;
             if (time != null ? !time.equals(that.time) : that.time != null) return false;
             return millis != null ? millis.equals(that.millis) : that.millis == null;
         }
@@ -137,6 +155,7 @@ public class FractionalPoint {
             long temp;
             result = point;
             result = 31 * result + (text != null ? text.hashCode() : 0);
+            result = 31 * result + (compact != null ? compact.hashCode() : 0);
             result = 31 * result + feet;
             temp = Double.doubleToLongBits(furlongs);
             result = 31 * result + (int) (temp ^ (temp >>> 32));
@@ -215,17 +234,18 @@ public class FractionalPoint {
         private final Fractional to;
 
         @JsonCreator
-        Split(int point, String text, int feet, String time, Long millis, Fractional from,
-                Fractional to) {
-            super(point, text, feet, time, millis);
+        Split(int point, String text, String compact, int feet, String time, Long millis,
+                Fractional from, Fractional to) {
+            super(point, text, compact, feet, time, millis);
             this.from = from;
             this.to = to;
         }
 
         public static Split calculate(Fractional from, Fractional to) throws ChartParserException {
             if (from == null && to != null) {
-                return new Split(to.getPoint(), "Start to " + to.getText(), to.getFeet(),
-                        to.getTime(), to.getMillis(), from, to);
+                return new Split(to.getPoint(), "Start to " + to.getText(),
+                        "Start to " + to.getCompact(), to.getFeet(), to.getTime(),
+                        to.getMillis(), from, to);
             } else {
                 if (to == null) {
                     throw new ChartParserException(String.format("Unable to create a split time " +
@@ -234,6 +254,7 @@ public class FractionalPoint {
 
                 int splitFeet = to.getFeet() - from.getFeet();
                 String text = from.getText() + " to " + to.getText();
+                String compact = from.getCompact() + " to " + to.getCompact();
 
                 Long splitMillis = null;
                 String time = null;
@@ -242,7 +263,8 @@ public class FractionalPoint {
                     time = convertToTime(splitMillis);
                 }
 
-                return new Split(to.getPoint(), text, splitFeet, time, splitMillis, from, to);
+                return new Split(to.getPoint(), text, compact, splitFeet, time, splitMillis,
+                        from, to);
             }
         }
 
@@ -279,6 +301,7 @@ public class FractionalPoint {
             return "Split{" +
                     "point=" + point +
                     ", text='" + text + '\'' +
+                    ", compact='" + compact + '\'' +
                     ", feet=" + feet +
                     ", furlongs=" + furlongs +
                     ", time='" + time + '\'' +

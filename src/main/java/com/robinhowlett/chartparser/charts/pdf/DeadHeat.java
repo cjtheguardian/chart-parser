@@ -21,9 +21,6 @@ public class DeadHeat {
 
     static boolean parseDeadHeat(String text) {
         Matcher matcher = DEAD_HEATS.matcher(text);
-        if (matcher.find()) {
-            return true;
-        }
-        return false;
+        return (matcher.find());
     }
 }

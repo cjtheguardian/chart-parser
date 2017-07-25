@@ -1,6 +1,6 @@
 # JSON API Design
 
-> Races that are cancelled will only have the `cancelled`, `reason`, `raceDate.*`, `track.*`, and `raceNumber` properties.
+> Races that are cancelled will only have the `cancelled`, `reason`, `raceDate.*`, `track.*`, and `raceNumber` properties. Everything else will be `null`.
 
 | Field  | Type | Description | Notes | Sample Value(s) |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
@@ -40,7 +40,8 @@
 | scheduledSurface  | string  | The surface the race was supposed to be run on |  | "Turf" |
 | offTurf  | boolean  | If the race was scheduled to be run on the turf, but was actually run on the main track |  | `true`<br/>`false` |
 | trackRecord  | object  | The record time for this race distance and surface listed in the chart | |  |
-| trackRecord.holder  | string  | The name of the track record holder | | "No It Ain't" |
+| trackRecord.holder  | object  | The details of the track record holder | |  |
+| trackRecord.holder.name  | string  | The track record holder's name |  | "No It Ain't" |
 | trackRecord.time  | string  | Text version of the track record time | Format: `M:SS:sss`<br/>Three decimal places | "1:08.190"<br/>"0:17.045" |
 | trackRecord.millis  | number  | The track record time in milliseconds | | `68190`<br/>`17045` |
 | trackRecord.raceDate  | object  | | When `trackRecord.raceDate` is present, all child fields are present |  |
@@ -157,6 +158,7 @@
 | starters[].pointsOfCall[] | object | A call at a particular point of the race |  |  |
 | starters[].pointsOfCall[].point | number | The point number<br/>`1` is the first point of call, `6` is the finish | Shorter races have fewer points of call | `3` |
 | starters[].pointsOfCall[].text | string | The chart's description of the point of call |  | "Start"<br/>"1/4"<br/>"1m" |
+| starters[].pointsOfCall[].compact  | string  | A compact description of the point of call distance |  | "Start"<br/>"2f"<br/>"1m" |
 | starters[].pointsOfCall[].feet | number | The number of feet traveled in the race to this point of call |  | `2640` |
 | starters[].pointsOfCall[].furlongs  | number  | The number of furlongs traveled in the race to this point of call | Up to two decimal places | `4` |
 | starters[].pointsOfCall[].relativePosition | object | Tracks the position of the starter at the point of call relative to the other starters |  |  |
@@ -171,6 +173,7 @@
 | starters[].fractionals[] | object | The details of an individual fractional |  |  |
 | starters[].fractionals[].point | number | The fractional point in question | Values range from `1` to `6` | `1` |
 | starters[].fractionals[].text | string | The chart text description of where the fractional was measured |  | "1/4" |
+| starters[].fractionals[].compact  | string  | A compact description of the fraction distance |  | "2f"<br/>"3 1/2f" |
 | starters[].fractionals[].feet | number | The number of feet traveled in the race to this fractional point  |  | `1320` |
 | starters[].fractionals[].furlongs  | number  | The number of furlongs traveled in the race to this fractional point | Up to two decimal places | `2` |
 | starters[].fractionals[].time | string | A text version of the time taken by the starter to reach this fractional point | Format: "M:SS.sss" | "0:22.880" |
@@ -179,6 +182,7 @@
 | starters[].splits[] | object | The details of an individual split |  |  |
 | starters[].splits[].point | number | The split point in question | Values range from `1` to `6` | `1` |
 | starters[].splits[].text | string | Describes the in-race distance the split covers  |  | "1/4 to 1/2"<br/>"5/8 to Fin"<br/>"Start to 1/4" |
+| starters[].splits[].compact  | string  | A compact description of the split distance |  | "2f to 4f"<br/>"5f to 6f" |
 | starters[].splits[].feet | number | The number of feet traveled in the race for the split  |  | `1320` |
 | starters[].splits[].furlongs  | number  | The number of furlongs traveled in the race for the split | Up to two decimal places | `2` |
 | starters[].splits[].time | string | A text version of the time taken by the starter for the split | Format: "M:SS.sss" | "0:23.620" |
@@ -186,6 +190,7 @@
 | starters[].splits[].from | object | The fractional point the split started at | `null` if it is the start of the race |  |
 | starters[].splits[].from.point | number | The fractional point in question | Values range from `1` to `6` | `1` |
 | starters[].splits[].from.text | string | The chart text description of where the fractional was measured |  | "1/4" |
+| starters[].splits[].from.compact | string | A compact description of where the fractional was measured |  | "2f" |
 | starters[].splits[].from.feet | number | The number of feet traveled in the race to this fractional point  |  | `1320` |
 | starters[].splits[].from.furlongs  | number  | The number of furlongs traveled in the race to this fractional point | Up to two decimal places | `2` |
 | starters[].splits[].from.time | string | A text version of the time taken by the starter to reach this fractional point | Format: "M:SS.sss" | "0:22.880" |
@@ -193,6 +198,7 @@
 | starters[].splits[].to | object | The fractional point the split ended at |  |  |
 | starters[].splits[].to.point | number | The fractional point in question | Values range from `1` to `6` | `2` |
 | starters[].splits[].to.text | string | The chart text description of where the fractional was measured |  | "1/2" |
+| starters[].splits[].to.compact | string | A compact description of where the fractional was measured |  | "2f" |
 | starters[].splits[].to.feet | number | The number of feet traveled in the race to this fractional point  |  | `2640` |
 | starters[].splits[].to.furlongs | number | The number of furlongs traveled in the race to this fractional point  | Up to two decimal places | `4` |
 | starters[].splits[].to.time | string | A text version of the time taken by the starter to reach this fractional point | Format: "M:SS.sss" | "0:46.500" |

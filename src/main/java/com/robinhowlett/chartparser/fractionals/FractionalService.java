@@ -11,10 +11,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Gets the {@link Fractional}s for a particular race distance from the
- * {@link FractionalPointRepository}. In cases where fractions appear to be missing, it makes a
- * guess about which fraction it should correspond to. Calculates the number of milliseconds each
- * fraction corresponds to as well
+ * Gets the {@link Fractional}s for a particular race distance from the {@link
+ * FractionalPointRepository}. In cases where fractions appear to be missing, it makes a guess about
+ * which fraction it should correspond to. Calculates the number of milliseconds each fraction
+ * corresponds to as well
  */
 public class FractionalService {
 
@@ -25,19 +25,17 @@ public class FractionalService {
     }
 
     public List<Fractional> getFractionalPointsForDistance(List<String> fractions,
-            int distanceInFeet, Breed breed) throws ChartParserException {
+            int distanceInFeet, String compact, Breed breed) throws ChartParserException {
         List<Fractional> fractionals = new ArrayList<>();
 
         if (fractions != null && !fractions.isEmpty()) {
             FractionalTreeSet fractionalSet = repository.findAll();
 
             // find the fractionals for this race distance
-            FractionalPoint fractionalPoint =
-                    fractionalSet.floor(createForFloor(distanceInFeet));
+            FractionalPoint fractionalPoint = fractionalSet.floor(createForFloor(distanceInFeet));
 
             int index = 0;
-            List<Fractional> fractionalPoints =
-                    fractionalPoint.getFractionals();
+            List<Fractional> fractionalPoints = fractionalPoint.getFractionals();
 
             // if the number of fractions detected is fewer than expected, or contains an invalid
             // value
@@ -52,6 +50,11 @@ public class FractionalService {
                                     fractionalPoints.get(fractionalPoints.size() - 1);
                             fractional.setMillis(millis.get());
                             fractional.setTime(FractionalPoint.convertToTime(millis.get()));
+                            // set the distance for the final fraction as it covers a range of possible
+                            // distances
+                            fractional.setFeet(distanceInFeet);
+                            fractional.setCompact(compact);
+
                             fractionals.add(fractional);
                         } else {
                             // attempt to guess the fractional that corresponds to the fraction time
@@ -85,12 +88,19 @@ public class FractionalService {
                 }
             } else {
                 // match each fraction to the expected fractional
-                for (Fractional fractional : fractionalPoints) {
+                for (int i = 0; i < fractionalPoints.size(); i++) {
+                    Fractional fractional = fractionalPoints.get(i);
                     String time = fractions.get(index).toString();
                     Optional<Long> millis = calculateMillisecondsForFraction(time);
                     if (millis.isPresent()) {
                         fractional.setMillis(millis.get());
                         fractional.setTime(FractionalPoint.convertToTime(millis.get()));
+                    }
+                    // set the distance for the final fraction as it covers a range of possible
+                    // distances
+                    if (isLastFraction(fractions, i)) {
+                        fractional.setFeet(distanceInFeet);
+                        fractional.setCompact(compact);
                     }
                     fractionals.add(fractional);
                     index++;

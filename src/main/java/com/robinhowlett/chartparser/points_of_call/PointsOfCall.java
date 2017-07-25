@@ -34,6 +34,7 @@ public class PointsOfCall {
     public static class PointOfCall {
         private final int point;
         private final String text;
+        private String compact;
         private Integer feet;
         private Double furlongs;
         private RelativePosition relativePosition;
@@ -42,9 +43,11 @@ public class PointsOfCall {
         public PointOfCall(
                 @JsonProperty("point") int point,
                 @JsonProperty("text") String text,
+                @JsonProperty("compact") String compact,
                 @JsonProperty("feet") Integer feet) {
             this.point = point;
             this.text = text;
+            this.compact = compact;
             this.feet = feet;
             this.furlongs = (feet != null ?
                     Chart.round((double) feet / 660, 2).doubleValue() : null);
@@ -68,6 +71,14 @@ public class PointsOfCall {
 
         public String getText() {
             return text;
+        }
+
+        public String getCompact() {
+            return compact;
+        }
+
+        public void setCompact(String compact) {
+            this.compact = compact;
         }
 
         public Integer getFeet() {
@@ -97,6 +108,7 @@ public class PointsOfCall {
             return "PointOfCall{" +
                     "point=" + point +
                     ", text='" + text + '\'' +
+                    ", compact='" + compact + '\'' +
                     ", feet=" + feet +
                     ", furlongs=" + furlongs +
                     ", relativePosition=" + relativePosition +
@@ -112,6 +124,8 @@ public class PointsOfCall {
 
             if (point != that.point) return false;
             if (text != null ? !text.equals(that.text) : that.text != null) return false;
+            if (compact != null ? !compact.equals(that.compact) : that.compact != null)
+                return false;
             if (feet != null ? !feet.equals(that.feet) : that.feet != null) return false;
             if (furlongs != null ? !furlongs.equals(that.furlongs) : that.furlongs != null)
                 return false;
@@ -123,6 +137,7 @@ public class PointsOfCall {
         public int hashCode() {
             int result = point;
             result = 31 * result + (text != null ? text.hashCode() : 0);
+            result = 31 * result + (compact != null ? compact.hashCode() : 0);
             result = 31 * result + (feet != null ? feet.hashCode() : 0);
             result = 31 * result + (furlongs != null ? furlongs.hashCode() : 0);
             result = 31 * result + (relativePosition != null ? relativePosition.hashCode() : 0);
@@ -285,9 +300,17 @@ public class PointsOfCall {
         return calls;
     }
 
+    public Optional<PointOfCall> getStretchPointOfCall() {
+        return getPointOfCall(5);
+    }
+
     public Optional<PointOfCall> getFinishPointOfCall() {
+        return getPointOfCall(6);
+    }
+
+    private Optional<PointOfCall> getPointOfCall(int index) {
         for (PointOfCall pointOfCall : getCalls()) {
-            if (pointOfCall.getPoint() == 6) {
+            if (pointOfCall.getPoint() == index) {
                 return Optional.of(pointOfCall);
             }
         }

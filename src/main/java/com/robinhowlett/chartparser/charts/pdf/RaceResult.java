@@ -602,8 +602,8 @@ public class RaceResult {
                 }
             }
 
-            return new Fractional(fractional.getPoint(), fractional.getText(), fractional.getFeet(),
-                    time, individualMillis);
+            return new Fractional(fractional.getPoint(), fractional.getText(),
+                    fractional.getCompact(), fractional.getFeet(), time, individualMillis);
         }
 
         // calculates the Split - the time taken between fractionals e.g. if a Starter recorded a
@@ -627,21 +627,22 @@ public class RaceResult {
             return splits;
         }
 
-        List<Starter> calculateForQHAndMixed(List<Starter> starters, DistanceSurfaceTrackRecord
-                distanceSurfaceTrackRecord, List<Fractional> winningFractionals)
-                throws ChartParserException {
+        List<Starter> calculateForQHAndMixed(List<Starter> starters,
+                DistanceSurfaceTrackRecord distanceSurfaceTrackRecord,
+                List<Fractional> winningFractionals) throws ChartParserException {
             for (Starter starter : starters) {
                 List<Fractional> individualFractionals = new ArrayList<>();
                 List<Rating> ratings = starter.getRatings();
                 if (starter.getFinishPosition() != null && ratings != null &&
                         distanceSurfaceTrackRecord.getRaceDistance() != null) {
                     int distance = distanceSurfaceTrackRecord.getRaceDistance().getFeet();
+                    String compact = distanceSurfaceTrackRecord.getRaceDistance().getCompact();
                     for (Rating rating : ratings) {
                         if (rating instanceof Rating.AqhaSpeedIndex) {
                             Long millis = ((Rating.AqhaSpeedIndex) rating).getMillis();
-                            Fractional finishFractional = new Fractional(6, "Fin", distance,
-                                    (millis != null ? FractionalPoint.convertToTime(millis) : null),
-                                    millis);
+                            Fractional finishFractional = new Fractional(6, "Fin", compact,
+                                    distance, (millis != null ?
+                                    FractionalPoint.convertToTime(millis) : null), millis);
 
                             individualFractionals.add(finishFractional);
 

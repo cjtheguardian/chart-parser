@@ -239,7 +239,8 @@ public class ChartParser {
                 ArrayList<String> fractions = FractionalTimes.parse(runningLines);
                 List<FractionalPoint.Fractional> fractionalPointsForDistance =
                         fractionalService.getFractionalPointsForDistance(fractions,
-                                raceDistance.getFeet(), raceTypeNameBlackTypeBreed.getBreed());
+                                raceDistance.getFeet(), raceDistance.getCompact(),
+                                raceTypeNameBlackTypeBreed.getBreed());
                 raceResultBuilder.fractionals(fractionalPointsForDistance);
 
                 // Run-Up

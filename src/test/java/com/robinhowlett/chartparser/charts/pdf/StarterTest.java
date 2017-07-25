@@ -124,31 +124,31 @@ public class StarterTest {
         expectedBuilder.odds(new Odds(3.40, false));
         expectedBuilder.comments("speed off rail 3wd tr");
         expectedBuilder.pointsOfCall(new ArrayList<PointsOfCall.PointOfCall>() {{
-            PointsOfCall.PointOfCall first = new PointsOfCall.PointOfCall(1, "Start", null);
+            PointsOfCall.PointOfCall first = new PointsOfCall.PointOfCall(1, "Start", "Start", null);
             first.setRelativePosition(new PointsOfCall.PointOfCall.RelativePosition(1, null));
             add(first);
 
-            PointsOfCall.PointOfCall second = new PointsOfCall.PointOfCall(2, "1/4", 1320);
+            PointsOfCall.PointOfCall second = new PointsOfCall.PointOfCall(2, "1/4", "2f", 1320);
             second.setRelativePosition(
                     new PointsOfCall.PointOfCall.RelativePosition(1,
                             new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("2", 2.0)));
             add(second);
 
-            PointsOfCall.PointOfCall third = new PointsOfCall.PointOfCall(3, "1/2", 2640);
+            PointsOfCall.PointOfCall third = new PointsOfCall.PointOfCall(3, "1/2", "4f",2640);
             third.setRelativePosition(
                     new PointsOfCall.PointOfCall.RelativePosition(1,
                             new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("Head",
                                     0.1)));
             add(third);
 
-            PointsOfCall.PointOfCall fourth = new PointsOfCall.PointOfCall(5, "Str", 3300);
+            PointsOfCall.PointOfCall fourth = new PointsOfCall.PointOfCall(5, "Str", "5f",3300);
             fourth.setRelativePosition(
                     new PointsOfCall.PointOfCall.RelativePosition(1,
                             new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("1/2",
                                     0.5)));
             add(fourth);
 
-            PointsOfCall.PointOfCall fifth = new PointsOfCall.PointOfCall(6, "Fin", 3960);
+            PointsOfCall.PointOfCall fifth = new PointsOfCall.PointOfCall(6, "Fin", "6f",3960);
             fifth.setRelativePosition(
                     new PointsOfCall.PointOfCall.RelativePosition(1,
                             new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("1 1/2",
@@ -184,24 +184,24 @@ public class StarterTest {
         expectedBuilder.speedIndex(97);
         expectedBuilder.comments("broke in best");
         expectedBuilder.pointsOfCall(new ArrayList<PointsOfCall.PointOfCall>() {{
-            PointsOfCall.PointOfCall first = new PointsOfCall.PointOfCall(1, "Start", null);
+            PointsOfCall.PointOfCall first = new PointsOfCall.PointOfCall(1, "Start", "Start",null);
             first.setRelativePosition(new PointsOfCall.PointOfCall.RelativePosition(2, null));
             add(first);
 
-            PointsOfCall.PointOfCall second = new PointsOfCall.PointOfCall(2, "Str1", null);
+            PointsOfCall.PointOfCall second = new PointsOfCall.PointOfCall(2, "Str1", "Str1", null);
             second.setRelativePosition(
                     new PointsOfCall.PointOfCall.RelativePosition(1,
                             new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("1/2",
                                     0.5)));
             add(second);
 
-            PointsOfCall.PointOfCall third = new PointsOfCall.PointOfCall(5, "Str", null);
+            PointsOfCall.PointOfCall third = new PointsOfCall.PointOfCall(5, "Str", "Str", null);
             third.setRelativePosition(
                     new PointsOfCall.PointOfCall.RelativePosition(1,
                             new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("1", 1.0)));
             add(third);
 
-            PointsOfCall.PointOfCall fourth = new PointsOfCall.PointOfCall(6, "Fin", 1050);
+            PointsOfCall.PointOfCall fourth = new PointsOfCall.PointOfCall(6, "Fin", "350y",1050);
 
             PointsOfCall.PointOfCall.RelativePosition position =
                     new PointsOfCall.PointOfCall.RelativePosition(1,

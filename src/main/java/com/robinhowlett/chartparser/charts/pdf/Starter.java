@@ -487,13 +487,27 @@ public class Starter {
             pointOfCall.setRelativePosition(relativePosition);
         }
 
-        // set finish distance for QH/Mixed races (as points of calls cover a variety of
-        // distance up to or between a certain number of yards)
+        // set stretch distance if possible (as points of calls cover a variety of distances)
+        Optional<PointOfCall> stretchPointOfCall = pointsOfCallForDistance.getStretchPointOfCall();
+        if (stretchPointOfCall.isPresent()) {
+            PointOfCall stretch = stretchPointOfCall.get();
+            // stretch call is supposed to be one-furlong from the finish
+            if (!stretch.hasKnownDistance() && raceDistance.getFeet() >= 1320) {
+                int stretchFeet = raceDistance.getFeet() - 660;
+                stretch.setFeet(stretchFeet);
+                String stretchCompact = RaceDistance.lookupCompact(stretchFeet);
+                String stretchFurlongs = String.format("%.2ff", stretch.getFurlongs());
+                stretch.setCompact(stretchCompact != null ? stretchCompact : stretchFurlongs);
+            }
+        }
+
+        // set finish distance (as points of calls cover a variety of distances)
         Optional<PointOfCall> finishPointOfCall = pointsOfCallForDistance.getFinishPointOfCall();
         if (finishPointOfCall.isPresent()) {
-            PointOfCall pointOfCall = finishPointOfCall.get();
-            if (!pointOfCall.hasKnownDistance()) {
-                pointOfCall.setFeet(raceDistance.getFeet());
+            PointOfCall finish = finishPointOfCall.get();
+            if (!finish.hasKnownDistance()) {
+                finish.setFeet(raceDistance.getFeet());
+                finish.setCompact(raceDistance.getCompact());
             }
         }
 

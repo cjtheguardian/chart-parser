@@ -28,20 +28,25 @@ public class SplitTest {
 
     @Parameterized.Parameters(name = "{0} {1}")
     public static Collection splits() {
-        Fractional first = new Fractional(1, "1/4", 1320, "0:22.000", 22000L);
-        Fractional second = new Fractional(2, "1/2", 2640, "0:46.000", 46000L);
-        Fractional third = new Fractional(3, "1 1/2", 7920, "2:48.980", 168980L);
-        Fractional fourth = new Fractional(4, "Fin", 8085, "2:54.080", 174080L);
+        Fractional first = new Fractional(1, "1/4", "2f", 1320, "0:22.000", 22000L);
+        Fractional second = new Fractional(2, "1/2", "4f", 2640, "0:46.000", 46000L);
+        Fractional third = new Fractional(3, "1 1/2", "1 1/2m", 7920, "2:48.980", 168980L);
+        Fractional fourth = new Fractional(4, "Fin", "1 17/32m", 8085, "2:54.080", 174080L);
         return Arrays.asList(new Object[][]{
-                {null, first, new Split(1, "Start to 1/4", 1320, "0:22.000", 22000L, null, first)},
-                {first, second, new Split(2, "1/4 to 1/2", 1320, "0:24.000", 24000L, first, second)},
-                {second, third, new Split(3, "1/2 to 1 1/2", 5280, "2:02.980", 122980L, second, third)},
-                {third, fourth, new Split(4, "1 1/2 to Fin", 165, "0:05.100", 5100L, third, fourth)}
+                {null, first, new Split(1, "Start to 1/4", "Start to 2f", 1320, "0:22.000",
+                        22000L, null, first)},
+                {first, second, new Split(2, "1/4 to 1/2", "2f to 4f", 1320, "0:24.000", 24000L,
+                        first, second)},
+                {second, third, new Split(3, "1/2 to 1 1/2", "4f to 1 1/2m", 5280, "2:02.980", 122980L,
+                        second, third)},
+                {third, fourth, new Split(4, "1 1/2 to Fin", "1 1/2m to 1 17/32m", 165,
+                        "0:05.100", 5100L, third, fourth)}
         });
     }
 
     @Test
-    public void calculateSplitsFromFrationals_WithVariousFractionals_CalculatesCorrectly() throws Exception {
+    public void calculateSplitsFromFrationals_WithVariousFractionals_CalculatesCorrectly()
+            throws Exception {
         assertThat(Split.calculate(from, to), equalTo(expected));
     }
 }
