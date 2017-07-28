@@ -258,7 +258,7 @@
 | splits[] | object | The details of the split times  |  |  |
 | splits[].point | number | The split point in question | Values range from `1` to `6` | `1` |
 | splits[].text | string | Describes the in-race distance the split covers  |  | "1/4 to 1/2"<br/>"5/8 to Fin"<br/>"Start to 1/4" |
-| starters[].splits[].compact  | string  | A compact description of the split distance |  | "2f to 4f"<br/>"5f to 6f"<br/>"Start to 2f" |
+| splits[].compact  | string  | A compact description of the split distance |  | "2f to 4f"<br/>"5f to 6f"<br/>"Start to 2f" |
 | splits[].feet | number | The number of feet traveled in the race for the split  |  | `1320` |
 | splits[].furlongs  | number  | The number of furlongs traveled in the race for the split | Up to two decimal places | `2` |
 | splits[].time | string | A text version of the time taken by the leader for the split | Format: "M:SS.sss" | "0:23.620" |
