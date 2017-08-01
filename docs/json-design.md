@@ -35,6 +35,7 @@
 | distance.furlongs  | number  | The distance of the race in furlongs | Up to two decimal places<br/>220 yards in a furlong<br/>8 furlongs in a mile | `8.5`<br/>`1.59`<br/>`6` |
 | distance.exact  | boolean  | Whether the distance of the race is measured (`true`) or estimated (`false`) | `true` if the distance description starts with "About" | `true`<br/>`false` |
 | distance.runUp  | number  | The distance between the starting stalls and the "start" electronic timer | Value is in feet | `30`<br/>`0` |
+| distance.tempRail  | number  | The distance the track rail was moved out temporariliy | Value is in feet | `20`<br/>`150` |
 | surface  | string  | The surface the race was run on |  | "Dirt"<br/>"Turf"<br/>"Inner turf" |
 | trackCondition  | string  | A description of the track/surface condition |  | "Fast"<br/>"Sloppy (Sealed)"<br/>"Muddy" |
 | scheduledSurface  | string  | The surface the race was supposed to be run on |  | "Turf" |

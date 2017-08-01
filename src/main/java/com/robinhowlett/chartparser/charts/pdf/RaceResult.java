@@ -101,8 +101,12 @@ public class RaceResult {
         }
 
         if (distanceSurfaceTrackRecord != null &&
-                distanceSurfaceTrackRecord.getRaceDistance() != null && builder.runUp != null) {
-            distanceSurfaceTrackRecord.getRaceDistance().setRunUp(builder.runUp);
+                distanceSurfaceTrackRecord.getRaceDistance() != null &&
+                builder.runUpTemporaryRail != null) {
+            distanceSurfaceTrackRecord.getRaceDistance()
+                    .setRunUp(builder.runUpTemporaryRail.getRunUp());
+            distanceSurfaceTrackRecord.getRaceDistance()
+                    .setTempRail(builder.runUpTemporaryRail.getTempRail());
         }
 
         if (raceConditions != null && builder.raceTypeNameBlackTypeBreed != null) {
@@ -332,7 +336,7 @@ public class RaceResult {
         private RaceConditions raceConditions;
         private Purse purse;
         private DistanceSurfaceTrackRecord distanceSurfaceTrackRecord;
-        private Integer runUp;
+        private RunUpTemporaryRail runUpTemporaryRail;
         private WeatherTrackCondition weatherTrackCondition;
         private PostTimeStartCommentsTimer postTimeStartCommentsTimer;
         private WindSpeedDirection windSpeedDirection;
@@ -370,8 +374,8 @@ public class RaceResult {
             return this;
         }
 
-        public Builder runUp(final Integer runUp) {
-            this.runUp = runUp;
+        public Builder runUpTemporaryRail(final RunUpTemporaryRail runUpTemporaryRail) {
+            this.runUpTemporaryRail = runUpTemporaryRail;
             return this;
         }
 

@@ -243,8 +243,9 @@ public class ChartParser {
                                 raceTypeNameBlackTypeBreed.getBreed());
                 raceResultBuilder.fractionals(fractionalPointsForDistance);
 
-                // Run-Up
-                raceResultBuilder.runUp(RunUp.parse(runningLines));
+                // Run-Up and Temporary Rail
+                RunUpTemporaryRail runUpTemporaryRail = RunUpTemporaryRail.parse(runningLines);
+                raceResultBuilder.runUpTemporaryRail(runUpTemporaryRail);
 
                 List<Starter> starters = new ArrayList<>();
                 for (List<ChartCharacter> runningLine : runningLines) {

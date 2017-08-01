@@ -498,6 +498,8 @@ public class Starter {
                 String stretchCompact = RaceDistance.lookupCompact(stretchFeet);
                 String stretchFurlongs = String.format("%.2ff", stretch.getFurlongs());
                 stretch.setCompact(stretchCompact != null ? stretchCompact : stretchFurlongs);
+            } else {
+                stretch.setCompact("Str");
             }
         }
 

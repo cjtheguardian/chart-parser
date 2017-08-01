@@ -54,7 +54,12 @@ public class RaceTypeNameBlackTypeBreedTest {
                         new RaceTypeNameBlackTypeBreed("DERBY", "Prairie Meadows Derby " +
                                 "Challenge", QUARTER_HORSE)},
                 {"STAKES CTBA Derby - Thoroughbred",
-                        new RaceTypeNameBlackTypeBreed("STAKES", "CTBA Derby", THOROUGHBRED)}
+                        new RaceTypeNameBlackTypeBreed("STAKES", "CTBA Derby", THOROUGHBRED)},
+                {"STAKES WA Cup Two Year Old Colts and Geldings S. Presented by Redhook ESL Black" +
+                        " Type - Thoroughbred",
+                        new RaceTypeNameBlackTypeBreed("STAKES", "WA Cup Two Year Old Colts and " +
+                                "Geldings S. Presented by Redhook ESL", null, "Black Type",
+                                THOROUGHBRED)}
         });
     }
 

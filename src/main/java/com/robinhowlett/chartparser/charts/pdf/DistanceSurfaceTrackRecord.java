@@ -8,7 +8,6 @@ import com.robinhowlett.chartparser.fractionals.FractionalPoint;
 import com.robinhowlett.chartparser.fractionals.FractionalService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,6 +15,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.robinhowlett.chartparser.charts.pdf.Purse.FOREIGN_CURRENCY_DISCLAIMER;
 import static com.robinhowlett.chartparser.charts.pdf.Purse.PURSE_PATTERN;
 
 /**
@@ -85,8 +85,9 @@ public class DistanceSurfaceTrackRecord {
         for (List<ChartCharacter> line : lines) {
             String text = Chart.convertToText(line);
             if (found) {
-                Matcher matcher = PURSE_PATTERN.matcher(text);
-                if (matcher.find()) {
+                Matcher purseMatcher = PURSE_PATTERN.matcher(text);
+                Matcher currencyMatcher = FOREIGN_CURRENCY_DISCLAIMER.matcher(text);
+                if (purseMatcher.find() || currencyMatcher.find()) {
                     break;
                 } else {
                     distanceSurfaceTrackRecordBuilder.append(prefix).append(text);
@@ -362,19 +363,21 @@ public class DistanceSurfaceTrackRecord {
         private final int feet;
         private final double furlongs;
         private Integer runUp;
+        private Integer tempRail;
 
         RaceDistance(String text, String compact, boolean exact, int feet) {
-            this(text, compact, exact, feet, null);
+            this(text, compact, exact, feet, null, null);
         }
 
         @JsonCreator
-        private RaceDistance(String text, String compact, boolean exact, int feet, Integer runUp) {
+        private RaceDistance(String text, String compact, boolean exact, int feet, Integer runUp, Integer tempRail) {
             this.text = text;
             this.compact = compact;
             this.exact = exact;
             this.feet = feet;
             this.furlongs = Chart.round((double) feet / 660, 2).doubleValue();
             this.runUp = runUp;
+            this.tempRail = tempRail;
         }
 
         public static String lookupCompact(int feet) {
@@ -465,8 +468,17 @@ public class DistanceSurfaceTrackRecord {
             this.runUp = runUp;
         }
 
+        public Integer getTempRail() {
+            return tempRail;
+        }
+
+        public void setTempRail(Integer tempRail) {
+            this.tempRail = tempRail;
+        }
+
         @Override
-        public String toString() {
+        public String
+        toString() {
             return "RaceDistance{" +
                     "text='" + text + '\'' +
                     ", compact='" + compact + '\'' +
@@ -474,6 +486,7 @@ public class DistanceSurfaceTrackRecord {
                     ", feet=" + feet +
                     ", furlongs=" + furlongs +
                     ", runUp=" + runUp +
+                    ", tempRail=" + tempRail +
                     '}';
         }
 
@@ -490,7 +503,8 @@ public class DistanceSurfaceTrackRecord {
             if (text != null ? !text.equals(that.text) : that.text != null) return false;
             if (compact != null ? !compact.equals(that.compact) : that.compact != null)
                 return false;
-            return runUp != null ? runUp.equals(that.runUp) : that.runUp == null;
+            if (runUp != null ? !runUp.equals(that.runUp) : that.runUp != null) return false;
+            return tempRail != null ? tempRail.equals(that.tempRail) : that.tempRail == null;
         }
 
         @Override
@@ -504,6 +518,7 @@ public class DistanceSurfaceTrackRecord {
             temp = Double.doubleToLongBits(furlongs);
             result = 31 * result + (int) (temp ^ (temp >>> 32));
             result = 31 * result + (runUp != null ? runUp.hashCode() : 0);
+            result = 31 * result + (tempRail != null ? tempRail.hashCode() : 0);
             return result;
         }
     }

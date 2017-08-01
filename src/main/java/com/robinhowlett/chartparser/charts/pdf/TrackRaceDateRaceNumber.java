@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  */
 public class TrackRaceDateRaceNumber {
     static final Pattern TRACK_DATE_NUMBER_PATTERN =
-            Pattern.compile("([A-Z0-9\\s&]+)\\s-\\s(.+)+\\s-\\sRace\\s(\\d+)");
+            Pattern.compile("([A-Z0-9\\s&@]+)\\s-\\s(.+)+\\s-\\sRace\\s(\\d+)");
 
     private static final DateTimeFormatter MONTH_DAY_YEAR_FORMATTER =
             DateTimeFormatter.ofPattern("MMMM d, yyyy");

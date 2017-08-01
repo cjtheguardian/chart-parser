@@ -30,6 +30,9 @@ public class Purse {
 
     static final Pattern PURSE_PATTERN =
             Pattern.compile("Purse: (\\$([0-9]{1,3}(,[0-9]{3})*)( .+)?)");
+    static final Pattern FOREIGN_CURRENCY_DISCLAIMER =
+            Pattern.compile("^All money values represented in [a-zA-Z0-9_ ]* currency unless noted" +
+                    " otherwise$");
     private static final Pattern AVAILABLE_MONEY_PATTERN =
             Pattern.compile("Available Money: (\\$.+)");
     private static final Pattern INCLUDES_PATTERN =

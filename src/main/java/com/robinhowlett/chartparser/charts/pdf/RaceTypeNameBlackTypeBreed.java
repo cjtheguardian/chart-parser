@@ -23,6 +23,9 @@ public class RaceTypeNameBlackTypeBreed {
             Pattern.compile("([A-Z ]+)( (.+) (Grade (\\d))| (.+ S\\.)( (.+))?| (.+))? - " +
                     "(Thoroughbred|Quarter Horse|Arabian|Mixed)");
 
+    private static final Pattern PRESENTED_BY =
+            Pattern.compile("(Presented by .+) (Black Type|Listed|Grade \\d)");
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RaceTypeNameBlackTypeBreed.class);
 
     private final String type;
@@ -111,6 +114,19 @@ public class RaceTypeNameBlackTypeBreed {
                 type = split[0];
                 if (split.length > 1 && split[1] != null) {
                     name = split[1] + " " + name;
+                }
+            }
+
+            // correct when a sponsor is presenting a non-graded stakes race
+            matcher = PRESENTED_BY.matcher(text);
+            if (matcher.find()) {
+                String sponsor = matcher.group(1);
+                if (sponsor != null) {
+                    name = name + " " + sponsor;
+                }
+                String newBlackType = matcher.group(2);
+                if (newBlackType != null) {
+                    blackType = newBlackType;
                 }
             }
 
