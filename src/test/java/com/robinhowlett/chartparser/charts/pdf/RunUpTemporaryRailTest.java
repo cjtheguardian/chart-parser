@@ -15,7 +15,8 @@ public class RunUpTemporaryRailTest {
     public void parse_WithSampleRunningLines_Returns30FeetRunUp() throws Exception {
         RunUpTemporaryRail expected = new RunUpTemporaryRail(30, null);
 
-        RunUpTemporaryRail runUpTemporaryRail = RunUpTemporaryRail.parse(sampleCharts.getRunningLineLines(0));
+        RunUpTemporaryRail runUpTemporaryRail =
+                RunUpTemporaryRail.parse(sampleCharts.getRunningLineLines(0));
         assertThat(runUpTemporaryRail, equalTo(expected));
     }
 }

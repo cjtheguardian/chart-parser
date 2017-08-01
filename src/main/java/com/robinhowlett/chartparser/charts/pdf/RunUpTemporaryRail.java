@@ -37,7 +37,7 @@ public class RunUpTemporaryRail {
 
                         String rail = matcher.group(2);
                         if (rail != null) {
-                            temporaryRailInFeet = Integer.parseInt(rail);
+                            temporaryRailInFeet = Integer.parseInt(matcher.group(3));
                         }
                         break;
                     }
