@@ -21,7 +21,7 @@ public class FractionalPointRepositoryTest {
         FractionalPointRepository repository = new FractionalPointRepository(getObjectMapper());
 
         FractionalTreeSet fractionalPoints = repository.findAll();
-        assertThat(fractionalPoints.size(), equalTo(13));
+        assertThat(fractionalPoints.size(), equalTo(14));
         assertThat(fractionalPoints.first(), equalTo(expected));
     }
 }

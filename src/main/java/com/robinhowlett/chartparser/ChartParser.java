@@ -362,10 +362,6 @@ public class ChartParser {
                 List<Scratch> scratches = Scratch.parse(lines);
                 raceResultBuilder.scratches(scratches);
 
-                // whether the race resulted in a dead heat
-                boolean isDeadHeat = DeadHeat.parse(lines);
-                raceResultBuilder.deadHeat(isDeadHeat);
-
                 // update result if affected by disqualifications
                 List<Disqualification> disqualifications = Disqualification.parse(lines);
                 for (Disqualification disqualification : disqualifications) {

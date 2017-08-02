@@ -22,7 +22,9 @@ import java.util.List;
 import static com.robinhowlett.chartparser.charts.pdf.Breed.QUARTER_HORSE;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class RaceResultBuilderTest {
 
@@ -469,5 +471,85 @@ public class RaceResultBuilderTest {
             add(Split.calculate(null, fin));
         }};
         assertThat(raceResult.getSplits(), equalTo(expectedSplits));
+    }
+
+    @Test
+    public void detectDeadHeat_WithWithUniqueOfficialPositions_ReturnsFalse()
+            throws Exception {
+        List<Starter> starters = new ArrayList<Starter>() {{
+            Starter first = new Starter.Builder().program("7").horseAndJockey(new HorseJockey(
+                    new Horse("Prater Sixty Four"), new Jockey("Karlo", "Lopez"))).build();
+            first.setOfficialPosition(1);
+
+            Starter second = new Starter.Builder().program("8").horseAndJockey(new HorseJockey(
+                    new Horse("Candy Sweetheart"), new Jockey("Dennis", "Collins"))).build();
+            second.setOfficialPosition(2);
+
+            Starter third = new Starter.Builder().program("3").horseAndJockey(new HorseJockey(
+                    new Horse("Midnightwithdrawal"), new Jockey("Alfredi", "Triana Jr."))).build();
+            third.setOfficialPosition(3);
+
+            add(first);
+            add(second);
+            add(third);
+        }};
+
+        RaceResult.Builder raceBuilder = new RaceResult.Builder();
+        assertFalse(raceBuilder.detectDeadHeat(starters));
+    }
+
+    @Test
+    public void detectDeadHeat_WithTwoStartersWithOfficialPositionOne_ReturnsTrue()
+            throws Exception {
+        List<Starter> starters = new ArrayList<Starter>() {{
+            Starter first = new Starter.Builder().program("7").horseAndJockey(new HorseJockey(
+                    new Horse("Prater Sixty Four"), new Jockey("Karlo", "Lopez"))).build();
+            first.setOfficialPosition(1);
+
+            Starter second = new Starter.Builder().program("8").horseAndJockey(new HorseJockey(
+                    new Horse("Candy Sweetheart"), new Jockey("Dennis", "Collins"))).build();
+            second.setOfficialPosition(1);
+
+            Starter third = new Starter.Builder().program("3").horseAndJockey(new HorseJockey(
+                    new Horse("Midnightwithdrawal"), new Jockey("Alfredi", "Triana Jr."))).build();
+            third.setOfficialPosition(3);
+
+            add(first);
+            add(second);
+            add(third);
+        }};
+
+        RaceResult.Builder raceBuilder = new RaceResult.Builder();
+        assertTrue(raceBuilder.detectDeadHeat(starters));
+    }
+
+    @Test
+    public void detectDeadHeat_WithTwoStartersWithOfficialPositionTwo_ReturnsFalse()
+            throws Exception {
+        List<Starter> starters = new ArrayList<Starter>() {{
+            Starter first = new Starter.Builder().program("7").horseAndJockey(new HorseJockey(
+                    new Horse("Prater Sixty Four"), new Jockey("Karlo", "Lopez"))).build();
+            first.setOfficialPosition(1);
+
+            Starter second = new Starter.Builder().program("8").horseAndJockey(new HorseJockey(
+                    new Horse("Candy Sweetheart"), new Jockey("Dennis", "Collins"))).build();
+            second.setOfficialPosition(2);
+
+            Starter third = new Starter.Builder().program("3").horseAndJockey(new HorseJockey(
+                    new Horse("Midnightwithdrawal"), new Jockey("Alfredi", "Triana Jr."))).build();
+            third.setOfficialPosition(2);
+
+            Starter last = new Starter.Builder().program("4").horseAndJockey(new HorseJockey(
+                    new Horse("Did Not Finish"), new Jockey("No", "Name"))).build();
+            third.setOfficialPosition(null);
+
+            add(first);
+            add(second);
+            add(third);
+            add(last);
+        }};
+
+        RaceResult.Builder raceBuilder = new RaceResult.Builder();
+        assertFalse(raceBuilder.detectDeadHeat(starters));
     }
 }

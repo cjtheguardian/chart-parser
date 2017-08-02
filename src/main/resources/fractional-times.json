@@ -64,6 +64,28 @@
     ]
   },
   {
+    "distance": "4 furlongs",
+    "floor": 2640,
+    "fractionals": [
+      {
+        "point": 1,
+        "text": "1/4",
+        "compact": "2f",
+        "feet": 1320
+      },
+      {
+        "point": 2,
+        "text": "3/8",
+        "compact": "3f",
+        "feet": 1980
+      },
+      {
+        "point": 6,
+        "text": "Fin"
+      }
+    ]
+  },
+  {
     "distance": "4 1/2 furlongs",
     "floor": 2970,
     "fractionals": [
@@ -142,8 +164,8 @@
     ]
   },
   {
-    "distance": "1 mile",
-    "floor": 5280,
+    "distance": "7 1/2 furlongs",
+    "floor": 4950,
     "fractionals": [
       {
         "point": 1,

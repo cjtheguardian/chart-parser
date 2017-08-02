@@ -57,7 +57,7 @@ public class RaceResult {
     @JsonProperty("postTimeStartCommentsTimer") // required for property order but unwrapped
     @JsonUnwrapped
     private final PostTimeStartCommentsTimer postTimeStartCommentsTimer;
-    private final boolean isDeadHeat;
+    private final boolean deadHeat;
     private final List<Starter> starters;
     private final List<Scratch> scratches;
     private final List<Fractional> fractionals;
@@ -76,7 +76,7 @@ public class RaceResult {
         this.purse = builder.purse;
         this.distanceSurfaceTrackRecord = builder.distanceSurfaceTrackRecord;
         this.postTimeStartCommentsTimer = builder.postTimeStartCommentsTimer;
-        this.isDeadHeat = builder.isDeadHeat;
+        this.deadHeat = builder.deadHeat;
         this.starters = builder.starters;
         this.fractionals = builder.fractionals;
         this.splits = builder.splits;
@@ -165,7 +165,7 @@ public class RaceResult {
     }
 
     public boolean isDeadHeat() {
-        return isDeadHeat;
+        return deadHeat;
     }
 
     public WagerPayoffPools getWagerPayoffPools() {
@@ -215,7 +215,7 @@ public class RaceResult {
 
         RaceResult that = (RaceResult) o;
 
-        if (isDeadHeat != that.isDeadHeat) return false;
+        if (deadHeat != that.deadHeat) return false;
         if (cancellation != null ? !cancellation.equals(that.cancellation) : that.cancellation !=
                 null)
             return false;
@@ -263,7 +263,7 @@ public class RaceResult {
         result = 31 * result + (weather != null ? weather.hashCode() : 0);
         result = 31 * result + (postTimeStartCommentsTimer != null ? postTimeStartCommentsTimer
                 .hashCode() : 0);
-        result = 31 * result + (isDeadHeat ? 1 : 0);
+        result = 31 * result + (deadHeat ? 1 : 0);
         result = 31 * result + (starters != null ? starters.hashCode() : 0);
         result = 31 * result + (scratches != null ? scratches.hashCode() : 0);
         result = 31 * result + (fractionals != null ? fractionals.hashCode() : 0);
@@ -286,7 +286,7 @@ public class RaceResult {
                 ", purse=" + purse +
                 ", weather=" + weather +
                 ", postTimeStartCommentsTimer=" + postTimeStartCommentsTimer +
-                ", isDeadHeat=" + isDeadHeat +
+                ", deadHeat=" + deadHeat +
                 ", starters=" + starters +
                 ", scratches=" + scratches +
                 ", fractionals=" + fractionals +
@@ -301,7 +301,7 @@ public class RaceResult {
     private RaceResult(Cancellation cancellation, LocalDate raceDate, Track track,
             Integer raceNumber, RaceConditions raceConditions, DistanceSurfaceTrackRecord
             distanceSurfaceTrackRecord, Purse purse, Weather weather,
-            PostTimeStartCommentsTimer postTimeStartCommentsTimer, boolean isDeadHeat,
+            PostTimeStartCommentsTimer postTimeStartCommentsTimer, boolean deadHeat,
             List<Starter> starters, List<Scratch> scratches, List<Fractional> fractionals,
             List<Split> splits, WagerPayoffPools wagerPayoffPools, String footnotes,
             List<Rating> ratings) {
@@ -314,7 +314,7 @@ public class RaceResult {
         this.purse = purse;
         this.weather = weather;
         this.postTimeStartCommentsTimer = postTimeStartCommentsTimer;
-        this.isDeadHeat = isDeadHeat;
+        this.deadHeat = deadHeat;
         this.starters = starters;
         this.scratches = scratches;
         this.fractionals = fractionals;
@@ -343,7 +343,7 @@ public class RaceResult {
         private List<Fractional> fractionals;
         private List<Split> splits;
         private List<Scratch> scratches;
-        private boolean isDeadHeat;
+        private boolean deadHeat;
         private WagerPayoffPools wagerPayoffPools;
         private List<Starter> starters;
         private String footnotes;
@@ -428,11 +428,6 @@ public class RaceResult {
             return this;
         }
 
-        public Builder deadHeat(final boolean isDeadHeat) {
-            this.isDeadHeat = isDeadHeat;
-            return this;
-        }
-
         public Builder wagerPoolsAndPayoffs(final WagerPayoffPools wagerPayoffPools) {
             this.wagerPayoffPools = wagerPayoffPools;
             return this;
@@ -448,13 +443,30 @@ public class RaceResult {
         }
 
         public RaceResult build() throws ChartParserException {
-            starters = updateStartersWithWinPlaceShowPayoffs(starters, wagerPayoffPools);
-            starters = calculateIndividualFractionalsAndSplits(starters, fractionals,
+            updateStartersWithWinPlaceShowPayoffs(starters, wagerPayoffPools);
+
+            calculateIndividualFractionalsAndSplits(starters, fractionals,
                     raceTypeNameBlackTypeBreed, distanceSurfaceTrackRecord);
 
-            starters = updateStartersWithOddsChoiceIndicies(starters);
+            updateStartersWithOddsChoiceIndicies(starters);
+
+            // whether the race resulted in a dead heat
+            deadHeat = detectDeadHeat(starters);
 
             return new RaceResult(this);
+        }
+
+        boolean detectDeadHeat(List<Starter> starters) {
+            long count = 0;
+            if (starters != null) {
+                count = starters.stream()
+                        .filter(starter -> {
+                            Integer officialPosition = starter.getOfficialPosition();
+                            return (officialPosition != null ? officialPosition == 1 : false);
+                        }).count();
+            }
+
+            return count > 1;
         }
 
         List<Starter> updateStartersWithOddsChoiceIndicies(List<Starter> starters) {

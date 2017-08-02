@@ -369,16 +369,11 @@ public class WagerPayoffPools {
     abstract static class Wager {
         protected final Double unit;
         protected final Double payoff;
-        private Double odds; // for JSON
+        protected Double odds; // for JSON
 
         public Wager(Double unit, Double payoff) {
             this.unit = unit;
             this.payoff = payoff;
-        }
-
-        // $2 default for WPS
-        public Wager(Double payoff) {
-            this(2.0, payoff);
         }
 
         public Double getUnit() {
@@ -595,9 +590,56 @@ public class WagerPayoffPools {
                         '}';
             }
 
-            public static class Win extends Wager {
+            public abstract static class WinPlaceShow extends Wager {
+                private final String type;
+
+                // $2 default for WPS
+                public WinPlaceShow(Double payoff, WPSType type) {
+                    super(2.0, payoff);
+                    this.type = type.getName();
+                }
+
+                public String getType() {
+                    return type;
+                }
+
+                @Override
+                public String toString() {
+                    return "WinPlaceShow{" +
+                            "unit=" + unit +
+                            ", payoff=" + payoff +
+                            ", odds=" + odds +
+                            ", type='" + type + '\'' +
+                            '}';
+                }
+            }
+
+            enum WPSType {
+                WIN("Win"),
+                PLACE("Place"),
+                SHOW("Show");
+
+                private final String name;
+
+                WPSType(String name) {
+                    this.name = name;
+                }
+
+                public String getName() {
+                    return name;
+                }
+
+                @Override
+                public String toString() {
+                    return "WPSType{" +
+                            "type='" + name + '\'' +
+                            '}';
+                }
+            }
+
+            public static class Win extends WinPlaceShow {
                 public Win(Double payoff) {
-                    super(payoff);
+                    super(payoff, WPSType.WIN);
                 }
 
                 @Override
@@ -609,9 +651,9 @@ public class WagerPayoffPools {
                 }
             }
 
-            public static class Place extends Wager {
+            public static class Place extends WinPlaceShow {
                 public Place(Double payoff) {
-                    super(payoff);
+                    super(payoff, WPSType.PLACE);
                 }
 
                 @Override
@@ -623,9 +665,9 @@ public class WagerPayoffPools {
                 }
             }
 
-            public static class Show extends Wager {
+            public static class Show extends WinPlaceShow {
                 public Show(Double payoff) {
-                    super(payoff);
+                    super(payoff, WPSType.SHOW);
                 }
 
                 @Override
