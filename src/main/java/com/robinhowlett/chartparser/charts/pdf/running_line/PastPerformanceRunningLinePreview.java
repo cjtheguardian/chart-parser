@@ -47,6 +47,8 @@ public class PastPerformanceRunningLinePreview {
                             runningLinePreview);
 
             String program = Chart.convertToText(runningLineCharactersByColumn.get("Pgm"));
+            program = (program != null ? program.toUpperCase() : null);
+
             String horseName = Chart.convertToText(runningLineCharactersByColumn.get("HorseName"));
 
             for (String column : runningLineCharactersByColumn.keySet()) {

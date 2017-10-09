@@ -26,7 +26,7 @@ public class Owner {
     private final String name;
 
     public Owner(String program, String name) {
-        this.program = program;
+        this.program = (program != null ? program.toUpperCase() : null);
         this.name = name;
     }
 

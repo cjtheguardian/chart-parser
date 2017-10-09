@@ -651,7 +651,7 @@ public class Starter {
         }
 
         public Builder program(final String program) {
-            this.program = program;
+            this.program = (program != null ? program.toUpperCase() : null);
             return this;
         }
 

@@ -25,7 +25,7 @@ public class Disqualification {
 
     public Disqualification(String program, Horse horse, int originalPosition,
             int newPosition) {
-        this.program = program;
+        this.program = (program != null ? program.toUpperCase() : null);
         this.horse = horse;
         this.originalPosition = originalPosition;
         this.newPosition = newPosition;

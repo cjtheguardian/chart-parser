@@ -476,7 +476,7 @@ public class WagerPayoffPools {
 
             WinPlaceShowPayoff(String program, HorseNameWin horseNameWin, Double placePayoff,
                     Double showPayoff) {
-                this.program = program;
+                this.program = (program != null ? program.toUpperCase() : null);
                 this.horse = (horseNameWin != null ? horseNameWin.getHorse() : null);
                 this.win = (horseNameWin != null ? horseNameWin.getWin() : null);
                 this.place = (placePayoff != null ? new Place(placePayoff) : null);

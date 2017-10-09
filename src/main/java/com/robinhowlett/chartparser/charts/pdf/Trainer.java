@@ -30,7 +30,7 @@ public class Trainer {
     private final String lastName;
 
     public Trainer(String program, String firstName, String lastName) {
-        this.program = program;
+        this.program = (program != null ? program.toUpperCase() : null);;
         this.firstName = firstName;
         this.lastName = lastName;
         this.name = (firstName != null && !firstName.isEmpty()) ?

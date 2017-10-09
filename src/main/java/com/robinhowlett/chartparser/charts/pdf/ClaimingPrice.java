@@ -32,7 +32,7 @@ public class ClaimingPrice {
     private final int claimingPrice;
 
     public ClaimingPrice(String program, Horse horse, int claimingPrice) {
-        this.program = program;
+        this.program = (program != null ? program.toUpperCase() : null);;
         this.horse = horse;
         this.claimingPrice = claimingPrice;
     }
