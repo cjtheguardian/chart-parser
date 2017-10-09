@@ -4,6 +4,9 @@ import com.robinhowlett.chartparser.charts.pdf.Breed;
 import com.robinhowlett.chartparser.exceptions.ChartParserException;
 import com.robinhowlett.chartparser.fractionals.FractionalPoint.Fractional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +20,8 @@ import java.util.regex.Pattern;
  * corresponds to as well
  */
 public class FractionalService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FractionalService.class);
 
     private FractionalPointRepository repository;
 
@@ -50,8 +55,8 @@ public class FractionalService {
                                     fractionalPoints.get(fractionalPoints.size() - 1);
                             fractional.setMillis(millis.get());
                             fractional.setTime(FractionalPoint.convertToTime(millis.get()));
-                            // set the distance for the final fraction as it covers a range of possible
-                            // distances
+                            // set the distance for the final fraction as it covers a range of
+                            // possible distances
                             fractional.setFeet(distanceInFeet);
                             fractional.setCompact(compact);
 
@@ -86,6 +91,11 @@ public class FractionalService {
                         }
                     }
                 }
+            } else if (fractions.size() > fractionalPoints.size()) {
+                // this is probably an error in the chart, so skip getting fractionals
+                LOGGER.warn(String.format("More fractions parsed (%d) than were expected (%d) " +
+                        "for distance (%s). Skipping", fractions.size(), fractionalPoints.size(),
+                        compact));
             } else {
                 // match each fraction to the expected fractional
                 for (int i = 0; i < fractionalPoints.size(); i++) {

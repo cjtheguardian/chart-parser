@@ -125,7 +125,11 @@ public class Winner {
         if (matcher.find()) {
             String breederName = matcher.group(1);
 
-            return Optional.of(breederName);
+            // sanity check
+            if (!breederName.startsWith(",") &&
+                    !(breederName.contains("out of") && breederName.contains("Foaled"))) {
+                return Optional.of(breederName);
+            }
         }
         return Optional.empty();
     }

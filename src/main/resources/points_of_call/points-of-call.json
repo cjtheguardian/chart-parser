@@ -454,6 +454,44 @@
     ]
   },
   {
+    "distance": "2 5/8 miles",
+    "floor": 13860,
+    "calls": [
+      {
+        "point": 1,
+        "text": "1/2",
+        "compact": "4f",
+        "feet": 2640
+      },
+      {
+        "point": 2,
+        "text": "1m",
+        "compact": "1m",
+        "feet": 5280
+      },
+      {
+        "point": 3,
+        "text": "2m",
+        "compact": "2m",
+        "feet": 10560
+      },
+      {
+        "point": 4,
+        "text": "21/4",
+        "compact": "2 1/4m",
+        "feet": 11880
+      },
+      {
+        "point": 5,
+        "text": "Str"
+      },
+      {
+        "point": 6,
+        "text": "Fin"
+      }
+    ]
+  },
+  {
     "distance": "3 miles",
     "floor": 15840,
     "calls": [
