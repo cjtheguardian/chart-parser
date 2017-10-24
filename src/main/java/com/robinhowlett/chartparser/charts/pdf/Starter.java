@@ -42,15 +42,17 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 /**
  * Everything to do with a participant in a {@link RaceResult}
  */
-@JsonPropertyOrder({"lastRaced", "program", "horse", "jockey", "trainer", "owner", "weight",
-        "medicationEquipment", "claim", "postPosition", "finishPosition", "officialPosition",
-        "winner", "disqualified", "odds", "choice", "favorite", "wagering", "pointsOfCall",
-        "fractionals", "splits", "ratings", "comments",})
+@JsonPropertyOrder({"lastRaced", "program", "entry", "entryProgram", "horse", "jockey",
+        "trainer", "owner", "weight", "medicationEquipment", "claim", "postPosition",
+        "finishPosition", "officialPosition", "wageringPosition", "winner", "disqualified", "odds",
+        "choice", "favorite", "wagering", "pointsOfCall", "fractionals", "splits", "ratings",
+        "comments"})
 public class Starter {
     private static final Logger LOGGER = LoggerFactory.getLogger(Starter.class);
 
     private final LastRaced lastRaced;
     private final String program;
+    private final String entryProgram; // e.g. "1", "1A", and "1X" are all "1"
     private final Horse horse;
     private final Jockey jockey;
     private final Weight weight;
@@ -60,8 +62,9 @@ public class Starter {
     private final Boolean favorite;
     private final String comments;
     private final List<PointOfCall> pointsOfCall;
-    private Integer finishPosition;
-    private Integer officialPosition;
+    private Integer finishPosition; // unofficial finishing position
+    private Integer officialPosition; // official finishing position (post DQs etc)
+    private Integer wageringPosition; // payoff finishing position (Win=1, Place=2, Show=3)
     private Trainer trainer;
     private Owner owner;
     @JsonInclude(NON_NULL)
@@ -76,10 +79,13 @@ public class Starter {
     private List<Fractional> fractionals;
     private List<Split> splits;
     private Integer choice; // the n-th betting choice
+    private boolean entry;
 
     private Starter(Builder builder) {
         lastRaced = builder.lastRaced;
         program = builder.program;
+        entryProgram = builder.entryProgram;
+        entry =  builder.entry;
         horse = (builder.horseJockey != null ? builder.horseJockey.getHorse() : null);
         jockey = (builder.horseJockey != null ? builder.horseJockey.getJockey() : null);
         weight = builder.weight;
@@ -108,6 +114,7 @@ public class Starter {
             Double odds, Boolean favorite, String comments, List<PointOfCall> pointsOfCall) {
         this.lastRaced = lastRaced;
         this.program = program;
+        this.entryProgram = program;
         this.horse = horse;
         this.jockey = jockey;
         this.weight = weight;
@@ -236,12 +243,29 @@ public class Starter {
         this.officialPosition = officialPosition;
     }
 
+    public Integer getWageringPosition() {
+        return wageringPosition;
+    }
+
+    public void setWageringPosition(Integer wageringPosition) {
+        this.wageringPosition = wageringPosition;
+    }
+
     public WinPlaceShowPayoff getWinPlaceShowPayoff() {
         return winPlaceShowPayoff;
     }
 
     public void setWinPlaceShowPayoff(WinPlaceShowPayoff winPlaceShowPayoff) {
         this.winPlaceShowPayoff = winPlaceShowPayoff;
+        if (this.winPlaceShowPayoff != null) {
+            if (this.winPlaceShowPayoff.getWin() != null) {
+                this.wageringPosition = 1;
+            } else if (this.winPlaceShowPayoff.getPlace() != null) {
+                this.wageringPosition = 2;
+            } else if (this.winPlaceShowPayoff.getShow() != null) {
+                this.wageringPosition = 3;
+            }
+        }
     }
 
     public List<Fractional> getFractionals() {
@@ -269,6 +293,18 @@ public class Starter {
 
     public void setChoice(Integer choice) {
         this.choice = choice;
+    }
+
+    public String getEntryProgram() {
+        return entryProgram;
+    }
+
+    public boolean isEntry() {
+        return entry;
+    }
+
+    public void setEntry(boolean entry) {
+        this.entry = entry;
     }
 
     public boolean matchesProgramOrName(String program, String horseName) {
@@ -526,9 +562,13 @@ public class Starter {
         Starter starter = (Starter) o;
 
         if (winner != starter.winner) return false;
+        if (entry != starter.entry) return false;
         if (lastRaced != null ? !lastRaced.equals(starter.lastRaced) : starter.lastRaced != null)
             return false;
         if (program != null ? !program.equals(starter.program) : starter.program != null)
+            return false;
+        if (entryProgram != null ? !entryProgram.equals(starter.entryProgram) : starter
+                .entryProgram != null)
             return false;
         if (horse != null ? !horse.equals(starter.horse) : starter.horse != null) return false;
         if (jockey != null ? !jockey.equals(starter.jockey) : starter.jockey != null) return false;
@@ -553,6 +593,9 @@ public class Starter {
         if (officialPosition != null ? !officialPosition.equals(starter.officialPosition) :
                 starter.officialPosition != null)
             return false;
+        if (wageringPosition != null ? !wageringPosition.equals(starter.wageringPosition) :
+                starter.wageringPosition != null)
+            return false;
         if (trainer != null ? !trainer.equals(starter.trainer) : starter.trainer != null)
             return false;
         if (owner != null ? !owner.equals(starter.owner) : starter.owner != null) return false;
@@ -576,6 +619,7 @@ public class Starter {
     public int hashCode() {
         int result = lastRaced != null ? lastRaced.hashCode() : 0;
         result = 31 * result + (program != null ? program.hashCode() : 0);
+        result = 31 * result + (entryProgram != null ? entryProgram.hashCode() : 0);
         result = 31 * result + (horse != null ? horse.hashCode() : 0);
         result = 31 * result + (jockey != null ? jockey.hashCode() : 0);
         result = 31 * result + (weight != null ? weight.hashCode() : 0);
@@ -587,6 +631,7 @@ public class Starter {
         result = 31 * result + (pointsOfCall != null ? pointsOfCall.hashCode() : 0);
         result = 31 * result + (finishPosition != null ? finishPosition.hashCode() : 0);
         result = 31 * result + (officialPosition != null ? officialPosition.hashCode() : 0);
+        result = 31 * result + (wageringPosition != null ? wageringPosition.hashCode() : 0);
         result = 31 * result + (trainer != null ? trainer.hashCode() : 0);
         result = 31 * result + (owner != null ? owner.hashCode() : 0);
         result = 31 * result + (claim != null ? claim.hashCode() : 0);
@@ -597,6 +642,7 @@ public class Starter {
         result = 31 * result + (fractionals != null ? fractionals.hashCode() : 0);
         result = 31 * result + (splits != null ? splits.hashCode() : 0);
         result = 31 * result + (choice != null ? choice.hashCode() : 0);
+        result = 31 * result + (entry ? 1 : 0);
         return result;
     }
 
@@ -605,6 +651,7 @@ public class Starter {
         return "Starter{" +
                 "lastRaced=" + lastRaced +
                 ", program='" + program + '\'' +
+                ", entryProgram='" + entryProgram + '\'' +
                 ", horse=" + horse +
                 ", jockey=" + jockey +
                 ", weight=" + weight +
@@ -616,6 +663,7 @@ public class Starter {
                 ", pointsOfCall=" + pointsOfCall +
                 ", finishPosition=" + finishPosition +
                 ", officialPosition=" + officialPosition +
+                ", wageringPosition=" + wageringPosition +
                 ", trainer=" + trainer +
                 ", owner=" + owner +
                 ", claim=" + claim +
@@ -626,6 +674,7 @@ public class Starter {
                 ", fractionals=" + fractionals +
                 ", splits=" + splits +
                 ", choice=" + choice +
+                ", entry=" + entry +
                 '}';
     }
 
@@ -635,6 +684,8 @@ public class Starter {
     public static class Builder {
         private LastRaced lastRaced;
         private String program;
+        private String entryProgram;
+        private boolean entry;
         private HorseJockey horseJockey;
         private Weight weight;
         private MedicationEquipment medicationEquipment;
@@ -652,6 +703,8 @@ public class Starter {
 
         public Builder program(final String program) {
             this.program = (program != null ? program.toUpperCase() : null);
+            this.entryProgram = Chart.getEntryProgram(this.program);
+            this.entry = (this.program != null && this.program != entryProgram);
             return this;
         }
 

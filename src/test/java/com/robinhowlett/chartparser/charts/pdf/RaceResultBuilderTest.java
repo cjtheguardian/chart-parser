@@ -44,9 +44,24 @@ public class RaceResultBuilderTest {
                     new Horse("Midnightwithdrawal"), new Jockey("Alfredi", "Triana Jr."))).build();
             third.setWinPlaceShowPayoff(WagerPayoffPoolsTest.expectedShowPayoff());
 
+            Starter fourth = new Starter.Builder().program("7A").horseAndJockey(new HorseJockey(
+                    new Horse("Rachel Alexandra"), new Jockey("Calvin", "Borel"))).build();
+            fourth.setWinPlaceShowPayoff(WagerPayoffPoolsTest.expectedWinPlaceAndShowPayoff());
+
+            Starter fifth = new Starter.Builder().program("4F").horseAndJockey(new HorseJockey(
+                    new Horse("Zenyatta"), new Jockey("Mike", "Smith"))).build();
+            fifth.setWinPlaceShowPayoff(null);
+
+            Starter sixth = new Starter.Builder().program("7B").horseAndJockey(new HorseJockey(
+                    new Horse("Ghostzapper"), new Jockey("Javier", "Castellano"))).build();
+            sixth.setWinPlaceShowPayoff(WagerPayoffPoolsTest.expectedWinPlaceAndShowPayoff());
+
             add(first);
             add(second);
             add(third);
+            add(fourth);
+            add(fifth);
+            add(sixth);
         }};
 
         RaceResult.Builder raceBuilder = new RaceResult.Builder();
@@ -57,6 +72,12 @@ public class RaceResultBuilderTest {
                     new Horse("Candy Sweetheart"), new Jockey("Dennis", "Collins"))).build());
             add(new Starter.Builder().program("3").horseAndJockey(new HorseJockey(
                     new Horse("Midnightwithdrawal"), new Jockey("Alfredi", "Triana Jr."))).build());
+            add(new Starter.Builder().program("7A").horseAndJockey(new HorseJockey(
+                    new Horse("Rachel Alexandra"), new Jockey("Calvin", "Borel"))).build());
+            add(new Starter.Builder().program("4F").horseAndJockey(new HorseJockey(
+                    new Horse("Zenyatta"), new Jockey("Mike", "Smith"))).build());
+            add(new Starter.Builder().program("7B").horseAndJockey(new HorseJockey(
+                    new Horse("Ghostzapper"), new Jockey("Javier", "Castellano"))).build());
         }};
 
         // method under test
@@ -551,5 +572,113 @@ public class RaceResultBuilderTest {
 
         RaceResult.Builder raceBuilder = new RaceResult.Builder();
         assertFalse(raceBuilder.detectDeadHeat(starters));
+    }
+
+
+    @Test
+    public void markCoupledAndFieldEntries_WithTenEntries_MarksNineCoupledOrFieldEntries()
+            throws Exception {
+        List<Starter> expected = new ArrayList<Starter>() {{
+            Starter first = new Starter.Builder().program("2")
+                    .horseAndJockey(new HorseJockey(new Horse("Sword Trick"),
+                            new Jockey("M.", "Berry"))).build();
+            first.setEntry(true);
+
+            Starter second = new Starter.Builder().program("4D")
+                    .horseAndJockey(new HorseJockey(new Horse("Boca Bay"),
+                            new Jockey("Chris", "Landeros"))).build();
+            second.setEntry(true);
+
+            Starter third = new Starter.Builder().program("3c")
+                    .horseAndJockey(new HorseJockey(new Horse("Swass Like Me"),
+                            new Jockey("Jose", "Medina"))).build();
+            third.setEntry(true);
+
+            Starter fourth = new Starter.Builder().program("4F")
+                    .horseAndJockey(new HorseJockey(new Horse("Field Goal"),
+                            new Jockey("Luis", "Quinonez"))).build();
+            fourth.setEntry(true);
+
+            Starter fifth = new Starter.Builder().program("2B")
+                    .horseAndJockey(new HorseJockey(new Horse("Coyote Canyon"),
+                            new Jockey("Roman", "Chapa"))).build();
+            fifth.setEntry(true);
+
+            Starter sixth = new Starter.Builder().program("1a")
+                    .horseAndJockey(new HorseJockey(new Horse("Jones Way"),
+                            new Jockey("Junior", "Chacaltana"))).build();
+            sixth.setEntry(true);
+
+            Starter seventh = new Starter.Builder().program("3F")
+                    .horseAndJockey(new HorseJockey(new Horse("Statler"),
+                            new Jockey("Erik", "McNeil"))).build();
+            seventh.setEntry(true);
+
+            // uncoupled
+            Starter eighth = new Starter.Builder().program("5")
+                    .horseAndJockey(new HorseJockey(new Horse("Primistalla"),
+                            new Jockey("Tony", "McNeil"))).build();
+            eighth.setEntry(false);
+
+            Starter ninth = new Starter.Builder().program("1")
+                    .horseAndJockey(new HorseJockey(new Horse("Jones Focus"),
+                            new Jockey("Gerard", "Melancon"))).build();
+            ninth.setEntry(true);
+
+            Starter tenth = new Starter.Builder().program("1X")
+                    .horseAndJockey(new HorseJockey(new Horse("Secretariat"),
+                            new Jockey("Ron", "Turcotte"))).build();
+            tenth.setEntry(true);
+
+            add(first);
+            add(second);
+            add(third);
+            add(fourth);
+            add(fifth);
+            add(sixth);
+            add(seventh);
+            add(eighth); // uncoupled
+            add(ninth);
+            add(tenth);
+        }};
+
+        RaceResult.Builder raceBuilder = new RaceResult.Builder();
+        List<Starter> starters = new ArrayList<Starter>() {{
+            add(new Starter.Builder().program("2")
+                    .horseAndJockey(new HorseJockey(new Horse("Sword Trick"),
+                            new Jockey("M.", "Berry"))).build());
+            add(new Starter.Builder().program("4D")
+                    .horseAndJockey(new HorseJockey(new Horse("Boca Bay"),
+                            new Jockey("Chris", "Landeros"))).build());
+            add(new Starter.Builder().program("3c")
+                    .horseAndJockey(new HorseJockey(new Horse("Swass Like Me"),
+                            new Jockey("Jose", "Medina"))).build());
+            add(new Starter.Builder().program("4F")
+                    .horseAndJockey(new HorseJockey(new Horse("Field Goal"),
+                            new Jockey("Luis", "Quinonez"))).build());
+            add(new Starter.Builder().program("2B")
+                    .horseAndJockey(new HorseJockey(new Horse("Coyote Canyon"),
+                            new Jockey("Roman", "Chapa"))).build());
+            add(new Starter.Builder().program("1a")
+                    .horseAndJockey(new HorseJockey(new Horse("Jones Way"),
+                            new Jockey("Junior", "Chacaltana"))).build());
+            add(new Starter.Builder().program("3F")
+                    .horseAndJockey(new HorseJockey(new Horse("Statler"),
+                            new Jockey("Erik", "McNeil"))).build());
+            add(new Starter.Builder().program("5")
+                    .horseAndJockey(new HorseJockey(new Horse("Primistalla"),
+                            new Jockey("Tony", "McNeil"))).build());
+            add(new Starter.Builder().program("1")
+                    .horseAndJockey(new HorseJockey(new Horse("Jones Focus"),
+                            new Jockey("Gerard", "Melancon"))).build());
+            add(new Starter.Builder().program("1X")
+                    .horseAndJockey(new HorseJockey(new Horse("Secretariat"),
+                            new Jockey("Ron", "Turcotte"))).build());
+        }};
+
+        // method under test
+        starters = raceBuilder.markCoupledAndFieldEntries(starters);
+
+        assertThat(starters, equalTo(expected));
     }
 }

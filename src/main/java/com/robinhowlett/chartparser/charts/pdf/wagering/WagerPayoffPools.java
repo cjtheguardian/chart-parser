@@ -537,6 +537,10 @@ public class WagerPayoffPools {
                 return program;
             }
 
+            public String getEntryProgram() {
+                return Chart.getEntryProgram(program);
+            }
+
             public Horse getHorse() {
                 return horse;
             }

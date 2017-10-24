@@ -58,4 +58,17 @@ public class ChartTest {
             throws Exception {
         assertThat(addWhitespaceIfRequired(102.168, 95.72, 2.224), equalTo(PIPE));
     }
+
+    @Test
+    public void getRootProgram_WithVariousPrograms_ReturnsCorrectRootProgram() throws Exception {
+        assertThat("1", equalTo(Chart.getEntryProgram("1")));
+        assertThat("1", equalTo(Chart.getEntryProgram("1A")));
+        assertThat("1", equalTo(Chart.getEntryProgram("1X")));
+        assertThat("1", equalTo(Chart.getEntryProgram("1b")));
+        assertThat("2", equalTo(Chart.getEntryProgram("2B")));
+        assertThat("11", equalTo(Chart.getEntryProgram("11")));
+        assertThat("220", equalTo(Chart.getEntryProgram("220")));
+        assertThat("F", equalTo(Chart.getEntryProgram("12F")));
+        assertThat("F", equalTo(Chart.getEntryProgram("13F")));
+    }
 }

@@ -25,10 +25,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -443,6 +445,8 @@ public class RaceResult {
         }
 
         public RaceResult build() throws ChartParserException {
+            markCoupledAndFieldEntries(starters);
+
             updateStartersWithWinPlaceShowPayoffs(starters, wagerPayoffPools);
 
             calculateIndividualFractionalsAndSplits(starters, fractionals,
@@ -456,56 +460,23 @@ public class RaceResult {
             return new RaceResult(this);
         }
 
-        boolean detectDeadHeat(List<Starter> starters) {
-            long count = 0;
+        List<Starter> markCoupledAndFieldEntries(List<Starter> starters) {
             if (starters != null) {
-                count = starters.stream()
-                        .filter(starter -> {
-                            Integer officialPosition = starter.getOfficialPosition();
-                            return (officialPosition != null ? officialPosition == 1 : false);
-                        }).count();
-            }
-
-            return count > 1;
-        }
-
-        List<Starter> updateStartersWithOddsChoiceIndicies(List<Starter> starters) {
-            if (starters != null) {
-                List<Double> odds = new ArrayList<>();
-
-                // for each Starter that has an Odds value, add it to the odds List
                 starters.stream()
-                        .filter(starter -> (starter.getOdds() != null))
-                        .forEach(starter -> odds.add(starter.getOdds()));
-
-                // sort the odds (ascending)
-                odds.sort(Comparator.comparingDouble(Double::doubleValue));
-
-                // remove duplicates from the odds list by replacing them with nulls
-                List<Double> truncatedOdds = new ArrayList<>();
-                for (Double choice : odds) {
-                    if (truncatedOdds.contains(choice)) {
-                        truncatedOdds.add(null);
-                    } else {
-                        truncatedOdds.add(choice);
-                    }
-                }
-
-                // update each starter that has an Odds value with the 1-based choice index
-                // e.g. the favorite is 1, the third favorite is 3, the tenth favorite is 10
-                starters.stream()
-                        .filter(starter -> (starter.getOdds() != null))
-                        .forEach(starter -> {
-                            int choiceIndex = odds.indexOf(starter.getOdds());
-                            if (choiceIndex > -1) {
-                                starter.setChoice(choiceIndex + 1); // 1-based
-                            }
-                        });
+                        .collect(groupingBy(Starter::getEntryProgram))
+                        .entrySet()
+                        .stream()
+                        .filter(entry -> entry.getValue().size() > 1)
+                        .forEach(entries -> entries.getValue()
+                                .stream()
+                                .filter(starter -> !starter.isEntry())
+                                .forEach(starter -> starter.setEntry(true)));
             }
             return starters;
         }
 
-        // adds the win, show, and place payoffs to the applicable Starters for easier lookups
+        // adds the win, show, and place payoffs to the applicable Starters for easier lookups,
+        // also handling coupled/field entries
         List<Starter> updateStartersWithWinPlaceShowPayoffs(List<Starter> starters,
                 WagerPayoffPools wagerPayoffPools) {
             if (wagerPayoffPools != null && starters != null) {
@@ -514,11 +485,39 @@ public class RaceResult {
                     List<WinPlaceShowPayoff> winPlaceShowPayoffs =
                             payoffPools.getWinPlaceShowPayoffs();
 
-                    for (WinPlaceShowPayoff payoff : winPlaceShowPayoffs) {
-                        for (Starter starter : starters) {
-                            if (matchesProgramOrHorseName(payoff, starter)) {
-                                starter.setWinPlaceShowPayoff(payoff);
-                                break;
+                    // group Win-Place-Show payoffs by their entry program number
+                    Map<String, List<WinPlaceShowPayoff>> wpsPayoffsByEntry =
+                            winPlaceShowPayoffs.stream().collect(
+                                    groupingBy(WinPlaceShowPayoff::getEntryProgram));
+
+                    // for each unique coupled program number
+                    for (String entryProgram : wpsPayoffsByEntry.keySet()) {
+                        List<WinPlaceShowPayoff> wpsPayoffsForEntry =
+                                wpsPayoffsByEntry.get(entryProgram);
+                        if (wpsPayoffsForEntry != null) {
+                            Optional<WinPlaceShowPayoff> payoff =
+                                    wpsPayoffsForEntry.stream().findFirst();
+
+                            // group starters by their entry program number
+                            Map<String, List<Starter>> startersByEntryProgram =
+                                    starters.stream().collect(
+                                            groupingBy(Starter::getEntryProgram));
+
+                            // set the same WPS payoffs for all starters of a coupled/field entry
+                            if (entryProgram != null && payoff.isPresent() &&
+                                    startersByEntryProgram.containsKey(entryProgram)) {
+                                startersByEntryProgram.get(entryProgram).stream().forEach(
+                                        starter -> starter.setWinPlaceShowPayoff(payoff.get()));
+                            } else {
+                                // or set the WPS payoffs for the matching starter
+                                for (Starter starter : starters) {
+                                    if (payoff.isPresent() &&
+                                            matchesEntryProgramOrHorseName(payoff.get(),
+                                                    starter)) {
+                                        starter.setWinPlaceShowPayoff(payoff.get());
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -527,11 +526,9 @@ public class RaceResult {
             return starters;
         }
 
-        // checks if the program numbers match, falling back to the horse name
-        boolean matchesProgramOrHorseName(WinPlaceShowPayoff payoff, Starter starter) {
-            return (payoff.getProgram() != null && payoff.getProgram().equals(starter.getProgram())
-                    || (payoff.getHorse() != null &&
-                    payoff.getHorse().equals(starter.getHorse().getName())));
+        boolean matchesEntryProgramOrHorseName(WinPlaceShowPayoff payoff, Starter starter) {
+            return (payoff.getHorse() != null &&
+                    payoff.getHorse().equals(starter.getHorse().getName()));
         }
 
         /**
@@ -678,6 +675,55 @@ public class RaceResult {
             }
 
             return starters;
+        }
+
+        List<Starter> updateStartersWithOddsChoiceIndicies(List<Starter> starters) {
+            if (starters != null) {
+                List<Double> odds = new ArrayList<>();
+
+                // for each Starter that has an Odds value, add it to the odds List
+                starters.stream()
+                        .filter(starter -> (starter.getOdds() != null))
+                        .forEach(starter -> odds.add(starter.getOdds()));
+
+                // sort the odds (ascending)
+                odds.sort(Comparator.comparingDouble(Double::doubleValue));
+
+                // remove duplicates from the odds list by replacing them with nulls
+                List<Double> truncatedOdds = new ArrayList<>();
+                for (Double choice : odds) {
+                    if (truncatedOdds.contains(choice)) {
+                        truncatedOdds.add(null);
+                    } else {
+                        truncatedOdds.add(choice);
+                    }
+                }
+
+                // update each starter that has an Odds value with the 1-based choice index
+                // e.g. the favorite is 1, the third favorite is 3, the tenth favorite is 10
+                starters.stream()
+                        .filter(starter -> (starter.getOdds() != null))
+                        .forEach(starter -> {
+                            int choiceIndex = odds.indexOf(starter.getOdds());
+                            if (choiceIndex > -1) {
+                                starter.setChoice(choiceIndex + 1); // 1-based
+                            }
+                        });
+            }
+            return starters;
+        }
+
+        boolean detectDeadHeat(List<Starter> starters) {
+            long count = 0;
+            if (starters != null) {
+                count = starters.stream()
+                        .filter(starter -> {
+                            Integer officialPosition = starter.getOfficialPosition();
+                            return (officialPosition != null ? officialPosition == 1 : false);
+                        }).count();
+            }
+
+            return count > 1;
         }
 
         public String summaryText() {
