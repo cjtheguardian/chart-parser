@@ -1,5 +1,6 @@
 package com.robinhowlett.chartparser.charts.pdf.wagering;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.robinhowlett.chartparser.charts.pdf.Chart;
@@ -474,13 +475,23 @@ public class WagerPayoffPools {
             private final Place place;
             private final Show show;
 
+            public WinPlaceShowPayoff(String program, Horse horse, Win win, Place place, Show show) {
+                this.program = program;
+                this.horse = horse;
+                this.win = win;
+                this.place = place;
+                this.show = show;
+            }
+
             WinPlaceShowPayoff(String program, HorseNameWin horseNameWin, Double placePayoff,
                     Double showPayoff) {
-                this.program = (program != null ? program.toUpperCase() : null);
-                this.horse = (horseNameWin != null ? horseNameWin.getHorse() : null);
-                this.win = (horseNameWin != null ? horseNameWin.getWin() : null);
-                this.place = (placePayoff != null ? new Place(placePayoff) : null);
-                this.show = (showPayoff != null ? new Show(showPayoff) : null);
+                this(
+                        (program != null ? program.toUpperCase() : null),
+                        (horseNameWin != null ? horseNameWin.getHorse() : null),
+                        (horseNameWin != null ? horseNameWin.getWin() : null),
+                        (placePayoff != null ? new Place(placePayoff) : null),
+                        (showPayoff != null ? new Show(showPayoff) : null)
+                );
             }
 
             static WinPlaceShowPayoff parse(Map<String, List<ChartCharacter>> wageringGridRow) {
@@ -537,6 +548,7 @@ public class WagerPayoffPools {
                 return program;
             }
 
+            @JsonIgnore
             public String getEntryProgram() {
                 return Chart.getEntryProgram(program);
             }
@@ -701,11 +713,11 @@ public class WagerPayoffPools {
         private final String name;
         private final String winningNumbers;
         private final Integer numberCorrect;
-        private final Integer pool;
-        private final Integer carryover;
+        private final Double pool;
+        private final Double carryover;
 
-        ExoticPayoffPool(WagerNameUnit wagerNameUnit,
-                WinningNumbersPayoff winningNumbersPayoff, Integer pool, Integer carryover) {
+        public ExoticPayoffPool(WagerNameUnit wagerNameUnit,
+                WinningNumbersPayoff winningNumbersPayoff, Double pool, Double carryover) {
             super((wagerNameUnit != null ? wagerNameUnit.getWagerUnit() : null),
                     (winningNumbersPayoff != null ? winningNumbersPayoff.getPayoff() : null));
             this.name = (wagerNameUnit != null ? wagerNameUnit.getName() : null);
@@ -729,10 +741,10 @@ public class WagerPayoffPools {
                     parseWinningNumbersAndPayoff(winningNumbersPayoffText);
 
             String poolText = Chart.convertToText(payoffGrid.get("Pool"));
-            Integer pool = parsePool(poolText);
+            Double pool = parsePool(poolText);
 
             String carryoverText = Chart.convertToText(payoffGrid.get("Carryover"));
-            Integer carryover = parseCarryover(carryoverText);
+            Double carryover = parseCarryover(carryoverText);
 
             return new ExoticPayoffPool(wagerNameUnit, winningNumbersPayoff, pool, carryover);
         }
@@ -801,10 +813,10 @@ public class WagerPayoffPools {
             return new WinningNumbersPayoff(winningNumbers, numberCorrect, payoff);
         }
 
-        private static Integer parsePool(String poolText) throws ChartParserException {
+        private static Double parsePool(String poolText) throws ChartParserException {
             if (poolText != null && !poolText.isEmpty()) {
                 try {
-                    return NumberFormat.getNumberInstance(US).parse(poolText).intValue();
+                    return NumberFormat.getNumberInstance(US).parse(poolText).doubleValue();
                 } catch (ParseException e) {
                     throw new ChartParserException(String.format("Failed to parse pool " +
                             "text: %s", poolText), e);
@@ -813,10 +825,10 @@ public class WagerPayoffPools {
             return null;
         }
 
-        private static Integer parseCarryover(String carryoverText) throws ChartParserException {
+        private static Double parseCarryover(String carryoverText) throws ChartParserException {
             if (carryoverText != null && !carryoverText.isEmpty()) {
                 try {
-                    return NumberFormat.getNumberInstance(US).parse(carryoverText).intValue();
+                    return NumberFormat.getNumberInstance(US).parse(carryoverText).doubleValue();
                 } catch (ParseException e) {
                     throw new ChartParserException(String.format("Failed to parse carryover " +
                             "text: %s", carryoverText), e);
@@ -837,11 +849,11 @@ public class WagerPayoffPools {
             return numberCorrect;
         }
 
-        public Integer getPool() {
+        public Double getPool() {
             return pool;
         }
 
-        public Integer getCarryover() {
+        public Double getCarryover() {
             return carryover;
         }
 
@@ -944,7 +956,7 @@ public class WagerPayoffPools {
     /**
      * For exotic bets, stores the name of the wager and the unit amount the payoff is based on
      */
-    static class WagerNameUnit {
+    public static class WagerNameUnit {
         private final Double wagerUnit;
         private final String name;
 
@@ -994,7 +1006,7 @@ public class WagerPayoffPools {
      * For exotics, stories the winning number sequence, how many correct selections were needed for
      * the bet to win (e.g. 6 in a Pick 6), and the payoff
      */
-    static class WinningNumbersPayoff {
+    public static class WinningNumbersPayoff {
         private final String winningNumbers;
         private final Integer numberCorrect;
         private final Double payoff;

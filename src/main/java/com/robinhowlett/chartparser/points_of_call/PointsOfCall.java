@@ -155,8 +155,14 @@ public class PointsOfCall {
             private TotalLengthsBehind totalLengthsBehind;
 
             public RelativePosition(Integer position, LengthsAhead lengthsAhead) {
+                this(position, lengthsAhead, null);
+            }
+
+            public RelativePosition(Integer position, LengthsAhead lengthsAhead,
+                    TotalLengthsBehind totalLengthsBehind) {
                 this.position = position;
                 this.lengthsAhead = lengthsAhead;
+                this.totalLengthsBehind = totalLengthsBehind;
             }
 
             public Integer getPosition() {

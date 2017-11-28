@@ -164,9 +164,8 @@ public class ChartParser {
 
                 // Check for Cancellation
                 Cancellation cancellation = Cancellation.parse(lines);
-                raceResultBuilder.cancellation(cancellation);
                 if (cancellation.isCancelled()) {
-                    RaceResult raceResult = raceResultBuilder.build();
+                    RaceResult raceResult = raceResultBuilder.cancellation(cancellation).build();
                     raceResults.add(raceResult);
                     continue;
                 }
@@ -364,23 +363,7 @@ public class ChartParser {
 
                 // update result if affected by disqualifications
                 List<Disqualification> disqualifications = Disqualification.parse(lines);
-                for (Disqualification disqualification : disqualifications) {
-                    for (Starter starter : starters) {
-                        if (matchesStarter(disqualification, starter)) {
-                            starter.updateDisqualification(disqualification);
-                            continue;
-                        }
-
-                        if (starter.getOfficialPosition() == null) {
-                            starter.setOfficialPosition(starter.getFinishPosition());
-                        }
-
-                        // adjust official positions of starters affected by disqualifications
-                        if (officialPositionAffectedByDisqualification(disqualification, starter)) {
-                            starter.setOfficialPosition(starter.getOfficialPosition() - 1);
-                        }
-                    }
-                }
+                updateStartersAffectedByDisqualifications(starters, disqualifications);
 
                 // parse the wagering pools and payoffs (WPS and exotics)
                 WagerPayoffPools wagerPayoffPools = WagerPayoffPools.parse(lines);
@@ -410,6 +393,26 @@ public class ChartParser {
         return raceResults;
     }
 
+    public void updateStartersAffectedByDisqualifications(List<Starter> starters, List<Disqualification> disqualifications) {
+        for (Disqualification disqualification : disqualifications) {
+            for (Starter starter : starters) {
+                if (matchesStarter(disqualification, starter)) {
+                    starter.updateDisqualification(disqualification);
+                    continue;
+                }
+
+                if (starter.getOfficialPosition() == null) {
+                    starter.setOfficialPosition(starter.getFinishPosition());
+                }
+
+                // adjust official positions of starters affected by disqualifications
+                if (officialPositionAffectedByDisqualification(disqualification, starter)) {
+                    starter.setOfficialPosition(starter.getOfficialPosition() - 1);
+                }
+            }
+        }
+    }
+
     private String fileLogMessage(String message, File pdfChartFile, int index) {
         return String.format("File: %s, page: %d - %s", pdfChartFile.getName(), (index + 1),
                 message);
@@ -436,7 +439,7 @@ public class ChartParser {
         return (disqualification.getProgram() != null &&
                 disqualification.getProgram().equals(starter.getProgram())) ||
                 (disqualification.getHorse() != null &&
-                        disqualification.getHorse().equals(
+                        disqualification.getHorse().getName().equals(
                                 starter.getHorse().getName()));
     }
 
@@ -445,7 +448,7 @@ public class ChartParser {
         return (claimingPrice.getProgram() != null &&
                 claimingPrice.getProgram().equals(starter.getProgram())) ||
                 (claimingPrice.getHorse() != null &&
-                        claimingPrice.getHorse().equals(
+                        claimingPrice.getHorse().getName().equals(
                                 starter.getHorse().getName()));
     }
 

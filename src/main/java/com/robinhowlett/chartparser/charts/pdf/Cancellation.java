@@ -24,10 +24,6 @@ public class Cancellation {
     private final boolean cancelled;
     private final String reason;
 
-    public Cancellation() {
-        this(false, NO_REASON_AVAILABLE);
-    }
-
     public Cancellation(String reason) {
         this(true, reason);
     }
@@ -35,6 +31,10 @@ public class Cancellation {
     Cancellation(boolean cancelled, String reason) {
         this.cancelled = cancelled;
         this.reason = reason;
+    }
+
+    public static Cancellation notCancelled() {
+        return new Cancellation(false, NO_REASON_AVAILABLE);
     }
 
     public static Cancellation parse(List<List<ChartCharacter>> lines) {
@@ -45,7 +45,7 @@ public class Cancellation {
                 return cancellation.get();
             }
         }
-        return new Cancellation();
+        return Cancellation.notCancelled();
     }
 
     static Optional<Cancellation> checkForCancellation(String text) {

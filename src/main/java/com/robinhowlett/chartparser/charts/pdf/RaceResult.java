@@ -70,7 +70,8 @@ public class RaceResult {
     private List<Rating> ratings;
 
     private RaceResult(Builder builder) {
-        this.cancellation = builder.cancellation;
+        this.cancellation = (builder.cancellation != null ? builder.cancellation :
+                Cancellation.notCancelled());
         this.raceDate = builder.raceDate;
         this.track = builder.track;
         this.raceNumber = builder.raceNumber;
@@ -440,8 +441,19 @@ public class RaceResult {
             return this;
         }
 
+        // for looking up suitable point of calls when building a Starter
         public DistanceSurfaceTrackRecord getDistanceSurfaceTrackRecord() {
             return distanceSurfaceTrackRecord;
+        }
+
+        // useful for looking up daysSince for a Starter being built
+        public LocalDate getRaceDate() {
+            return raceDate;
+        }
+
+        // for looking up suitable point of calls when building a Starter
+        public RaceTypeNameBlackTypeBreed getRaceTypeNameBlackTypeBreed() {
+            return raceTypeNameBlackTypeBreed;
         }
 
         public RaceResult build() throws ChartParserException {

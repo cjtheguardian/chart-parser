@@ -64,6 +64,7 @@ public class Starter {
     private final List<PointOfCall> pointsOfCall;
     private Integer finishPosition; // unofficial finishing position
     private Integer officialPosition; // official finishing position (post DQs etc)
+    @JsonInclude(NON_NULL)
     private Integer wageringPosition; // payoff finishing position (Win=1, Place=2, Show=3)
     private Trainer trainer;
     private Owner owner;
@@ -85,7 +86,7 @@ public class Starter {
         lastRaced = builder.lastRaced;
         program = builder.program;
         entryProgram = builder.entryProgram;
-        entry =  builder.entry;
+        entry = builder.entry;
         horse = (builder.horseJockey != null ? builder.horseJockey.getHorse() : null);
         jockey = (builder.horseJockey != null ? builder.horseJockey.getJockey() : null);
         weight = builder.weight;
@@ -486,13 +487,40 @@ public class Starter {
             }
         }
 
+        int numberOfPointsOfCallInChart = pointsOfCall.size();
+
+        PointsOfCall pointsOfCallForDistance = buildPointsOfCall(breed, raceDistance,
+                pointsOfCallService, builder, numberOfPointsOfCallInChart);
+
+        // set the relative position (lengths ahead/behind) for each point of call
+        for (int i = 0; i < numberOfPointsOfCallInChart; i++) {
+            PointOfCall pointOfCall = pointsOfCallForDistance.getCalls().get(i);
+
+            List<ChartCharacter> characters = pointsOfCall.get(i);
+            RelativePosition relativePosition = PointOfCallPosition.parse(characters);
+
+            pointOfCall.setRelativePosition(relativePosition);
+        }
+
+        updateStretchAndFinishDistances(raceDistance, pointsOfCallForDistance);
+
+        List<PointOfCall> calls = pointsOfCallForDistance.getCalls();
+
+        builder.pointsOfCall(calls);
+
+        return builder.build();
+    }
+
+    public static PointsOfCall buildPointsOfCall(Breed breed, RaceDistance raceDistance,
+            PointsOfCallService pointsOfCallService, Builder builder,
+            int numberOfPointsOfCallInChart) throws InvalidPointsOfCallException {
         PointsOfCall pointsOfCallForDistance =
                 pointsOfCallService.getPointsOfCallForDistance(breed, raceDistance);
 
         // handle Mixed/QH races with inconsistent points of call (this certainly could be improved)
-        if (pointsOfCall.size() > 0 && pointsOfCallForDistance.getCalls() != null) {
+        if (numberOfPointsOfCallInChart > 0 && pointsOfCallForDistance.getCalls() != null) {
             if ((breed.equals(Breed.MIXED) || breed.equals(Breed.QUARTER_HORSE)) &&
-                    (pointsOfCall.size() < pointsOfCallForDistance.getCalls().size())) {
+                    (numberOfPointsOfCallInChart < pointsOfCallForDistance.getCalls().size())) {
                 for (PointOfCall pointOfCall : pointsOfCallForDistance.getCalls()) {
                     if (pointOfCall.getText().equals("Str2")) {
                         LOGGER.warn(String.format("Removing the extraneous \"Str2\"" +
@@ -505,24 +533,18 @@ public class Starter {
                 }
 
                 // if still not right, give up
-                if (pointsOfCall.size() != pointsOfCallForDistance.getCalls().size()) {
+                if (numberOfPointsOfCallInChart != pointsOfCallForDistance.getCalls().size()) {
                     throw new InvalidPointsOfCallException(String.format("Unable to parse values " +
                                     "for all of the following points of call: %s",
                             pointsOfCallForDistance));
                 }
             }
         }
+        return pointsOfCallForDistance;
+    }
 
-        // set the relative position (lengths ahead/behind) for each point of call
-        for (int i = 0; i < pointsOfCall.size(); i++) {
-            PointOfCall pointOfCall = pointsOfCallForDistance.getCalls().get(i);
-
-            List<ChartCharacter> characters = pointsOfCall.get(i);
-            RelativePosition relativePosition = PointOfCallPosition.parse(characters);
-
-            pointOfCall.setRelativePosition(relativePosition);
-        }
-
+    public static void updateStretchAndFinishDistances(RaceDistance raceDistance, PointsOfCall
+            pointsOfCallForDistance) {
         // set stretch distance if possible (as points of calls cover a variety of distances)
         Optional<PointOfCall> stretchPointOfCall = pointsOfCallForDistance.getStretchPointOfCall();
         if (stretchPointOfCall.isPresent()) {
@@ -548,10 +570,6 @@ public class Starter {
                 finish.setCompact(raceDistance.getCompact());
             }
         }
-
-        builder.pointsOfCall(pointsOfCallForDistance.getCalls());
-
-        return builder.build();
     }
 
     @Override

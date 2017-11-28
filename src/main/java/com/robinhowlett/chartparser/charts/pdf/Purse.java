@@ -52,6 +52,17 @@ public class Purse {
     @JsonIgnore
     private List<PurseEnhancement> enhancementsList = new ArrayList<>();
 
+    public Purse() { }
+
+    public Purse(Integer value, String text, String availableMoney, String valueOfRace,
+            List<PurseEnhancement> enhancementsList) {
+        this.value = value;
+        this.text = text;
+        this.availableMoney = availableMoney;
+        this.valueOfRace = valueOfRace;
+        this.enhancementsList = enhancementsList;
+    }
+
     public static Purse parse(final List<List<ChartCharacter>> lines) throws PurseParseException {
         Purse purse = new Purse();
         for (List<ChartCharacter> line : lines) {

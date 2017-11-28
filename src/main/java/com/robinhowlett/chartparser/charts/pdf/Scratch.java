@@ -18,6 +18,8 @@ import java.util.regex.Pattern;
  */
 public class Scratch {
 
+    public static final String NO_REASON_AVAILABLE = "N/A";
+
     private static final Pattern SCRATCHED_HORSES =
             Pattern.compile("Scratched Horse\\(s\\):.+");
     private static final Pattern SCRATCHED_HORSE =
@@ -66,7 +68,7 @@ public class Scratch {
             String horseName = matcher.group(1).trim();
             String reason = matcher.group(3);
             if (reason == null || reason.isEmpty()) {
-                reason = "N/A";
+                reason = NO_REASON_AVAILABLE;
             } else {
                 reason = reason.trim();
             }

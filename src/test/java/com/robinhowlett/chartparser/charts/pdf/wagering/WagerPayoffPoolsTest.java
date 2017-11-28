@@ -188,15 +188,15 @@ public class WagerPayoffPoolsTest {
 
         List<ExoticPayoffPool> exoticPayoffPools = new ArrayList<ExoticPayoffPool>() {{
             add(new ExoticPayoffPool(new WagerNameUnit(2.0, "Exacta"),
-                    new WinningNumbersPayoff("7-8", null, 23.4), 2892, null));
+                    new WinningNumbersPayoff("7-8", null, 23.4), 2892d, null));
             add(new ExoticPayoffPool(new WagerNameUnit(2.0, "Quinella"),
-                    new WinningNumbersPayoff("7-8", null, 17.6), 1239, null));
+                    new WinningNumbersPayoff("7-8", null, 17.6), 1239d, null));
             add(new ExoticPayoffPool(new WagerNameUnit(2.0, "Trifecta"),
-                    new WinningNumbersPayoff("7-8-3", null, 104.8), 3983, null));
+                    new WinningNumbersPayoff("7-8-3", null, 104.8), 3983d, null));
             add(new ExoticPayoffPool(new WagerNameUnit(2.0, "Superfecta"),
-                    new WinningNumbersPayoff("7-8-3-6", null, 1140.6), 1521, null));
+                    new WinningNumbersPayoff("7-8-3-6", null, 1140.6), 1521d, null));
             add(new ExoticPayoffPool(new WagerNameUnit(2.0, "Daily Double"),
-                    new WinningNumbersPayoff("11-7", null, 16.4), 882, null));
+                    new WinningNumbersPayoff("11-7", null, 16.4), 882d, null));
         }};
         WinPlaceShowPayoffPool winPlaceShowPayoffPool =
                 new WinPlaceShowPayoffPool(6334, winPlaceShowPayoffs);
@@ -266,7 +266,7 @@ public class WagerPayoffPoolsTest {
         @Test
         public void parse_WithExactaGridRow_CreatesCorrectExoticPayoffPool() throws Exception {
             ExoticPayoffPool expected = new ExoticPayoffPool(new WagerNameUnit(2.0, "Exacta"),
-                    new WinningNumbersPayoff("7-8", null, 23.4), 2892, null);
+                    new WinningNumbersPayoff("7-8", null, 23.4), 2892d, null);
 
             Map<String, List<ChartCharacter>> exactaGridRow = SAMPLE_CHARTS.getExactaGridRow();
 
