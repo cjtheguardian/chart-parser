@@ -38,7 +38,7 @@ import static java.util.stream.Collectors.toList;
  * {@link Builder} configured by the {@link ChartParser}
  */
 @JsonPropertyOrder({"cancellation", "raceDate", "track", "raceNumber", "conditions",
-        "distanceSurfaceTrackRecord", "purse", "weather", "postTimeStartCommentsTimer", "deadHeat",
+        "distanceSurfaceTrackRecord", "weather", "postTimeStartCommentsTimer", "deadHeat",
         "numberOfRunners", "starters", "scratches", "wagering", "fractionals", "splits", "ratings",
         "footnotes"})
 public class RaceResult {
@@ -54,7 +54,6 @@ public class RaceResult {
     @JsonProperty("distanceSurfaceTrackRecord") // required for property order but unwrapped
     @JsonUnwrapped
     private final DistanceSurfaceTrackRecord distanceSurfaceTrackRecord;
-    private final Purse purse;
     private final Weather weather;
     @JsonProperty("postTimeStartCommentsTimer") // required for property order but unwrapped
     @JsonUnwrapped
@@ -76,7 +75,6 @@ public class RaceResult {
         this.track = builder.track;
         this.raceNumber = builder.raceNumber;
         this.raceConditions = builder.raceConditions;
-        this.purse = builder.purse;
         this.distanceSurfaceTrackRecord = builder.distanceSurfaceTrackRecord;
         this.postTimeStartCommentsTimer = builder.postTimeStartCommentsTimer;
         this.deadHeat = builder.deadHeat;
@@ -116,6 +114,10 @@ public class RaceResult {
             raceConditions.setRaceTypeNameBlackTypeBreed(builder.raceTypeNameBlackTypeBreed);
         }
 
+        if (raceConditions != null && builder.purse != null) {
+            raceConditions.setPurse(builder.purse);
+        }
+
         ratings = new ArrayList<>();
     }
 
@@ -137,10 +139,6 @@ public class RaceResult {
 
     public RaceConditions getRaceConditions() {
         return raceConditions;
-    }
-
-    public Purse getPurse() {
-        return purse;
     }
 
     public DistanceSurfaceTrackRecord getDistanceSurfaceTrackRecord() {
@@ -233,7 +231,6 @@ public class RaceResult {
         if (distanceSurfaceTrackRecord != null ? !distanceSurfaceTrackRecord.equals(that
                 .distanceSurfaceTrackRecord) : that.distanceSurfaceTrackRecord != null)
             return false;
-        if (purse != null ? !purse.equals(that.purse) : that.purse != null) return false;
         if (weather != null ? !weather.equals(that.weather) : that.weather != null) return false;
         if (postTimeStartCommentsTimer != null ? !postTimeStartCommentsTimer.equals(that
                 .postTimeStartCommentsTimer) : that.postTimeStartCommentsTimer != null)
@@ -262,7 +259,6 @@ public class RaceResult {
         result = 31 * result + (raceConditions != null ? raceConditions.hashCode() : 0);
         result = 31 * result + (distanceSurfaceTrackRecord != null ? distanceSurfaceTrackRecord
                 .hashCode() : 0);
-        result = 31 * result + (purse != null ? purse.hashCode() : 0);
         result = 31 * result + (weather != null ? weather.hashCode() : 0);
         result = 31 * result + (postTimeStartCommentsTimer != null ? postTimeStartCommentsTimer
                 .hashCode() : 0);
@@ -286,7 +282,6 @@ public class RaceResult {
                 ", raceNumber=" + raceNumber +
                 ", raceConditions=" + raceConditions +
                 ", distanceSurfaceTrackRecord=" + distanceSurfaceTrackRecord +
-                ", purse=" + purse +
                 ", weather=" + weather +
                 ", postTimeStartCommentsTimer=" + postTimeStartCommentsTimer +
                 ", deadHeat=" + deadHeat +
@@ -303,7 +298,7 @@ public class RaceResult {
     @JsonCreator
     private RaceResult(Cancellation cancellation, LocalDate raceDate, Track track,
             Integer raceNumber, RaceConditions raceConditions, DistanceSurfaceTrackRecord
-            distanceSurfaceTrackRecord, Purse purse, Weather weather,
+            distanceSurfaceTrackRecord, Weather weather,
             PostTimeStartCommentsTimer postTimeStartCommentsTimer, boolean deadHeat,
             List<Starter> starters, List<Scratch> scratches, List<Fractional> fractionals,
             List<Split> splits, WagerPayoffPools wagerPayoffPools, String footnotes,
@@ -314,7 +309,6 @@ public class RaceResult {
         this.raceNumber = raceNumber;
         this.raceConditions = raceConditions;
         this.distanceSurfaceTrackRecord = distanceSurfaceTrackRecord;
-        this.purse = purse;
         this.weather = weather;
         this.postTimeStartCommentsTimer = postTimeStartCommentsTimer;
         this.deadHeat = deadHeat;

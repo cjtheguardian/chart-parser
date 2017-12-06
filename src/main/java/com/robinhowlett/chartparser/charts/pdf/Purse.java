@@ -1,5 +1,6 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -54,6 +55,7 @@ public class Purse {
 
     public Purse() { }
 
+    @JsonCreator
     public Purse(Integer value, String text, String availableMoney, String valueOfRace,
             List<PurseEnhancement> enhancementsList) {
         this.value = value;

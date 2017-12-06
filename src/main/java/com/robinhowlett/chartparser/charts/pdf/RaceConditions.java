@@ -25,27 +25,33 @@ import static java.util.Locale.US;
  * Parses and stores the textual description of the race conditions and, if applicable, the minimum
  * and maximum claiming prices that can be availed of
  */
-@JsonPropertyOrder({"raceTypeNameBlackTypeBreed", "text", "claimingPriceRange"})
+@JsonPropertyOrder({"raceTypeNameBlackTypeBreed", "text", "restrictions", "purse",
+        "claimingPriceRange"})
 public class RaceConditions {
 
     private final String text;
     @JsonInclude(NON_NULL)
     private final ClaimingPriceRange claimingPriceRange;
+    private final RaceRestrictions restrictions;
     @JsonProperty("raceTypeNameBlackTypeBreed") // required for property order but unwrapped
     @JsonUnwrapped
     private RaceTypeNameBlackTypeBreed raceTypeNameBlackTypeBreed;
+    private Purse purse;
 
-    public RaceConditions(String text,
-            ClaimingPriceRange claimingPriceRange) {
-        this.text = text;
-        this.claimingPriceRange = claimingPriceRange;
+    public RaceConditions(String text, ClaimingPriceRange claimingPriceRange) {
+        this(text, claimingPriceRange, (text != null ? RaceRestrictions.parse(text) : null),
+                null, null);
     }
 
     @JsonCreator
     private RaceConditions(String text, ClaimingPriceRange claimingPriceRange,
-            RaceTypeNameBlackTypeBreed raceTypeNameBlackTypeBreed) {
-        this(text, claimingPriceRange);
+            RaceRestrictions restrictions, RaceTypeNameBlackTypeBreed raceTypeNameBlackTypeBreed,
+            Purse purse) {
+        this.text = text;
+        this.claimingPriceRange = claimingPriceRange;
+        this.restrictions = restrictions;
         this.raceTypeNameBlackTypeBreed = raceTypeNameBlackTypeBreed;
+        this.purse = purse;
     }
 
     // handles multi-line
@@ -92,6 +98,18 @@ public class RaceConditions {
     public void setRaceTypeNameBlackTypeBreed(RaceTypeNameBlackTypeBreed
             raceTypeNameBlackTypeBreed) {
         this.raceTypeNameBlackTypeBreed = raceTypeNameBlackTypeBreed;
+    }
+
+    public RaceRestrictions getRestrictions() {
+        return restrictions;
+    }
+
+    public Purse getPurse() {
+        return purse;
+    }
+
+    public void setPurse(Purse purse) {
+        this.purse = purse;
     }
 
     /**
@@ -197,18 +215,27 @@ public class RaceConditions {
 
         RaceConditions that = (RaceConditions) o;
 
-        if (text != null ? !text.equals(that.text) : that
-                .text != null)
+        if (text != null ? !text.equals(that.text) : that.text != null) return false;
+        if (claimingPriceRange != null ? !claimingPriceRange.equals(that.claimingPriceRange) :
+                that.claimingPriceRange != null)
             return false;
-        return claimingPriceRange != null ? claimingPriceRange.equals(that.claimingPriceRange) :
-                that
-                        .claimingPriceRange == null;
+        if (restrictions != null ? !restrictions.equals(that.restrictions) : that.restrictions !=
+                null)
+            return false;
+        if (raceTypeNameBlackTypeBreed != null ? !raceTypeNameBlackTypeBreed.equals(that
+                .raceTypeNameBlackTypeBreed) : that.raceTypeNameBlackTypeBreed != null)
+            return false;
+        return purse != null ? purse.equals(that.purse) : that.purse == null;
     }
 
     @Override
     public int hashCode() {
         int result = text != null ? text.hashCode() : 0;
         result = 31 * result + (claimingPriceRange != null ? claimingPriceRange.hashCode() : 0);
+        result = 31 * result + (restrictions != null ? restrictions.hashCode() : 0);
+        result = 31 * result + (raceTypeNameBlackTypeBreed != null ? raceTypeNameBlackTypeBreed
+                .hashCode() : 0);
+        result = 31 * result + (purse != null ? purse.hashCode() : 0);
         return result;
     }
 
@@ -217,6 +244,9 @@ public class RaceConditions {
         return "RaceConditions{" +
                 "text='" + text + '\'' +
                 ", claimingPriceRange=" + claimingPriceRange +
+                ", restrictions=" + restrictions +
+                ", raceTypeNameBlackTypeBreed=" + raceTypeNameBlackTypeBreed +
+                ", purse=" + purse +
                 '}';
     }
 }
