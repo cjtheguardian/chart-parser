@@ -55,8 +55,8 @@ public class RaceRestrictions {
             "^(.*?for.+?)?" + AGES + ".+?(?=" + SEXES + "|$).*");
 
     private final String code;
-    private final Integer ageMin;
-    private final Integer ageMax;
+    private final Integer minAge;
+    private final Integer maxAge;
     /*
      a bitwise-style value to store the gender restrictions that apply
 
@@ -71,18 +71,18 @@ public class RaceRestrictions {
     private final boolean femaleOnly;
     private final boolean stateBred;
 
-    RaceRestrictions(RaceRestrictionCodes raceRestrictionCodes, Integer ageMin, Integer ageMax,
+    RaceRestrictions(RaceRestrictionCodes raceRestrictionCodes, Integer minAge, Integer maxAge,
             int sex) {
         this((raceRestrictionCodes != null ? raceRestrictionCodes.getCode() : null),
-                ageMin, ageMax, sex,
+                minAge, maxAge, sex,
                 (raceRestrictionCodes != null && raceRestrictionCodes.isStateBred()));
     }
 
-    RaceRestrictions(String code, Integer ageMin, Integer ageMax, int sex, boolean stateBred) {
+    RaceRestrictions(String code, Integer minAge, Integer maxAge, int sex, boolean stateBred) {
         this.code = code;
-        this.ageMin = ageMin;
+        this.minAge = minAge;
         // if no specified max, then assume same as the minimum
-        this.ageMax = (ageMax != null ? ageMax : ageMin);
+        this.maxAge = (maxAge != null ? maxAge : minAge);
         this.sex = sex;
         this.femaleOnly = (sex % 8 == 0); // 8 = fillies, 16 = mares, 24 = fillies & mares
         this.stateBred = stateBred;
@@ -149,29 +149,29 @@ public class RaceRestrictions {
             RaceRestrictionCodes raceRestrictionCodes, RaceRestrictions conditionRestrictions,
             RaceRestrictions raceRestrictions) {
         Integer ageMin;
-        if (raceRestrictions.getAgeMin() == null) {
-            ageMin = conditionRestrictions.getAgeMin();
-        } else if (conditionRestrictions.getAgeMin() == null) {
-            ageMin = raceRestrictions.getAgeMin();
+        if (raceRestrictions.getMinAge() == null) {
+            ageMin = conditionRestrictions.getMinAge();
+        } else if (conditionRestrictions.getMinAge() == null) {
+            ageMin = raceRestrictions.getMinAge();
         } else {
-            ageMin = Math.min(raceRestrictions.getAgeMin(), conditionRestrictions.getAgeMin());
+            ageMin = Math.min(raceRestrictions.getMinAge(), conditionRestrictions.getMinAge());
         }
 
         Integer ageMax = null;
-        if (raceRestrictions.getAgeMax() == null) {
-            if (conditionRestrictions.getAgeMax() != null) {
-                ageMax = (conditionRestrictions.getAgeMax() < 0) ? -1 : null;
+        if (raceRestrictions.getMaxAge() == null) {
+            if (conditionRestrictions.getMaxAge() != null) {
+                ageMax = (conditionRestrictions.getMaxAge() < 0) ? -1 : null;
             }
-        } else if (conditionRestrictions.getAgeMax() == null) {
-            if (raceRestrictions.getAgeMax() != null) {
-                ageMax = (raceRestrictions.getAgeMax() < 0) ? -1 : null;
+        } else if (conditionRestrictions.getMaxAge() == null) {
+            if (raceRestrictions.getMaxAge() != null) {
+                ageMax = (raceRestrictions.getMaxAge() < 0) ? -1 : null;
             }
         } else {
-            if (conditionRestrictions.getAgeMax() != null && raceRestrictions.getAgeMax() != null) {
-                if (raceRestrictions.getAgeMax() < 0 || conditionRestrictions.getAgeMax() < 0) {
+            if (conditionRestrictions.getMaxAge() != null && raceRestrictions.getMaxAge() != null) {
+                if (raceRestrictions.getMaxAge() < 0 || conditionRestrictions.getMaxAge() < 0) {
                     ageMax = -1;
                 } else {
-                    Math.max(raceRestrictions.getAgeMax(), conditionRestrictions.getAgeMax());
+                    Math.max(raceRestrictions.getMaxAge(), conditionRestrictions.getMaxAge());
                 }
             }
         }
@@ -367,12 +367,12 @@ public class RaceRestrictions {
         return code;
     }
 
-    public Integer getAgeMin() {
-        return ageMin;
+    public Integer getMinAge() {
+        return minAge;
     }
 
-    public Integer getAgeMax() {
-        return ageMax;
+    public Integer getMaxAge() {
+        return maxAge;
     }
 
     public int getSex() {
@@ -398,15 +398,15 @@ public class RaceRestrictions {
         if (femaleOnly != that.femaleOnly) return false;
         if (stateBred != that.stateBred) return false;
         if (code != null ? !code.equals(that.code) : that.code != null) return false;
-        if (ageMin != null ? !ageMin.equals(that.ageMin) : that.ageMin != null) return false;
-        return ageMax != null ? ageMax.equals(that.ageMax) : that.ageMax == null;
+        if (minAge != null ? !minAge.equals(that.minAge) : that.minAge != null) return false;
+        return maxAge != null ? maxAge.equals(that.maxAge) : that.maxAge == null;
     }
 
     @Override
     public int hashCode() {
         int result = code != null ? code.hashCode() : 0;
-        result = 31 * result + (ageMin != null ? ageMin.hashCode() : 0);
-        result = 31 * result + (ageMax != null ? ageMax.hashCode() : 0);
+        result = 31 * result + (minAge != null ? minAge.hashCode() : 0);
+        result = 31 * result + (maxAge != null ? maxAge.hashCode() : 0);
         result = 31 * result + sex;
         result = 31 * result + (femaleOnly ? 1 : 0);
         result = 31 * result + (stateBred ? 1 : 0);
@@ -417,8 +417,8 @@ public class RaceRestrictions {
     public String toString() {
         return "RaceRestrictions{" +
                 "code='" + code + '\'' +
-                ", ageMin=" + ageMin +
-                ", ageMax=" + ageMax +
+                ", minAge=" + minAge +
+                ", maxAge=" + maxAge +
                 ", sex=" + sex +
                 ", femaleOnly=" + femaleOnly +
                 ", stateBred=" + stateBred +

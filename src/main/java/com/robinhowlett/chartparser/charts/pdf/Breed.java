@@ -3,25 +3,37 @@ package com.robinhowlett.chartparser.charts.pdf;
 import com.robinhowlett.chartparser.exceptions.ChartParserException;
 
 /**
- * Enum for Thoroughbred (TB), Quarter Horse (QH), Arabian, and Mixed (usually a race containing
- * both TB and QH)
+ * Enum for Thoroughbred (TB), Quarter Horse (QH), Arabian (AR), and Mixed (MX; usually a race
+ * containing both TB and QH)
  */
 public enum Breed {
-    THOROUGHBRED("Thoroughbred"),
-    QUARTER_HORSE("Quarter Horse"),
-    ARABIAN("Arabian"),
-    MIXED("Mixed");
+    THOROUGHBRED("Thoroughbred", "TB"),
+    QUARTER_HORSE("Quarter Horse", "QH"),
+    ARABIAN("Arabian", "ARAB"),
+    MIXED("Mixed", "MIX");
 
     private final String chartValue;
+    private final String code;
 
-    Breed(String chartValue) {
+    Breed(String chartValue, String code) {
         this.chartValue = chartValue;
+        this.code = code;
     }
 
     // forChartValue("Thoroughbred") returns Breed.THOROUGHBRED
     public static Breed forChartValue(String text) throws NoMatchingBreedException {
         for (Breed breed : values()) {
             if (breed.getChartValue().equals(text)) {
+                return breed;
+            }
+        }
+        throw new NoMatchingBreedException(text);
+    }
+
+    // forCode("TB") returns Breed.THOROUGHBRED
+    public static Breed forCode(String text) throws NoMatchingBreedException {
+        for (Breed breed : values()) {
+            if (breed.getCode().equals(text)) {
                 return breed;
             }
         }
@@ -41,14 +53,15 @@ public enum Breed {
         return chartValue;
     }
 
-    public String getBreed() {
-        return chartValue;
+    public String getCode() {
+        return code;
     }
 
     @Override
     public String toString() {
         return "Breed{" +
                 "chartValue='" + chartValue + '\'' +
+                ", code='" + code + '\'' +
                 '}';
     }
 

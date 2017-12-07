@@ -735,7 +735,7 @@ public class RaceResult {
         public String summaryText() {
             return String.format("%s (%s), %s, Race %d (%s)", track.getCode(), track.getName(),
                     raceDate, raceNumber, (raceTypeNameBlackTypeBreed != null ?
-                            raceTypeNameBlackTypeBreed.getBreed().getBreed() : "Failed to parse"));
+                            raceTypeNameBlackTypeBreed.getBreed().getCode() : "Failed to parse"));
         }
     }
 
