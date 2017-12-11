@@ -321,6 +321,14 @@ public class Starter {
         return null;
     }
 
+    @JsonIgnore
+    public PointOfCall getFinishPointOfCall() {
+        if (pointsOfCall != null && !pointsOfCall.isEmpty()) {
+            return pointsOfCall.get(pointsOfCall.size() - 1);
+        }
+        return null;
+    }
+
     /**
      * Add the total lengths behind to the {@link Starter}'s {@link RelativePosition} for the
      * applicable {@link PointOfCall}

@@ -46,7 +46,7 @@ public class RaceRestrictionsTest {
                                 "Total lifetime earnings will be used in determining order of " +
                                 "preference of horses .This race will be limited to twelve " +
                                 "starters. (S)",
-                        new RaceRestrictions("S", 2, 2, 8, true)
+                        new RaceRestrictions(null, 2, 2, 8, true)
                 },
                 {
                         "(UP TO $13,860 NYSBFOA) FOR THREE YEAR OLDS AND UPWARD WHICH HAVE NEVER " +
@@ -69,7 +69,7 @@ public class RaceRestrictionsTest {
                                 "mile or over since August 15, 3 lbs. Such a race since July 1, 5" +
                                 " lbs. Any race since then 7 lbs. CLAIMING PRICE $2,500. (SNW2 R " +
                                 "6M) Claiming Price: $2,500",
-                        new RaceRestrictions("SNW2 R 6M", 4, -1, 31, true)
+                        new RaceRestrictions("NW2 R 6M", 4, -1, 31, true)
                 },
                 {
                         "TWO YEAR OLD FILLIES. Weight 118 lbs. Fillies that went through the " +
@@ -160,7 +160,7 @@ public class RaceRestrictionsTest {
                 {
                         "3 and Up Fillies and Mares Alberta Breds ($12,000 plus $150 ) Starters " +
                                 "will be determined by preferences in stake book. (S)",
-                        new RaceRestrictions("S", 3, -1, 24, true)
+                        new RaceRestrictions(null, 3, -1, 24, true)
                 },
                 {
                         "FOR FOALED IN NEW YORK STATE AND APPROVED BY THE NEW YORK STATE-BRED " +
@@ -169,7 +169,7 @@ public class RaceRestrictionsTest {
                                 "Olds, 119 lbs.; Older, 124 lbs. Non-winners of a race since May " +
                                 "20 Allowed 2 lbs. A race since April 20 Allowed 4 lbs. (Races " +
                                 "where entered for $15,000 or less not considered). (SNW1 B L X)",
-                        new RaceRestrictions("SNW1 B L X", 3, -1, 31, true)
+                        new RaceRestrictions("NW1 B L X", 3, -1, 31, true)
                 },
                 {
                         "FOR FILLIES AND MARES THREE YEARS OLD AND UPWARD FOALED IN NEW YORK " +
@@ -179,7 +179,7 @@ public class RaceRestrictionsTest {
                                 "Older, 124 lbs. Non-winners Of $24,000 Since April 13 Allowed 2 " +
                                 "lbs. (Races where entered for $35,000 or less not considered in " +
                                 "allowances). (SNW1 X)",
-                        new RaceRestrictions("SNW1 X", 3, -1, 24, true)
+                        new RaceRestrictions("NW1 X", 3, -1, 24, true)
                 },
                 {
                         "FOR THREE YEAR OLDS AND UPWARD WHICH HAVE NEVER WON $10,000 THREE TIMES " +
@@ -229,16 +229,16 @@ public class RaceRestrictionsTest {
                                 "the scale. Total earnings in 2010-11 will be used in determining" +
                                 " the order of preference of horses assigned equal weights. " +
                                 "Closed Saturday, March 19 with eighteen nominations. (S)",
-                        new RaceRestrictions("S", 3, -1, 24, true)
+                        new RaceRestrictions(null, 3, -1, 24, true)
                 },
                 {
                         "FOR OHIO REGISTERED. THREE, FOUR, FIVE AND SIX YEAR OLDS. Three Years " +
                                 "Old, 112 lbs.; Older, 122 lbs. (S)",
-                        new RaceRestrictions("S", 3, 6, 31, true)
+                        new RaceRestrictions(null, 3, 6, 31, true)
                 },
                 {
                         "Maiden Fillies. Registered New Mexico Bred. Two year olds 120 Lbs. (S)",
-                        new RaceRestrictions("S", 2, 2, 8, true)
+                        new RaceRestrictions(null, 2, 2, 8, true)
                 },
                 {
                         "For five, six, seven, eight and nine year olds",
@@ -259,7 +259,7 @@ public class RaceRestrictionsTest {
                 {
                         "Maiden 3, 4 & 5-year olds, registered Colorado Bred. 3-year olds 118 Lbs" +
                                 ".; Older 122 Lbs.;. (S)",
-                        new RaceRestrictions("S", 3, 5, 31, true)
+                        new RaceRestrictions(null, 3, 5, 31, true)
                 },
                 {
                         "TWO YEAR OLDS WHICH HAVE QUALIFIED FOR THE FINAL. Weight 124 lbs.",
@@ -278,14 +278,14 @@ public class RaceRestrictionsTest {
                                 "furlongs. (SNW3 L) Claiming Price: $10,000",
                         // this is the correct result, but the description above is too non-standard
                         // will leave it as a future goal to fix this
-                        // new RaceRestrictions("SNW3 L", 3, -1, 24, true)
-                        new RaceRestrictions("SNW3 L", null, null, 31, true)
+                        // new RaceRestrictions("NW3 L", 3, -1, 24, true)
+                        new RaceRestrictions("NW3 L", null, null, 31, true)
                 },
                 {
                         // urgh, more errors, this time leaving out "olds"
                         "THREE YEAR COLO. Bred fillies eligible to the final. Weight 120 lbs. (S)",
-//                        new RaceRestrictions("S", 3, 3, 8, true)
-                        new RaceRestrictions("S", null, null, 31, true)
+//                        new RaceRestrictions(null, 3, 3, 8, true)
+                        new RaceRestrictions(null, null, null, 31, true)
                 },
                 {
                         "INNER TURF (UP TO $16,200 NYSBFOA) FOR FILLIES AND MARES THREE YEARS OLD" +

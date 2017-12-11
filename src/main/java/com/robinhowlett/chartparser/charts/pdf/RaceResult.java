@@ -39,8 +39,8 @@ import static java.util.stream.Collectors.toList;
  */
 @JsonPropertyOrder({"cancellation", "raceDate", "track", "raceNumber", "conditions",
         "distanceSurfaceTrackRecord", "weather", "postTimeStartCommentsTimer", "deadHeat",
-        "numberOfRunners", "starters", "scratches", "wagering", "fractionals", "splits", "ratings",
-        "footnotes"})
+        "numberOfRunners", "finalTime", "winningMargin", "starters", "scratches", "wagering",
+        "fractionals", "splits", "ratings", "footnotes"})
 public class RaceResult {
 
     @JsonProperty("cancellation") // required for property order but unwrapped
@@ -201,10 +201,23 @@ public class RaceResult {
         return new ArrayList<>();
     }
 
-    @JsonIgnore
+    @JsonProperty("winningTime")
     public String getWinningTime() {
         if (getWinners() != null && !getWinners().isEmpty()) {
-            return getWinners().get(0).getFinishFractional().getTime();
+            Fractional finishFractional = getWinners().get(0).getFinishFractional();
+            return (finishFractional != null ? finishFractional.getTime() : null);
+        }
+        return null;
+    }
+
+    @JsonProperty("winningMargin")
+    public String getWinningMargin() {
+        if (getWinners() != null && !getWinners().isEmpty()) {
+            PointOfCall finishPointOfCall = getWinners().get(0).getFinishPointOfCall();
+            if (finishPointOfCall != null && finishPointOfCall.getRelativePosition() != null &&
+                    finishPointOfCall.getRelativePosition().getLengthsAhead() != null) {
+                return finishPointOfCall.getRelativePosition().getLengthsAhead().getText();
+            }
         }
         return null;
     }
@@ -217,7 +230,8 @@ public class RaceResult {
         RaceResult that = (RaceResult) o;
 
         if (deadHeat != that.deadHeat) return false;
-        if (cancellation != null ? !cancellation.equals(that.cancellation) : that.cancellation !=
+        if (cancellation != null ? !cancellation.equals(that.cancellation) : that
+                .cancellation !=
                 null)
             return false;
         if (raceDate != null ? !raceDate.equals(that.raceDate) : that.raceDate != null)
@@ -231,7 +245,8 @@ public class RaceResult {
         if (distanceSurfaceTrackRecord != null ? !distanceSurfaceTrackRecord.equals(that
                 .distanceSurfaceTrackRecord) : that.distanceSurfaceTrackRecord != null)
             return false;
-        if (weather != null ? !weather.equals(that.weather) : that.weather != null) return false;
+        if (weather != null ? !weather.equals(that.weather) : that.weather != null)
+            return false;
         if (postTimeStartCommentsTimer != null ? !postTimeStartCommentsTimer.equals(that
                 .postTimeStartCommentsTimer) : that.postTimeStartCommentsTimer != null)
             return false;
@@ -239,7 +254,8 @@ public class RaceResult {
             return false;
         if (scratches != null ? !scratches.equals(that.scratches) : that.scratches != null)
             return false;
-        if (fractionals != null ? !fractionals.equals(that.fractionals) : that.fractionals != null)
+        if (fractionals != null ? !fractionals.equals(that.fractionals) : that.fractionals !=
+                null)
             return false;
         if (splits != null ? !splits.equals(that.splits) : that.splits != null) return false;
         if (wagerPayoffPools != null ? !wagerPayoffPools.equals(that.wagerPayoffPools) : that
@@ -376,7 +392,8 @@ public class RaceResult {
             return this;
         }
 
-        public Builder fractionals(final List<Fractional> fractionals) throws ChartParserException {
+        public Builder fractionals(final List<Fractional> fractionals) throws
+                ChartParserException {
             this.splits = createSplitsFromFractionals(fractionals);
             this.fractionals = fractionals;
             return this;
@@ -409,7 +426,8 @@ public class RaceResult {
             return this;
         }
 
-        public Builder weatherAndTrackCondition(final WeatherTrackCondition weatherTrackCondition) {
+        public Builder weatherAndTrackCondition(final WeatherTrackCondition
+                weatherTrackCondition) {
             this.weatherTrackCondition = weatherTrackCondition;
             return this;
         }
@@ -489,7 +507,8 @@ public class RaceResult {
         List<Starter> updateStartersWithWinPlaceShowPayoffs(List<Starter> starters,
                 WagerPayoffPools wagerPayoffPools) {
             if (wagerPayoffPools != null && starters != null) {
-                WinPlaceShowPayoffPool payoffPools = wagerPayoffPools.getWinPlaceShowPayoffPools();
+                WinPlaceShowPayoffPool payoffPools = wagerPayoffPools
+                        .getWinPlaceShowPayoffPools();
                 if (payoffPools != null) {
                     List<WinPlaceShowPayoff> winPlaceShowPayoffs =
                             payoffPools.getWinPlaceShowPayoffs();
@@ -512,7 +531,8 @@ public class RaceResult {
                                     starters.stream().collect(
                                             groupingBy(Starter::getEntryProgram));
 
-                            // set the same WPS payoffs for all starters of a coupled/field entry
+                            // set the same WPS payoffs for all starters of a coupled/field
+                            // entry
                             if (entryProgram != null && payoff.isPresent() &&
                                     startersByEntryProgram.containsKey(entryProgram)) {
                                 startersByEntryProgram.get(entryProgram).stream().forEach(
@@ -553,11 +573,13 @@ public class RaceResult {
                 List<Starter> starters,
                 List<Fractional> fractionals,
                 RaceTypeNameBlackTypeBreed raceTypeNameBlackTypeBreed,
-                DistanceSurfaceTrackRecord distanceSurfaceTrackRecord) throws ChartParserException {
+                DistanceSurfaceTrackRecord distanceSurfaceTrackRecord) throws
+                ChartParserException {
             if (starters != null) {
                 if (fractionals != null && !fractionals.isEmpty()) {
                     starters = calculateForTBredsAndArabians(starters, fractionals);
-                } else if (raceTypeNameBlackTypeBreed != null && distanceSurfaceTrackRecord != null
+                } else if (raceTypeNameBlackTypeBreed != null && distanceSurfaceTrackRecord
+                        != null
                         && (raceTypeNameBlackTypeBreed.getBreed().equals(Breed.QUARTER_HORSE) ||
                         raceTypeNameBlackTypeBreed.getBreed().equals(Breed.MIXED))) {
                     List<Fractional> winningFractionals = new ArrayList<>();
@@ -595,7 +617,8 @@ public class RaceResult {
             return starters;
         }
 
-        Fractional calculateIndividualFractionals(Fractional fractional, PointOfCall pointOfCall) {
+        Fractional calculateIndividualFractionals(Fractional fractional, PointOfCall
+                pointOfCall) {
             RelativePosition relativePosition = pointOfCall.getRelativePosition();
             RelativePosition.TotalLengthsBehind totalLengthsBehind =
                     relativePosition.getTotalLengthsBehind();
@@ -617,7 +640,8 @@ public class RaceResult {
                 if (fractionalMillis != null) {
                     double feetPerMillisecond =
                             ((double) fractional.getFeet() / fractionalMillis);
-                    double feetBehind = (lengths * 8.75); // 8.75 feet (estimation for a "length")
+                    double feetBehind = (lengths * 8.75); // 8.75 feet (estimation for a
+                    // "length")
                     double additionalMillis = (feetBehind / feetPerMillisecond);
                     individualMillis = (long) (fractionalMillis + additionalMillis);
                     time = FractionalPoint.convertToTime(individualMillis);
@@ -628,9 +652,9 @@ public class RaceResult {
                     fractional.getCompact(), fractional.getFeet(), time, individualMillis);
         }
 
-        // calculates the Split - the time taken between fractionals e.g. if a Starter recorded a
-        // first quarter time of 22 seconds, and a first half-mile time of 45 seconds, that would
-        // be a 2 furlong split of 23 seconds
+        // calculates the Split - the time taken between fractionals e.g. if a Starter
+        // recorded a first quarter time of 22 seconds, and a first half-mile time of 45 seconds,
+        // that would be a 2 furlong split of 23 seconds
         List<Split> createSplitsFromFractionals(List<Fractional> fractionals)
                 throws ChartParserException {
             List<Split> splits = new ArrayList<>();
@@ -668,7 +692,8 @@ public class RaceResult {
 
                             individualFractionals.add(finishFractional);
 
-                            if (starter.getFinishPosition() == 1 && winningFractionals.isEmpty()) {
+                            if (starter.getFinishPosition() == 1 && winningFractionals
+                                    .isEmpty()) {
                                 winningFractionals.add(finishFractional);
                             }
 
