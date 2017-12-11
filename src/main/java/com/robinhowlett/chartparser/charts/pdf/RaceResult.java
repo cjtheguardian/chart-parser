@@ -201,8 +201,8 @@ public class RaceResult {
         return new ArrayList<>();
     }
 
-    @JsonProperty("winningTime")
-    public String getWinningTime() {
+    @JsonProperty("finalTime")
+    public String getFinalTime() {
         if (getWinners() != null && !getWinners().isEmpty()) {
             Fractional finishFractional = getWinners().get(0).getFinishFractional();
             return (finishFractional != null ? finishFractional.getTime() : null);
