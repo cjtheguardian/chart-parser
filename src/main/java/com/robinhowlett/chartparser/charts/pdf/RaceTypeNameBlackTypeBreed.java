@@ -1,34 +1,92 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.robinhowlett.chartparser.exceptions.ChartParserException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
 /**
- * Parses and stores the race type (e.g. "STAKES"), name (e.g. "Kentucky Derby"), grade (e.g. 1),
- * black type (e.g. "Grade 1"), and for what {@link Breed}
+ * Parses and stores the race type (e.g. "STAKES"), short code (e.g. "STK"), name (e.g. "Kentucky
+ * Derby"), grade (e.g. 1), black type (e.g. "Grade 1"), and for what {@link Breed}
  */
-@JsonPropertyOrder({"breed"})
+@JsonPropertyOrder({"breed", "type", "code", "name", "grade", "blackType"})
 public class RaceTypeNameBlackTypeBreed {
 
-    static final Pattern RACE_TYPE_NAME_GRADE_BREED =
-            Pattern.compile("([A-Z ]+)( (.+) (Grade (\\d))| (.+ S\\.)( (.+))?| (.+))? - " +
-                    "(Thoroughbred|Quarter Horse|Arabian|Mixed)");
+    static final Map<String, String> RACE_TYPE_CODES = new LinkedHashMap<String, String>() {{
+        put("SPEED INDEX OPTIONAL CLAIMING", "SPO");
+        put("INVITATIONAL HANDICAP STAKES", "IHS");
+        put("ALLOWANCE OPTIONAL CLAIMING", "AOC");
+        put("OPTIONAL CLAIMING HANDICAP", "OCH");
+        put("STARTER OPTIONAL CLAIMING", "SOC");
+        put("MAIDEN OPTIONAL CLAIMING", "MOC");
+        put("MAIDEN STARTER ALLOWANCE", "MSA");
+        put("OPTIONAL CLAIMING STAKES", "OCS");
+        put("SPEED INDEX CONSOLATION", "SPC");
+        put("WAIVER MAIDEN CLAIMING", "WMC");
+        put("INVITATIONAL HANDICAP", "INH");
+        put("MAIDEN SPECIAL WEIGHT", "MSW");
+        put("FUTURITY CONSOLATION", "FCN");
+        put("INVITATIONAL STAKES", "INS");
+        put("CLAIMING HANDICAP", "CLH");
+        put("OPTIONAL CLAIMING", "OCL");
+        put("SPEED INDEX FINAL", "SPF");
+        put("SPEED INDEX TRIAL", "SPT");
+        put("STARTER ALLOWANCE", "STA");
+        put("UNKNOWN RACE TYPE", "UNK");
+        put("SPEED INDEX RACE", "SPR");
+        put("STARTER HANDICAP", "STH");
+        put("ALLOWANCE TRIAL", "ATR");
+        put("CLAIMING STAKES", "CST");
+        put("HANDICAP STAKES", "HCS");
+        put("MAIDEN CLAIMING", "MCL");
+        put("WAIVER CLAIMING", "WCL");
+        put("FUTURITY TRIAL", "FTR");
+        put("MATURITY TRIAL", "MTR");
+        put("STARTER STAKES", "STS");
+        put("MAIDEN STAKES", "MST");
+        put("CHAMPIONSHIP", "CHP");
+        put("INVITATIONAL", "INV");
+        put("MAIDEN TRIAL", "MDT");
+        put("CONSOLATION", "CON");
+        put("DERBY TRIAL", "DTR");
+        put("MATCH RACE", "MCH");
+        put("ALLOWANCE", "ALW");
+        put("CLAIMING", "CLM");
+        put("FUTURITY", "FUT");
+        put("HANDICAP", "HCP");
+        put("MATURITY", "MAT");
+        put("MAIDEN", "MDN");
+        put("STAKES", "STK");
+        put("TRIALS", "TRL");
+        put("DERBY", "DBY");
+        put("FINAL", "FNL");
+        put("MATCH", "MCH");
+        put("STAKE", "STK");
+        put("TRIAL", "TRL");
+    }};
 
-    private static final Pattern PRESENTED_BY =
-            Pattern.compile("(Presented by .+) (Black Type|Listed|Grade \\d)");
+    static final Pattern RACE_TYPE_NAME_GRADE_BREED =
+            Pattern.compile("^(" + String.join("|", RACE_TYPE_CODES.keySet()) + ")\\s+(.+?)?\\s?" +
+                    "(Grade ([123])|Listed|Black Type)?\\s*-\\s*(Thoroughbred|Quarter " +
+                    "Horse|Arabian|Mixed)$");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RaceTypeNameBlackTypeBreed.class);
 
     private final String type;
+    @JsonInclude(NON_NULL)
+    private final String code;
     private final String name;
     private final Integer grade;
     private final String blackType;
@@ -50,6 +108,7 @@ public class RaceTypeNameBlackTypeBreed {
     public RaceTypeNameBlackTypeBreed(String type, String name, Integer grade, String blackType,
             Breed breed) {
         this.type = type;
+        this.code = RACE_TYPE_CODES.getOrDefault(type, null);
         this.name = name;
         this.grade = grade;
         this.blackType = blackType;
@@ -60,83 +119,56 @@ public class RaceTypeNameBlackTypeBreed {
             throws Breed.NoMatchingBreedException, RaceTypeNameOrBreedNotIdentifiable {
         for (List<ChartCharacter> line : lines) {
             String rawText = Chart.convertToText(line);
-            Optional<RaceTypeNameBlackTypeBreed> raceTypeNameGradeBreed =
+            RaceTypeNameBlackTypeBreed raceTypeNameGradeBreed =
                     parseRaceTypeNameBlackTypeBreed(rawText);
-            if (raceTypeNameGradeBreed.isPresent()) {
-                return raceTypeNameGradeBreed.get();
+            if (raceTypeNameGradeBreed != null) {
+                return raceTypeNameGradeBreed;
             }
         }
         throw new RaceTypeNameOrBreedNotIdentifiable("Unable to identify a valid race type, name " +
                 "and/or breed");
     }
 
-    static Optional<RaceTypeNameBlackTypeBreed> parseRaceTypeNameBlackTypeBreed(String text)
+    static RaceTypeNameBlackTypeBreed parseRaceTypeNameBlackTypeBreed(String text)
             throws Breed.NoMatchingBreedException {
+        // GRAND PRAIRIE (GPR) edge-case handling
+        if (text.startsWith("Claiming stake ")) {
+            text = text.replace("Claiming stake ", "CLAIMING STAKES ");
+        }
+
         Matcher matcher = RACE_TYPE_NAME_GRADE_BREED.matcher(text);
         if (matcher.find()) {
-            String breedText = matcher.group(10);
+            String breedText = matcher.group(5);
             Breed breed = Breed.forChartValue(breedText);
             String type = matcher.group(1);
             if (type == null) {
                 LOGGER.warn("A race type was not found from text: " + text);
+            } else {
+                type = type.trim();
             }
 
             Integer grade = null;
-            String blackType = null;
-            String gradeText = matcher.group(5);
-            if (gradeText != null) {
-                grade = Integer.parseInt(gradeText);
-                blackType = matcher.group(4);
-            }
-
-            String name = null;
-            if (grade != null) {
-                name = matcher.group(3);
-            } else {
-                String raceNameText = matcher.group(6);
-                if (raceNameText != null) {
-                    name = raceNameText;
-                } else {
-                    raceNameText = matcher.group(9);
-                    if (raceNameText != null) {
-                        name = raceNameText;
-                    }
-                }
-                String blackTypeText = matcher.group(8);
-                if (blackTypeText != null) {
-                    blackType = blackTypeText;
+            String blackType = matcher.group(3);
+            if (blackType != null) {
+                String gradeText = matcher.group(4);
+                if (gradeText != null) {
+                    grade = Integer.parseInt(gradeText);
                 }
             }
 
-            // correct when race name starts with capital letters
-            if (type.toUpperCase().startsWith("STAKES")) {
-                String[] split = type.split("\\s", 2); // split on the first space
-                type = split[0];
-                if (split.length > 1 && split[1] != null) {
-                    name = split[1] + " " + name;
-                }
-            }
+            String name = (matcher.group(2) != null ? matcher.group(2).trim() : null);
 
-            // correct when a sponsor is presenting a non-graded stakes race
-            matcher = PRESENTED_BY.matcher(text);
-            if (matcher.find()) {
-                String sponsor = matcher.group(1);
-                if (sponsor != null) {
-                    name = name + " " + sponsor;
-                }
-                String newBlackType = matcher.group(2);
-                if (newBlackType != null) {
-                    blackType = newBlackType;
-                }
-            }
-
-            return Optional.of(new RaceTypeNameBlackTypeBreed(type, name, grade, blackType, breed));
+            return new RaceTypeNameBlackTypeBreed(type, name, grade, blackType, breed);
         }
-        return Optional.empty();
+        return null;
     }
 
     public String getType() {
         return type;
+    }
+
+    public String getCode() {
+        return code;
     }
 
     public String getName() {
@@ -159,6 +191,7 @@ public class RaceTypeNameBlackTypeBreed {
     public String toString() {
         return "RaceTypeNameBlackTypeBreed{" +
                 "type='" + type + '\'' +
+                ", code='" + code + '\'' +
                 ", name='" + name + '\'' +
                 ", grade=" + grade +
                 ", blackType='" + blackType + '\'' +
@@ -174,6 +207,7 @@ public class RaceTypeNameBlackTypeBreed {
         RaceTypeNameBlackTypeBreed that = (RaceTypeNameBlackTypeBreed) o;
 
         if (type != null ? !type.equals(that.type) : that.type != null) return false;
+        if (code != null ? !code.equals(that.code) : that.code != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (grade != null ? !grade.equals(that.grade) : that.grade != null) return false;
         if (blackType != null ? !blackType.equals(that.blackType) : that.blackType != null)
@@ -184,6 +218,7 @@ public class RaceTypeNameBlackTypeBreed {
     @Override
     public int hashCode() {
         int result = type != null ? type.hashCode() : 0;
+        result = 31 * result + (code != null ? code.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (grade != null ? grade.hashCode() : 0);
         result = 31 * result + (blackType != null ? blackType.hashCode() : 0);

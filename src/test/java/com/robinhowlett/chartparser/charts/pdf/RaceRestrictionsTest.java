@@ -6,8 +6,6 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -241,8 +239,65 @@ public class RaceRestrictionsTest {
                 {
                         "Maiden Fillies. Registered New Mexico Bred. Two year olds 120 Lbs. (S)",
                         new RaceRestrictions("S", 2, 2, 8, true)
+                },
+                {
+                        "For five, six, seven, eight and nine year olds",
+                        new RaceRestrictions(null, 5, 9, 31, false)
+                },
+                {
+                        "FOR THREE YEAR OLDS AND UPWARD. Northern Hemisphere Three-Year-Olds, 122" +
+                                " lbs.; Older, 126 lbs.; Southern Hemisphere Three-Year-Olds, 117" +
+                                " lbs.; Older, 126 lbs. All Fillies and Mares allowed 3 lbs. $50," +
+                                "000 to pre-enter, $100,000 to enter, with guaranteed $5 million " +
+                                "purse including nominator awards of which 54% to the owner of " +
+                                "the winner, 18% to second, 9.9% to third, 6% to fourth and 3% to" +
+                                " fifth; plus stallion nominator awards of 3% to the winner, 1% " +
+                                "to second and 0.55% to third and foal nominator awards of 3% to " +
+                                "the winner, 1% to second and 0.55% to third.",
+                        new RaceRestrictions(null, 3, -1, 31, false)
+                },
+                {
+                        "Maiden 3, 4 & 5-year olds, registered Colorado Bred. 3-year olds 118 Lbs" +
+                                ".; Older 122 Lbs.;. (S)",
+                        new RaceRestrictions("S", 3, 5, 31, true)
+                },
+                {
+                        "TWO YEAR OLDS WHICH HAVE QUALIFIED FOR THE FINAL. Weight 124 lbs.",
+                        new RaceRestrictions(null, 2, 2, 31, false)
+                },
+                {
+                        "PURSE $100,000. A stake for two year olds. Weight 122 lbs. N/W of a " +
+                                "stakes in 2010 - 2 lbs. N/W of a race other than mdn,clm, or str" +
+                                ". in 2010 - 4 lbs. (Winners with highest lifetime earnings " +
+                                "preferred).",
+                        new RaceRestrictions(null, 2, 2, 31, false)
+                },
+                {
+                        "Fillies and Mares, Which have never won three races, Colorado Bred. " +
+                                "3-year olds 120 lbs. Older 124 lbs. Claiming Price $10,000. 6 " +
+                                "furlongs. (SNW3 L) Claiming Price: $10,000",
+                        // this is the correct result, but the description above is too non-standard
+                        // will leave it as a future goal to fix this
+                        // new RaceRestrictions("SNW3 L", 3, -1, 24, true)
+                        new RaceRestrictions("SNW3 L", null, null, 31, true)
+                },
+                {
+                        // urgh, more errors, this time leaving out "olds"
+                        "THREE YEAR COLO. Bred fillies eligible to the final. Weight 120 lbs. (S)",
+//                        new RaceRestrictions("S", 3, 3, 8, true)
+                        new RaceRestrictions("S", null, null, 31, true)
+                },
+                {
+                        "INNER TURF (UP TO $16,200 NYSBFOA) FOR FILLIES AND MARES THREE YEARS OLD" +
+                                " AND UPWARD WHICH HAVE NEVER WON $10,000 TWICE OTHER THAN " +
+                                "MAIDEN, CLAIMING, STARTER OR STATE BRED OR WHICH HAVE NEVER WON " +
+                                "THREE RACES OR CLAIMING PRICE $62,500. Three Year Olds, 119lbs.;" +
+                                " Older, 124 lbs. Non-winners Of Two Races Other Than Maiden, " +
+                                "Claiming Or Starter At A Mile Or Over In 2016 Allowed 2 lbs. One" +
+                                " such race in 2016 Allowed 4 lbs. Claiming Price $62,500 " +
+                                "(Allowance Horses Preferred). (NW2$ X) Claiming Price: $62,500",
+                        new RaceRestrictions("NW2$ X", 3, -1, 24, false)
                 }
-
         });
     }
 

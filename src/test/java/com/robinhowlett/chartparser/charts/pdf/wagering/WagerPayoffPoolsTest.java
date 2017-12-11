@@ -78,15 +78,15 @@ public class WagerPayoffPoolsTest {
                     put(1.0, new LinkedHashMap<String, List<ChartCharacter>>() {{
                         put("WagerType", new ArrayList<ChartCharacter>() {{
                             ChartCharacter a = new ChartCharacter();
-                            a.setUnicode('A');
+                            a.setUnicode('$');
                             add(a);
                             ChartCharacter c = new ChartCharacter();
-                            c.setUnicode('C');
+                            c.setUnicode('1');
                             add(c);
                         }});
                         put("WinningNumbersPayoff", new ArrayList<ChartCharacter>() {{
                             ChartCharacter b = new ChartCharacter();
-                            b.setUnicode('B');
+                            b.setUnicode('A');
                             add(b);
                         }});
                     }});
@@ -97,15 +97,15 @@ public class WagerPayoffPoolsTest {
                     put(3.0, new LinkedHashMap<String, List<ChartCharacter>>() {{
                         put("WagerType", new ArrayList<ChartCharacter>() {{
                             ChartCharacter d = new ChartCharacter();
-                            d.setUnicode('D');
+                            d.setUnicode('$');
                             add(d);
                         }});
                         put("WinningNumbersPayoff", new ArrayList<ChartCharacter>() {{
                             ChartCharacter e = new ChartCharacter();
-                            e.setUnicode('E');
+                            e.setUnicode('B');
                             add(e);
                             ChartCharacter f = new ChartCharacter();
-                            f.setUnicode('F');
+                            f.setUnicode('C');
                             add(f);
                         }});
                     }});
@@ -120,19 +120,19 @@ public class WagerPayoffPoolsTest {
                     put(1.0, new LinkedHashMap<String, List<ChartCharacter>>() {{
                         put("WagerType", new ArrayList<ChartCharacter>() {{
                             ChartCharacter a = new ChartCharacter();
-                            a.setUnicode('A');
+                            a.setUnicode('$');
                             add(a);
                         }});
                         put("WinningNumbersPayoff", new ArrayList<ChartCharacter>() {{
                             ChartCharacter b = new ChartCharacter();
-                            b.setUnicode('B');
+                            b.setUnicode('A');
                             add(b);
                         }});
                     }});
                     put(2.0, new LinkedHashMap<String, List<ChartCharacter>>() {{
                         put("WagerType", new ArrayList<ChartCharacter>() {{
                             ChartCharacter c = new ChartCharacter();
-                            c.setUnicode('C');
+                            c.setUnicode('1');
                             add(c);
                         }});
                         put("WinningNumbersPayoff", null);
@@ -140,12 +140,12 @@ public class WagerPayoffPoolsTest {
                     put(3.0, new LinkedHashMap<String, List<ChartCharacter>>() {{
                         put("WagerType", new ArrayList<ChartCharacter>() {{
                             ChartCharacter d = new ChartCharacter();
-                            d.setUnicode('D');
+                            d.setUnicode('$');
                             add(d);
                         }});
                         put("WinningNumbersPayoff", new ArrayList<ChartCharacter>() {{
                             ChartCharacter e = new ChartCharacter();
-                            e.setUnicode('E');
+                            e.setUnicode('B');
                             add(e);
                         }});
                     }});
@@ -153,7 +153,7 @@ public class WagerPayoffPoolsTest {
                         put("WagerType", null);
                         put("WinningNumbersPayoff", new ArrayList<ChartCharacter>() {{
                             ChartCharacter f = new ChartCharacter();
-                            f.setUnicode('F');
+                            f.setUnicode('C');
                             add(f);
                         }});
                     }});

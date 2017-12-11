@@ -1,6 +1,7 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.robinhowlett.chartparser.exceptions.ChartParserException;
@@ -11,10 +12,17 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Surface.DIRT;
+import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Surface.SYNTHETIC;
+import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Surface.TURF;
+import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Format.FLAT;
+import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Format.JUMPS;
 import static com.robinhowlett.chartparser.charts.pdf.Purse.FOREIGN_CURRENCY_DISCLAIMER;
 import static com.robinhowlett.chartparser.charts.pdf.Purse.PURSE_PATTERN;
 
@@ -25,8 +33,8 @@ import static com.robinhowlett.chartparser.charts.pdf.Purse.PURSE_PATTERN;
  * stores, in a {@link TrackRecord} instance, the details of the track record for this
  * distance/surface.
  */
-@JsonPropertyOrder({"distance", "surface", "trackCondition", "scheduledSurface", "offTurf",
-        "trackRecord"})
+@JsonPropertyOrder({"distance", "surface", "course", "trackCondition", "offTurf",
+        "scheduledSurface", "scheduledSurface", "format", "trackRecord"})
 public class DistanceSurfaceTrackRecord {
 
     static final Pattern DIST_SURF_RECORD_PATTERN =
@@ -64,16 +72,35 @@ public class DistanceSurfaceTrackRecord {
     @JsonProperty("distance")
     private final RaceDistance raceDistance;
     private final String surface;
+    private final String course;
+    @JsonInclude(NON_NULL)
     private final String scheduledSurface;
+    @JsonInclude(NON_NULL)
+    private final String scheduledCourse;
+    private final String format;
     private final TrackRecord trackRecord;
     private String trackCondition;
 
-    public DistanceSurfaceTrackRecord(String distanceDescription, String surface,
-            String scheduledSurface, TrackRecord trackRecord) throws ChartParserException {
+    public DistanceSurfaceTrackRecord(String distanceDescription, String course,
+            String scheduledCourse, TrackRecord trackRecord) throws ChartParserException {
         this.raceDistance = (distanceDescription != null ?
                 parseRaceDistance(distanceDescription) : null);
-        this.surface = surface;
-        this.scheduledSurface = (scheduledSurface != null ? scheduledSurface : surface);
+
+        SurfaceCourseFormat courseSurfaceCourseFormat = SurfaceCourseFormat.fromCourse(course);
+        this.surface = courseSurfaceCourseFormat.getSurface().getText();
+        this.course = courseSurfaceCourseFormat.getCourse();
+        this.format = courseSurfaceCourseFormat.getFormat().getText();
+
+        if (scheduledCourse != null && !scheduledCourse.trim().isEmpty()) {
+            SurfaceCourseFormat scheduledCourseSurfaceCourseFormat =
+                    SurfaceCourseFormat.fromCourse(scheduledCourse);
+            this.scheduledSurface = scheduledCourseSurfaceCourseFormat.getSurface().getText();
+            this.scheduledCourse = scheduledCourseSurfaceCourseFormat.getCourse();
+        } else {
+            this.scheduledSurface = null;
+            this.scheduledCourse = null;
+        }
+
         this.trackRecord = trackRecord;
     }
 
@@ -103,10 +130,10 @@ public class DistanceSurfaceTrackRecord {
         }
 
         String distanceSurfaceTrackRecord = distanceSurfaceTrackRecordBuilder.toString();
-        Optional<DistanceSurfaceTrackRecord> distanceSurface =
+        DistanceSurfaceTrackRecord distanceSurface =
                 parseDistanceSurface(distanceSurfaceTrackRecord);
-        if (distanceSurface.isPresent()) {
-            return distanceSurface.get();
+        if (distanceSurface != null) {
+            return distanceSurface;
         }
 
         throw new NoRaceDistanceFound(distanceSurfaceTrackRecord);
@@ -120,18 +147,18 @@ public class DistanceSurfaceTrackRecord {
                 && !text.toLowerCase().contains("track record"));
     }
 
-    static Optional<DistanceSurfaceTrackRecord> parseDistanceSurface(String text)
+    static DistanceSurfaceTrackRecord parseDistanceSurface(String text)
             throws ChartParserException {
         Matcher matcher = DIST_SURF_RECORD_PATTERN.matcher(text);
         if (matcher.find()) {
             String distanceDescription = matcher.group(1);
-            String surface = matcher.group(4).trim();
-            String scheduledSurface = null;
+            String course = matcher.group(4).trim();
+            String scheduledCourse = null;
 
             // detect off-turf races
-            String scheduledSurfaceFlag = matcher.group(5);
-            if (scheduledSurfaceFlag != null) {
-                scheduledSurface = matcher.group(6);
+            String scheduledCourseFlag = matcher.group(5);
+            if (scheduledCourseFlag != null) {
+                scheduledCourse = matcher.group(6);
             }
 
             TrackRecord trackRecord = null;
@@ -149,10 +176,10 @@ public class DistanceSurfaceTrackRecord {
                         (recordTime.isPresent() ? recordTime.get() : null), raceDate);
             }
 
-            return Optional.of(new DistanceSurfaceTrackRecord(distanceDescription, surface,
-                    scheduledSurface, trackRecord));
+            return new DistanceSurfaceTrackRecord(distanceDescription, course,
+                    scheduledCourse, trackRecord);
         }
-        return Optional.empty();
+        return null;
     }
 
     static RaceDistance parseRaceDistance(String distanceDescription) throws ChartParserException {
@@ -370,7 +397,8 @@ public class DistanceSurfaceTrackRecord {
         }
 
         @JsonCreator
-        private RaceDistance(String text, String compact, boolean exact, int feet, Integer runUp, Integer tempRail) {
+        private RaceDistance(String text, String compact, boolean exact, int feet, Integer runUp,
+                Integer tempRail) {
             this.text = text;
             this.compact = compact;
             this.exact = exact;
@@ -593,12 +621,24 @@ public class DistanceSurfaceTrackRecord {
         return surface;
     }
 
+    public String getCourse() {
+        return course;
+    }
+
     public String getScheduledSurface() {
         return scheduledSurface;
     }
 
+    public String getScheduledCourse() {
+        return scheduledCourse;
+    }
+
     public boolean isOffTurf() {
-        return (!surface.equals(scheduledSurface));
+        return ((scheduledSurface != null) && (!surface.equals(scheduledSurface)));
+    }
+
+    public String getFormat() {
+        return format;
     }
 
     public TrackRecord getTrackRecord() {
@@ -628,9 +668,14 @@ public class DistanceSurfaceTrackRecord {
                 null)
             return false;
         if (surface != null ? !surface.equals(that.surface) : that.surface != null) return false;
+        if (course != null ? !course.equals(that.course) : that.course != null) return false;
         if (scheduledSurface != null ? !scheduledSurface.equals(that.scheduledSurface) : that
                 .scheduledSurface != null)
             return false;
+        if (scheduledCourse != null ? !scheduledCourse.equals(that.scheduledCourse) : that
+                .scheduledCourse != null)
+            return false;
+        if (format != null ? !format.equals(that.format) : that.format != null) return false;
         if (trackRecord != null ? !trackRecord.equals(that.trackRecord) : that.trackRecord != null)
             return false;
         return trackCondition != null ? trackCondition.equals(that.trackCondition) : that
@@ -641,7 +686,10 @@ public class DistanceSurfaceTrackRecord {
     public int hashCode() {
         int result = raceDistance != null ? raceDistance.hashCode() : 0;
         result = 31 * result + (surface != null ? surface.hashCode() : 0);
+        result = 31 * result + (course != null ? course.hashCode() : 0);
         result = 31 * result + (scheduledSurface != null ? scheduledSurface.hashCode() : 0);
+        result = 31 * result + (scheduledCourse != null ? scheduledCourse.hashCode() : 0);
+        result = 31 * result + (format != null ? format.hashCode() : 0);
         result = 31 * result + (trackRecord != null ? trackRecord.hashCode() : 0);
         result = 31 * result + (trackCondition != null ? trackCondition.hashCode() : 0);
         return result;
@@ -652,15 +700,154 @@ public class DistanceSurfaceTrackRecord {
         return "DistanceSurfaceTrackRecord{" +
                 "raceDistance=" + raceDistance +
                 ", surface='" + surface + '\'' +
+                ", course='" + course + '\'' +
                 ", scheduledSurface='" + scheduledSurface + '\'' +
+                ", scheduledCourse='" + scheduledCourse + '\'' +
+                ", format='" + format + '\'' +
                 ", trackRecord=" + trackRecord +
                 ", trackCondition='" + trackCondition + '\'' +
                 '}';
     }
 
+    enum Surface {
+        DIRT("Dirt"),
+        TURF("Turf"),
+        SYNTHETIC("Synthetic");
+
+        private String text;
+
+        Surface(String text) {
+            this.text = text;
+        }
+
+        public static Surface forText(String text) {
+            for (Surface surface : values()) {
+                if (surface.getText().equals(text)) {
+                    return surface;
+                }
+            }
+            return null;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public String toString() {
+            return "Surface{" +
+                    "text='" + text + '\'' +
+                    '}';
+        }
+    }
+
+    enum Format {
+        FLAT("Flat"),
+        JUMPS("Jumps");
+
+        private String text;
+
+        Format(String text) {
+            this.text = text;
+        }
+
+        public static Format forText(String text) {
+            for (Format surface : values()) {
+                if (surface.getText().equals(text)) {
+                    return surface;
+                }
+            }
+            return null;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public String toString() {
+            return "Format{" +
+                    "text='" + text + '\'' +
+                    '}';
+        }
+    }
+
+    private static class SurfaceCourseFormat {
+        private static final Map<String, SurfaceCourseFormat> SURFACE_COURSE_TYPES =
+                new LinkedHashMap<String, SurfaceCourseFormat>() {{
+                    put("Dirt", new SurfaceCourseFormat(DIRT, "Dirt", FLAT));
+                    put("Turf", new SurfaceCourseFormat(TURF, "Turf", FLAT));
+                    put("All Weather Track",
+                            new SurfaceCourseFormat(SYNTHETIC, "All Weather Track", FLAT));
+                    put("Inner track", new SurfaceCourseFormat(DIRT, "Inner Track", FLAT));
+                    put("Inner turf", new SurfaceCourseFormat(TURF, "Inner Turf", FLAT));
+                    put("Hurdle", new SurfaceCourseFormat(TURF, "Hurdle", JUMPS));
+                    put("Downhill turf", new SurfaceCourseFormat(TURF, "Downhill Turf", FLAT));
+                    put("Outer turf", new SurfaceCourseFormat(TURF, "Outer Turf", FLAT));
+                    put("Timber", new SurfaceCourseFormat(TURF, "Timber", JUMPS));
+                    put("Steeplechase", new SurfaceCourseFormat(TURF, "Steeplechase", JUMPS));
+                    put("Hunt on turf", new SurfaceCourseFormat(TURF, "Hunt On Turf", JUMPS));
+                }};
+
+        private final Surface surface;
+        private final String course;
+        private final Format format;
+
+        SurfaceCourseFormat(Surface surface, String course, Format format) {
+            this.surface = surface;
+            this.course = course;
+            this.format = format;
+        }
+
+        static SurfaceCourseFormat fromCourse(String course) {
+            return SURFACE_COURSE_TYPES.get(course);
+        }
+
+        public Surface getSurface() {
+            return surface;
+        }
+
+        public String getCourse() {
+            return course;
+        }
+
+        public Format getFormat() {
+            return format;
+        }
+
+        @Override
+        public String toString() {
+            return "SurfaceCourseFormat{" +
+                    "surface=" + surface +
+                    ", course='" + course + '\'' +
+                    ", format=" + format +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SurfaceCourseFormat that = (SurfaceCourseFormat) o;
+
+            if (surface != that.surface) return false;
+            if (course != null ? !course.equals(that.course) : that.course != null) return false;
+            return format == that.format;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = surface != null ? surface.hashCode() : 0;
+            result = 31 * result + (course != null ? course.hashCode() : 0);
+            result = 31 * result + (format != null ? format.hashCode() : 0);
+            return result;
+        }
+    }
+
     public static class NoRaceDistanceFound extends ChartParserException {
         public NoRaceDistanceFound(String distanceSurfaceTrackRecord) {
-            super(String.format("Unable to identify a valid race feet, surface, and/or track " +
+            super(String.format("Unable to identify a valid race distance, surface, and/or track " +
                     "record: %s", distanceSurfaceTrackRecord));
         }
     }

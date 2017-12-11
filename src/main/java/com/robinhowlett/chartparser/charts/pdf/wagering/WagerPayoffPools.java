@@ -225,7 +225,26 @@ public class WagerPayoffPools {
                         wageringGridRow.put("WagerType", null);
                     }
                 } else {
-                    previousWageringGridRow = wageringGridRow;
+                    if (wagerType != null && !wagerType.isEmpty() && wagerType.get(0).getUnicode
+                            () != '$' &&
+                            winningNumbersPayoff != null) {
+                        List<ChartCharacter> previousWagerType =
+                                previousWageringGridRow.get("WagerType");
+                        if (previousWagerType != null) {
+                            previousWagerType.addAll(wagerType);
+                            wageringGridRow.put("WagerType", null);
+                        }
+
+                        List<ChartCharacter> previousWinningNumbersPayoff =
+                                previousWageringGridRow.get("WinningNumbersPayoff");
+
+                        if (previousWinningNumbersPayoff != null) {
+                            previousWinningNumbersPayoff.addAll(winningNumbersPayoff);
+                            wageringGridRow.put("WinningNumbersPayoff", null);
+                        }
+                    } else {
+                        previousWageringGridRow = wageringGridRow;
+                    }
                 }
             } else {
                 previousWageringGridRow = wageringGridRow;
@@ -475,7 +494,8 @@ public class WagerPayoffPools {
             private final Place place;
             private final Show show;
 
-            public WinPlaceShowPayoff(String program, Horse horse, Win win, Place place, Show show) {
+            public WinPlaceShowPayoff(String program, Horse horse, Win win, Place place, Show
+                    show) {
                 this.program = program;
                 this.horse = horse;
                 this.win = win;

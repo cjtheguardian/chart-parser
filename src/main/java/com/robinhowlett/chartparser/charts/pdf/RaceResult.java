@@ -461,7 +461,10 @@ public class RaceResult {
             updateStartersWithOddsChoiceIndicies(starters);
 
             // whether the race resulted in a dead heat
-            deadHeat = detectDeadHeat(starters);
+            // ignore the idiotic 2016 Parx Oaks co-winner decision
+            if (!ChartParser.is2016ParxOaksDebacle(track, raceDate, raceNumber)) {
+                deadHeat = detectDeadHeat(starters);
+            }
 
             return new RaceResult(this);
         }

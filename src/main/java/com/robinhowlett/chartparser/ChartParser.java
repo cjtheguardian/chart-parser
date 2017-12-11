@@ -113,8 +113,9 @@ public class ChartParser {
         simpleLocalDateModule.addSerializer(LocalDate.class, new SimpleLocalDateSerializer());
         simpleLocalDateModule.addDeserializer(LocalDate.class, new SimpleLocalDateDeserializer());
 
-        csvMapper = (CsvMapper) new CsvMapper()// adds JDK 8 Parameter Name access for cleaner JSON-to-Object mapping
+        csvMapper = (CsvMapper) new CsvMapper()
                 .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                // adds JDK 8 Parameter Name access for cleaner JSON-to-Object mapping
                 .registerModule(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES))
                 .registerModule(simpleLocalDateModule);
         return csvMapper;
@@ -365,6 +366,15 @@ public class ChartParser {
                 List<Disqualification> disqualifications = Disqualification.parse(lines);
                 updateStartersAffectedByDisqualifications(starters, disqualifications);
 
+                // handle the utter debacle that was the 2016 Parx Oaks co-winner decision
+                if (is2016ParxOaksDebacle(track.get(), trackRaceDateRaceNumber.getRaceDate(),
+                        trackRaceDateRaceNumber.getRaceNumber())) {
+                    starters.stream()
+                            .filter(starter -> starter.getFinishPosition() > 1)
+                            .forEach(starter -> starter.setOfficialPosition(
+                                    starter.getFinishPosition() - 1));
+                }
+
                 // parse the wagering pools and payoffs (WPS and exotics)
                 WagerPayoffPools wagerPayoffPools = WagerPayoffPools.parse(lines);
                 raceResultBuilder.wagerPoolsAndPayoffs(wagerPayoffPools);
@@ -393,7 +403,8 @@ public class ChartParser {
         return raceResults;
     }
 
-    public void updateStartersAffectedByDisqualifications(List<Starter> starters, List<Disqualification> disqualifications) {
+    public void updateStartersAffectedByDisqualifications(List<Starter> starters,
+            List<Disqualification> disqualifications) {
         for (Disqualification disqualification : disqualifications) {
             for (Starter starter : starters) {
                 if (matchesStarter(disqualification, starter)) {
@@ -583,6 +594,16 @@ public class ChartParser {
         } catch (Exception e) {
             throw new ChartParserException("Error deserializing the Chart CSV data", e);
         }
+    }
+
+    // http://www.drf.com/news/settlement-creates-two-winners-2016-parx-oaks
+    public static boolean is2016ParxOaksDebacle(Track track, LocalDate raceDate,
+            Integer raceNumber) {
+        return (track != null && track.getCode() != null && raceDate != null &&
+                raceNumber != null &&
+                track.getCode().equals("PRX") &&
+                raceDate.isEqual(LocalDate.of(2016, 5, 7)) &&
+                raceNumber == 8);
     }
 
 }
