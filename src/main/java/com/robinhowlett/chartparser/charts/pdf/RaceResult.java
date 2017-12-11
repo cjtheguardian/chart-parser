@@ -211,12 +211,12 @@ public class RaceResult {
     }
 
     @JsonProperty("winningMargin")
-    public String getWinningMargin() {
+    public Double getWinningMargin() {
         if (getWinners() != null && !getWinners().isEmpty()) {
             PointOfCall finishPointOfCall = getWinners().get(0).getFinishPointOfCall();
             if (finishPointOfCall != null && finishPointOfCall.getRelativePosition() != null &&
                     finishPointOfCall.getRelativePosition().getLengthsAhead() != null) {
-                return finishPointOfCall.getRelativePosition().getLengthsAhead().getText();
+                return finishPointOfCall.getRelativePosition().getLengthsAhead().getLengths();
             }
         }
         return null;
