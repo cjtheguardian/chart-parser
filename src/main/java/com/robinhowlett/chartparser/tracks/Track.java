@@ -10,7 +10,9 @@ public class Track {
     // e.g. PHA for PRX, HOL for BHP and OTH, SA for OSA etc.
     private String canonical;
     private String country;
+    private String state;
     private String name;
+    private String city;
 
     public String getCode() {
         return code.trim();
@@ -26,6 +28,14 @@ public class Track {
 
     public void setCanonical(String canonical) {
         this.canonical = canonical;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 
     public String getCountry() {
@@ -44,13 +54,23 @@ public class Track {
         this.name = name;
     }
 
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
     @Override
     public String toString() {
         return "Track{" +
                 "code='" + code + '\'' +
                 ", canonical='" + canonical + '\'' +
                 ", country='" + country + '\'' +
+                ", state='" + state + '\'' +
                 ", name='" + name + '\'' +
+                ", city='" + city + '\'' +
                 '}';
     }
 
@@ -65,7 +85,9 @@ public class Track {
         if (canonical != null ? !canonical.equals(track.canonical) : track.canonical != null)
             return false;
         if (country != null ? !country.equals(track.country) : track.country != null) return false;
-        return name != null ? name.equals(track.name) : track.name == null;
+        if (state != null ? !state.equals(track.state) : track.state != null) return false;
+        if (name != null ? !name.equals(track.name) : track.name != null) return false;
+        return city != null ? city.equals(track.city) : track.city == null;
     }
 
     @Override
@@ -73,7 +95,9 @@ public class Track {
         int result = code != null ? code.hashCode() : 0;
         result = 31 * result + (canonical != null ? canonical.hashCode() : 0);
         result = 31 * result + (country != null ? country.hashCode() : 0);
+        result = 31 * result + (state != null ? state.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (city != null ? city.hashCode() : 0);
         return result;
     }
 }

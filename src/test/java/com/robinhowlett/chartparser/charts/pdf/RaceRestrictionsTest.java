@@ -273,6 +273,27 @@ public class RaceRestrictionsTest {
                         new RaceRestrictions(null, 2, 2, 31, false)
                 },
                 {
+                        "INNER TURF (UP TO $16,200 NYSBFOA) FOR FILLIES AND MARES THREE YEARS OLD" +
+                                " AND UPWARD WHICH HAVE NEVER WON $10,000 TWICE OTHER THAN " +
+                                "MAIDEN, CLAIMING, STARTER OR STATE BRED OR WHICH HAVE NEVER WON " +
+                                "THREE RACES OR CLAIMING PRICE $62,500. Three Year Olds, 119lbs.;" +
+                                " Older, 124 lbs. Non-winners Of Two Races Other Than Maiden, " +
+                                "Claiming Or Starter At A Mile Or Over In 2016 Allowed 2 lbs. One" +
+                                " such race in 2016 Allowed 4 lbs. Claiming Price $62,500 " +
+                                "(Allowance Horses Preferred). (NW2$ X) Claiming Price: $62,500",
+                        new RaceRestrictions("NW2$ X", 3, -1, 24, false)
+                },
+                {
+                        "FOR QUARTER HORSES, TWO YEARS OLD.",
+                        new RaceRestrictions(null, 2, 2, 31, false)
+                },
+                {
+                        "FOR 3YR OLDS AND UPWARD. $50.00 due at time of entry. Weight 3yr. olds " +
+                                "121 older 124.",
+                        new RaceRestrictions(null, 3, -1, 31, false)
+                },
+                /* YET TO BE HANDLED IRREGULAR CONDITIONS */
+                {
                         "Fillies and Mares, Which have never won three races, Colorado Bred. " +
                                 "3-year olds 120 lbs. Older 124 lbs. Claiming Price $10,000. 6 " +
                                 "furlongs. (SNW3 L) Claiming Price: $10,000",
@@ -284,19 +305,52 @@ public class RaceRestrictionsTest {
                 {
                         // urgh, more errors, this time leaving out "olds"
                         "THREE YEAR COLO. Bred fillies eligible to the final. Weight 120 lbs. (S)",
-//                        new RaceRestrictions(null, 3, 3, 8, true)
+                        // new RaceRestrictions(null, 3, 3, 8, true)
                         new RaceRestrictions(null, null, null, 31, true)
                 },
                 {
-                        "INNER TURF (UP TO $16,200 NYSBFOA) FOR FILLIES AND MARES THREE YEARS OLD" +
-                                " AND UPWARD WHICH HAVE NEVER WON $10,000 TWICE OTHER THAN " +
-                                "MAIDEN, CLAIMING, STARTER OR STATE BRED OR WHICH HAVE NEVER WON " +
-                                "THREE RACES OR CLAIMING PRICE $62,500. Three Year Olds, 119lbs.;" +
-                                " Older, 124 lbs. Non-winners Of Two Races Other Than Maiden, " +
-                                "Claiming Or Starter At A Mile Or Over In 2016 Allowed 2 lbs. One" +
-                                " such race in 2016 Allowed 4 lbs. Claiming Price $62,500 " +
-                                "(Allowance Horses Preferred). (NW2$ X) Claiming Price: $62,500",
-                        new RaceRestrictions("NW2$ X", 3, -1, 24, false)
+                        // "year" left out
+                        "FOR THREE OLDS THAT WERE NOMINATED AND REMAIN ELIGIBLE. Weight, 124 lbs.",
+                        //new RaceRestrictions(null, 3, 3, 31, false)
+                        new RaceRestrictions(null, null, null, 31, false)
+                },
+                {
+                        // just the worst...
+                        "FOR THREE YEAR AND FOUR OLD COLTS AND GELDINGS FOALED IN CANADA. All " +
+                                "horses presented for sale and sold OR any consigned yearlings " +
+                                "whose ownership changed by the time the CTHS transferred the " +
+                                "papers (which normally is within 30 days after the sale) will be" +
+                                " considered by the C.T.H.S. as sold and will be eligible for the" +
+                                " Yearling Sales Stakes when the full sales commission and IN/OUT" +
+                                " fees have been paid. A consignor's IN fee of $100.00 is to be " +
+                                "deducted from the sale proceeds of the yearling at time of sale " +
+                                "and a buyer's OUT fee of $200.00 over and above the purchase " +
+                                "price of the yearling must be paid by the purchaser at time of " +
+                                "sale. The owner may pay an additional supplementary fee of " +
+                                "$3000.00 per race at time of nomination if the OUT fee was not " +
+                                "paid atthe time of the C.T.H.S. sale. $500.00 to enter, $500.00 " +
+                                "to start. Purse distibribution: 1st-$31,000 2nd-$10,000 3rd-$5," +
+                                "000 4th-$1,750 5th-$1,250 and $1,000 to the Consignor of winning" +
+                                " horse. Preferences as listed in the Stakes book apply. " +
+                                "Weight.121 llbs. Field limited to Ten starters.",
+                        // new RaceRestrictions(null, 3, -1, 3, false)
+                        new RaceRestrictions(null, null, null, 31, false)
+                },
+                {
+                        // "old" left out again
+                        "FOR TWO-YEAR-FILLIES FOALED IN WASHINGTON STATE OR SIRED BY A STALLION " +
+                                "STANDING IN WASHINGTON STATE IN 2013. By subscription of $100 " +
+                                "each, which shall accompany the nomination, $250 to enter, $250 " +
+                                "additional to start with $25,000 guaranteed to the winner, $8," +
+                                "750 to second, $6,250 to third, $3,750 to fourth, $2,500 to " +
+                                "fifth, $1,500 to sixth, $1,250 to seventh and $1,000 to eighth. " +
+                                "Weight 119 lbs.; Maidens allowed 2 lbs. Starters to be named " +
+                                "through the entry box by the closing time of entries. Preference" +
+                                " in the draw for post positions will be based on money earned. " +
+                                "NOMINATIONS CLOSED AT 3:00PM SATURDAY,AUGUST 20, 2016 WITH 10. " +
+                                "(S)",
+                        // new RaceRestrictions(null, 2, 2, 8, false)
+                        new RaceRestrictions(null, null, null, 31, true)
                 }
         });
     }

@@ -22,6 +22,10 @@ public class TrackService {
         return repository.findByName(trackName);
     }
 
+    public List<Track> getTracksWithState(String state) {
+        return repository.findByState(state);
+    }
+
     public List<Track> getTracks() {
         return repository.findAll();
     }

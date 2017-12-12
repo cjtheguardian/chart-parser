@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +46,16 @@ public class TrackRepository {
             }
         }
         return empty();
+    }
+
+    public List<Track> findByState(String state) {
+        List<Track> tracks = new ArrayList<>();
+        for (Track track : findAll()) {
+            if (track.getState().trim().equals(state.trim())) {
+                tracks.add(track);
+            }
+        }
+        return tracks;
     }
 
     public List<Track> findAll() {

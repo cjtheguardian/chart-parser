@@ -79,9 +79,9 @@ public class RaceRestrictions {
 //    private static final String AGES = "((\\d?\\d)(\\s&?\\s?(\\d?\\d))?(\\s&?\\s?(\\d?\\d))?" +
 //            "(\\s&?\\s?(\\d?\\d))?" +
 //            "(\\s&?\\s?(\\d?\\d))?(yrs?|yos?| years? olds?)?)( & (upwards?|up|olders?))?";
-    private static final String AGES = "(((\\b\\d\\b)(\\s&?\\s?(\\d?\\d))?(\\s&?\\s?(\\d?\\d))?" +
-            "(\\s&?\\s?(\\d?\\d))?(\\s&?\\s?(\\d?\\d))?(yrs?|yos?| years? olds?))( & " +
-            "(upwards?|up\\b|olders?))?|(\\b\\d\\b)( & (upwards?|up\\b)))" +
+    private static final String AGES = "(((\\b\\d)(\\s&?\\s?(\\d?\\d))?(\\s&?\\s?(\\d?\\d))?" +
+            "(\\s&?\\s?(\\d?\\d))?(\\s&?\\s?(\\d?\\d))?(\\s?yrs? olds?|yrs?|yos?|\\s?years? " +
+            "olds?))( & (upwards?|up\\b|olders?))?|(\\b\\d\\b)( & (upwards?|up\\b)))" +
             FALSE_POSITIVE_DETECTION;
 
     /*
@@ -104,7 +104,7 @@ public class RaceRestrictions {
     private static final Pattern SEXES_THEN_AGES = Pattern.compile(
             "^(for.+?|.+?for.+?|.*?)?" + SEXES + "[^\\d]*(" + AGES + ")?.*");
     private static final Pattern AGES_THEN_SEXES = Pattern.compile(
-            "^(for.+?|.*?)?" + AGES + ".+?(?=" + SEXES + "|$).*");
+            "^(for.+?|.*?)?" + AGES + ".*?(?=" + SEXES + "|$).*");
 
     @JsonInclude(NON_NULL)
     private final String code;
@@ -180,37 +180,7 @@ public class RaceRestrictions {
             text = text.replaceAll(Pattern.quote(match), " ").trim();
         }
 
-
-        // 12. attempt to identify multiple conditions e.g. 3yo fillies or 4yo mares
-        String[] conditions = text.split("\\bor\\b");
-
-        RaceRestrictions conditionRestrictions, raceRestrictions = null;
-        for (String condition : conditions) {
-            if (condition == null || condition.isEmpty()) {
-                continue;
-            }
-
-            // 13. check whether the age restriction comes first or the sexes restriction
-            AgeSexPattern ageSexPattern = determineAgeSexPatternToUse(condition.trim());
-
-            if (ageSexPattern == null) {
-                continue;
-            }
-
-            // 14. extract the age- and sexes restrictions for this section of conditions
-            conditionRestrictions = createRaceRestrictionsFromConditions(raceRestrictions,
-                    condition.trim(), raceRestrictionCodes, ageSexPattern);
-
-            if (conditionRestrictions != null) {
-                // 15. if condition restrictions were previously identified, merge them together
-                if (raceRestrictions != null) {
-                    conditionRestrictions = mergeConditionRestrictions(raceRestrictionCodes,
-                            conditionRestrictions, raceRestrictions);
-
-                }
-                raceRestrictions = conditionRestrictions;
-            }
-        }
+        RaceRestrictions raceRestrictions = buildRaceRestrictions(text, raceRestrictionCodes);
 
         if (raceRestrictions != null) {
             return raceRestrictions;
@@ -226,10 +196,11 @@ public class RaceRestrictions {
                 // 2. replace edge-case typos
                 .replaceAll("\\by-year-olds\\b", "year olds")
                 .replaceAll("\\bfillies/mares\\b", "fillies and mares")
-                .replaceAll("\\bthre\\b", "three")
+                .replaceAll("\\b(thre|theee)\\b", "three")
                 .replaceAll("\\bthreeyear\\b", "three year")
                 .replaceAll("\\bttwo\\b", "two")
                 .replaceAll("\\bmaresthree\\b", "mares three")
+                .replaceAll("\\btears? olds?\\b", "year olds")
                 // 3. replace punctuation with space character
                 .replaceAll("[.,:;\\[\\]\\-\"'%+\\\\/*!]", " ")
                 // 4. ensure spaces around & (ampersand character) and parentheses
@@ -289,6 +260,41 @@ public class RaceRestrictions {
             }
         }
         return null;
+    }
+
+    private static RaceRestrictions buildRaceRestrictions(String text, RaceRestrictionCodes
+            raceRestrictionCodes) {
+        // 12. attempt to identify multiple conditions e.g. 3yo fillies or 4yo mares
+        String[] conditions = text.split("\\bor\\b");
+
+        RaceRestrictions conditionRestrictions, raceRestrictions = null;
+        for (String condition : conditions) {
+            if (condition == null || condition.isEmpty()) {
+                continue;
+            }
+
+            // 13. check whether the age restriction comes first or the sexes restriction
+            AgeSexPattern ageSexPattern = determineAgeSexPatternToUse(condition.trim());
+
+            if (ageSexPattern == null) {
+                continue;
+            }
+
+            // 14. extract the age- and sexes restrictions for this section of conditions
+            conditionRestrictions = createRaceRestrictionsFromConditions(raceRestrictions,
+                    condition.trim(), raceRestrictionCodes, ageSexPattern);
+
+            if (conditionRestrictions != null) {
+                // 15. if condition restrictions were previously identified, merge them together
+                if (raceRestrictions != null) {
+                    conditionRestrictions = mergeConditionRestrictions(raceRestrictionCodes,
+                            conditionRestrictions, raceRestrictions);
+
+                }
+                raceRestrictions = conditionRestrictions;
+            }
+        }
+        return raceRestrictions;
     }
 
     private static AgeSexPattern determineAgeSexPatternToUse(String condition) {
