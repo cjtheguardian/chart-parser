@@ -11,8 +11,8 @@ public class Track {
     private String canonical;
     private String country;
     private String state;
-    private String name;
     private String city;
+    private String name;
 
     public String getCode() {
         return code.trim();
@@ -31,7 +31,7 @@ public class Track {
     }
 
     public String getState() {
-        return state;
+        return (state != null || !state.trim().isEmpty()) ? state.trim() : null;
     }
 
     public void setState(String state) {
@@ -39,11 +39,19 @@ public class Track {
     }
 
     public String getCountry() {
-        return country.trim();
+        return (country != null || !country.trim().isEmpty()) ? country.trim() : null;
     }
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public String getCity() {
+        return (city != null || !city.trim().isEmpty()) ? city.trim() : null;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public String getName() {
@@ -54,14 +62,6 @@ public class Track {
         this.name = name;
     }
 
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
     @Override
     public String toString() {
         return "Track{" +
@@ -69,8 +69,8 @@ public class Track {
                 ", canonical='" + canonical + '\'' +
                 ", country='" + country + '\'' +
                 ", state='" + state + '\'' +
-                ", name='" + name + '\'' +
                 ", city='" + city + '\'' +
+                ", name='" + name + '\'' +
                 '}';
     }
 
@@ -86,8 +86,8 @@ public class Track {
             return false;
         if (country != null ? !country.equals(track.country) : track.country != null) return false;
         if (state != null ? !state.equals(track.state) : track.state != null) return false;
-        if (name != null ? !name.equals(track.name) : track.name != null) return false;
-        return city != null ? city.equals(track.city) : track.city == null;
+        if (city != null ? !city.equals(track.city) : track.city != null) return false;
+        return name != null ? name.equals(track.name) : track.name == null;
     }
 
     @Override
@@ -96,8 +96,8 @@ public class Track {
         result = 31 * result + (canonical != null ? canonical.hashCode() : 0);
         result = 31 * result + (country != null ? country.hashCode() : 0);
         result = 31 * result + (state != null ? state.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (city != null ? city.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 }
