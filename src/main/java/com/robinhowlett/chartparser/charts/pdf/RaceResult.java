@@ -21,6 +21,8 @@ import com.robinhowlett.chartparser.points_of_call.PointsOfCall.PointOfCall.Rela
         .LengthsAhead;
 import com.robinhowlett.chartparser.tracks.Track;
 
+import org.springframework.hateoas.Link;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -37,12 +39,14 @@ import static java.util.stream.Collectors.toList;
  * Represents a single race result on a chart. This will normally be initialized by use of the
  * {@link Builder} configured by the {@link ChartParser}
  */
-@JsonPropertyOrder({"cancellation", "raceDate", "track", "raceNumber", "conditions",
+@JsonPropertyOrder({"links", "cancellation", "raceDate", "track", "raceNumber", "conditions",
         "distanceSurfaceTrackRecord", "weather", "postTimeStartCommentsTimer", "deadHeat",
-        "numberOfRunners", "finalTime", "winningMargin", "starters", "scratches", "wagering",
-        "fractionals", "splits", "ratings", "footnotes"})
+        "numberOfRunners", "finalTime", "finalMillis", "winningMargin", "starters", "scratches",
+        "wagering", "fractionals", "splits", "ratings", "footnotes"})
 public class RaceResult {
 
+    @JsonInclude(NON_NULL)
+    private final List<Link> links;
     @JsonProperty("cancellation") // required for property order but unwrapped
     @JsonUnwrapped
     private final Cancellation cancellation;
@@ -119,6 +123,50 @@ public class RaceResult {
         }
 
         ratings = new ArrayList<>();
+
+        links = buildLinks(track, raceDate, raceNumber);
+    }
+
+    static List<Link> buildLinks(Track track, LocalDate raceDate, Integer raceNumber) {
+        List<Link> links = new ArrayList<>();
+
+        if (track != null && raceDate != null) {
+            String raceDateMDY = ChartParser.convertToMonthDayYear(raceDate);
+            String singleChartEmbedded =
+                    String.format("https://www.equibase.com/premium/chartEmb.cfm?" +
+                            "track=%s&raceDate=%s&cy=%s&rn=%s", track.getCode(), raceDateMDY,
+                    track.getCountry(), raceNumber);
+            Link embeddedChart = new Link(singleChartEmbedded, "web");
+
+            String singeChartDirect =
+                    String.format("https://www.equibase.com/premium/eqbPDFChartPlus.cfm?" +
+                            "RACE=%d&BorP=P&TID=%s&CTRY=%s&DT=%s&DAY=D&STYLE=EQB",
+                            raceNumber, track.getCode(), track.getCountry(), raceDateMDY);
+            Link directChart = new Link(singeChartDirect, "pdf");
+
+            String raceDayEmbedded =
+                    String.format("https://www.equibase.com/premium/chartEmb.cfm?" +
+                                    "track=%s&raceDate=%s&cy=%s", track.getCode(), raceDateMDY,
+                            track.getCountry());
+            Link embeddedRaceDay = new Link(raceDayEmbedded, "allWeb");
+
+            String raceDayDirect =
+                    String.format("https://www.equibase.com/premium/eqbPDFChartPlus.cfm?" +
+                                    "RACE=A&BorP=P&TID=%s&CTRY=%s&DT=%s&DAY=D&STYLE=EQB",
+                            track.getCode(), track.getCountry(), raceDateMDY);
+            Link directRaceDay = new Link(raceDayDirect, "allPdf");
+
+            links.add(embeddedChart);
+            links.add(directChart);
+            links.add(embeddedRaceDay);
+            links.add(directRaceDay);
+        }
+
+        return links;
+    }
+
+    public List<Link> getLinks() {
+        return links;
     }
 
     public Cancellation getCancellation() {
@@ -203,23 +251,31 @@ public class RaceResult {
 
     @JsonProperty("finalTime")
     public String getFinalTime() {
-        if (getWinners() != null && !getWinners().isEmpty()) {
-            Fractional finishFractional = getWinners().get(0).getFinishFractional();
+        List<Starter> winners = getWinners();
+        if (winners != null && !winners.isEmpty()) {
+            // PRX 2016 Oaks potential catch
+            winners.sort(Comparator.comparingInt(Starter::getFinishPosition));
+            Fractional finishFractional = winners.get(0).getFinishFractional();
             return (finishFractional != null ? finishFractional.getTime() : null);
         }
         return null;
     }
 
-    @JsonProperty("winningMargin")
-    public Double getWinningMargin() {
-        if (getWinners() != null && !getWinners().isEmpty()) {
-            PointOfCall finishPointOfCall = getWinners().get(0).getFinishPointOfCall();
-            if (finishPointOfCall != null && finishPointOfCall.getRelativePosition() != null &&
-                    finishPointOfCall.getRelativePosition().getLengthsAhead() != null) {
-                return finishPointOfCall.getRelativePosition().getLengthsAhead().getLengths();
-            }
+    @JsonProperty("finalMillis")
+    public Long getFinalMillis() {
+        List<Starter> winners = getWinners();
+        if (winners != null && !winners.isEmpty()) {
+            // PRX 2016 Oaks potential catch
+            winners.sort(Comparator.comparingInt(Starter::getFinishPosition));
+            Fractional finishFractional = winners.get(0).getFinishFractional();
+            return (finishFractional != null ? finishFractional.getMillis() : null);
         }
         return null;
+    }
+
+    @JsonIgnore
+    public String simpleSummary() {
+        return String.format("%s %s R%d", getTrack().getCode(), getRaceDate(), getRaceNumber());
     }
 
     @Override
@@ -311,10 +367,16 @@ public class RaceResult {
                 '}';
     }
 
+    public RaceResult(Cancellation cancellation, LocalDate raceDate, Track track,
+            Integer raceNumber) {
+        this(cancellation, raceDate, track, raceNumber, null, null, null, null, false, null,
+                null, null, null, null, null, null);
+    }
+
     @JsonCreator
-    private RaceResult(Cancellation cancellation, LocalDate raceDate, Track track,
-            Integer raceNumber, RaceConditions raceConditions, DistanceSurfaceTrackRecord
-            distanceSurfaceTrackRecord, Weather weather,
+    public RaceResult(Cancellation cancellation, LocalDate raceDate, Track track,
+            Integer raceNumber, RaceConditions raceConditions,
+            DistanceSurfaceTrackRecord distanceSurfaceTrackRecord, Weather weather,
             PostTimeStartCommentsTimer postTimeStartCommentsTimer, boolean deadHeat,
             List<Starter> starters, List<Scratch> scratches, List<Fractional> fractionals,
             List<Split> splits, WagerPayoffPools wagerPayoffPools, String footnotes,
@@ -335,6 +397,7 @@ public class RaceResult {
         this.wagerPayoffPools = wagerPayoffPools;
         this.footnotes = footnotes;
         this.ratings = ratings;
+        this.links = buildLinks(track, raceDate, raceNumber);
     }
 
     /**

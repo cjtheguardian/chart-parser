@@ -24,11 +24,11 @@ public class PostTimeStartCommentsTimer {
     @JsonInclude(NON_NULL)
     private final String timer;
 
-    @JsonCreator
     public PostTimeStartCommentsTimer(String postTime, String startComments) {
         this(postTime, startComments, null);
     }
 
+    @JsonCreator
     public PostTimeStartCommentsTimer(String postTime, String startComments, String timer) {
         this.postTime = postTime;
         this.startComments = startComments;

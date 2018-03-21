@@ -1,6 +1,7 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,8 @@ public class Scratch {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Scratch.class);
 
+    @JsonIgnoreProperties({"color", "sex", "sire", "dam", "damSire", "foalingDate",
+            "foalingLocation", "breeder"})
     private final Horse horse;
     private final String reason;
 

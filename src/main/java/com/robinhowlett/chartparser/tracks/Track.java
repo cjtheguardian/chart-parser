@@ -23,7 +23,7 @@ public class Track {
     }
 
     public String getCanonical() {
-        return (canonical != null || !canonical.trim().isEmpty() ? canonical.trim() : getCode());
+        return (canonical != null && !canonical.trim().isEmpty() ? canonical.trim() : getCode());
     }
 
     public void setCanonical(String canonical) {
@@ -31,7 +31,7 @@ public class Track {
     }
 
     public String getState() {
-        return (state != null || !state.trim().isEmpty()) ? state.trim() : null;
+        return (state != null && !state.trim().isEmpty()) ? state.trim() : null;
     }
 
     public void setState(String state) {
@@ -39,7 +39,7 @@ public class Track {
     }
 
     public String getCountry() {
-        return (country != null || !country.trim().isEmpty()) ? country.trim() : null;
+        return (country != null && !country.trim().isEmpty()) ? country.trim() : null;
     }
 
     public void setCountry(String country) {
@@ -47,7 +47,7 @@ public class Track {
     }
 
     public String getCity() {
-        return (city != null || !city.trim().isEmpty()) ? city.trim() : null;
+        return (city != null && !city.trim().isEmpty()) ? city.trim() : null;
     }
 
     public void setCity(String city) {

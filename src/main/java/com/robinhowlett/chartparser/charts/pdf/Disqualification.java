@@ -1,5 +1,6 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.robinhowlett.chartparser.exceptions.ChartParserException;
 
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ public class Disqualification {
             Pattern.compile("#\\s?(\\d+\\w?)? (.+) from (\\d+) to (\\d+)");
 
     private final String program;
+    @JsonIgnoreProperties({"color", "sex", "sire", "dam", "damSire", "foalingDate",
+            "foalingLocation", "breeder"})
     private final Horse horse;
     private final int originalPosition;
     private final int newPosition;

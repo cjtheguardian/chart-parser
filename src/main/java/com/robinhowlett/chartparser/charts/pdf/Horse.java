@@ -1,5 +1,6 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.LocalDate;
@@ -24,6 +25,20 @@ public class Horse {
 
     public Horse(String name) {
         this.name = name;
+    }
+
+    @JsonCreator
+    public Horse(String name, String color, String sex, Horse sire, Horse dam, Horse damSire,
+            LocalDate foalingDate, String foalingLocation, Breeder breeder) {
+        this.name = name;
+        this.color = color;
+        this.sex = sex;
+        this.sire = sire;
+        this.dam = dam;
+        this.damSire = damSire;
+        this.foalingDate = foalingDate;
+        this.foalingLocation = foalingLocation;
+        this.breeder = breeder;
     }
 
     public String getName() {

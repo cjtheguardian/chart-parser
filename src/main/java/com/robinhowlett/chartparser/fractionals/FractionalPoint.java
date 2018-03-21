@@ -51,8 +51,13 @@ public class FractionalPoint {
         }
 
         @JsonCreator
-        public Fractional(int point, String text, String compact, int feet, String time, Long
-                millis) {
+        public Fractional(
+                @JsonProperty("point") int point,
+                @JsonProperty("text") String text,
+                @JsonProperty("compact") String compact,
+                @JsonProperty("feet") int feet,
+                @JsonProperty("time") String time,
+                @JsonProperty("millis") Long millis) {
             this.point = point;
             this.text = text;
             this.compact = compact;
@@ -234,7 +239,7 @@ public class FractionalPoint {
         private final Fractional to;
 
         @JsonCreator
-        Split(int point, String text, String compact, int feet, String time, Long millis,
+        public Split(int point, String text, String compact, int feet, String time, Long millis,
                 Fractional from, Fractional to) {
             super(point, text, compact, feet, time, millis);
             this.from = from;

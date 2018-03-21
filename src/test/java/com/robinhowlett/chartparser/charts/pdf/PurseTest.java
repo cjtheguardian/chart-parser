@@ -1,15 +1,10 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
 import com.robinhowlett.chartparser.TestChartResources;
-import com.robinhowlett.chartparser.charts.pdf.Purse.PurseEnhancement;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-
-import static com.robinhowlett.chartparser.charts.pdf.Purse.EnhancementType.INCLUDES;
-import static com.robinhowlett.chartparser.charts.pdf.Purse.EnhancementType.PLUS;
 import static com.robinhowlett.chartparser.charts.pdf.Purse.parsePurseText;
 
 import static org.hamcrest.Matchers.equalTo;

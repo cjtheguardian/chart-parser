@@ -7,18 +7,6 @@
     <groupId>com.robinhowlett</groupId>
     <artifactId>chart-parser</artifactId>
     <version>1.0.6-SNAPSHOT</version>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <compilerArgument>-parameters</compilerArgument>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -27,6 +15,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <bouncycastle.version>1.54</bouncycastle.version>
         <jackson.version>2.8.8</jackson.version>
+        <spring.hateoas.version>0.24.0.RELEASE</spring.hateoas.version>
     </properties>
 
     <dependencies>
@@ -73,6 +62,11 @@
             <artifactId>jackson-dataformat-csv</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.hateoas</groupId>
+            <artifactId>spring-hateoas</artifactId>
+            <version>${spring.hateoas.version}</version>
+        </dependency>
 
         <!-- Logging -->
         <dependency>
@@ -107,5 +101,16 @@
         </dependency>
     </dependencies>
 
-
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <compilerArgument>-parameters</compilerArgument>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

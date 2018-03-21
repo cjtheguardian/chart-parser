@@ -1,6 +1,8 @@
 package com.robinhowlett.chartparser.charts.pdf.wagering;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.robinhowlett.chartparser.charts.pdf.Chart;
@@ -46,6 +48,7 @@ public class WagerPayoffPools {
     @JsonProperty("exotics")
     private final List<ExoticPayoffPool> exoticPayoffPools;
 
+    @JsonCreator
     public WagerPayoffPools(WinPlaceShowPayoffPool winPlaceShowPayoffPools,
             List<ExoticPayoffPool> exoticPayoffPools) {
         this.winPlaceShowPayoffPools = winPlaceShowPayoffPools;
@@ -445,6 +448,7 @@ public class WagerPayoffPools {
         @JsonProperty("payoffs")
         private final List<WinPlaceShowPayoff> winPlaceShowPayoffs;
 
+        @JsonCreator
         public WinPlaceShowPayoffPool(Integer totalWinPlaceShowPool,
                 List<WinPlaceShowPayoff> winPlaceShowPayoffs) {
             this.totalWinPlaceShowPool = totalWinPlaceShowPool;
@@ -489,11 +493,14 @@ public class WagerPayoffPools {
          */
         public static class WinPlaceShowPayoff {
             private final String program;
+            @JsonIgnoreProperties({"color", "sex", "sire", "dam", "damSire", "foalingDate",
+                    "foalingLocation", "breeder"})
             private final Horse horse;
             private final Win win;
             private final Place place;
             private final Show show;
 
+            @JsonCreator
             public WinPlaceShowPayoff(String program, Horse horse, Win win, Place place, Show
                     show) {
                 this.program = program;
@@ -745,6 +752,17 @@ public class WagerPayoffPools {
                     winningNumbersPayoff.getWinningNumbers() : null);
             this.numberCorrect = (winningNumbersPayoff != null ?
                     winningNumbersPayoff.getNumberCorrect() : null);
+            this.pool = pool;
+            this.carryover = carryover;
+        }
+
+        @JsonCreator
+        public ExoticPayoffPool(Double unit, Double payoff, String name, String winningNumbers,
+                Integer numberCorrect, Double pool, Double carryover) {
+            super(unit, payoff);
+            this.name = name;
+            this.winningNumbers = winningNumbers;
+            this.numberCorrect = numberCorrect;
             this.pool = pool;
             this.carryover = carryover;
         }

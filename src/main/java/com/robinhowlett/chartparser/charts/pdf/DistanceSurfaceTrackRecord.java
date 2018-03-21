@@ -1,6 +1,7 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -102,6 +103,20 @@ public class DistanceSurfaceTrackRecord {
         }
 
         this.trackRecord = trackRecord;
+    }
+
+    @JsonCreator
+    public DistanceSurfaceTrackRecord(RaceDistance raceDistance, String surface, String course,
+            String scheduledSurface, String scheduledCourse, String format, TrackRecord
+            trackRecord, String trackCondition) {
+        this.raceDistance = raceDistance;
+        this.surface = surface;
+        this.course = course;
+        this.scheduledSurface = scheduledSurface;
+        this.scheduledCourse = scheduledCourse;
+        this.format = format;
+        this.trackRecord = trackRecord;
+        this.trackCondition = trackCondition;
     }
 
     public static DistanceSurfaceTrackRecord parse(final List<List<ChartCharacter>> lines)
@@ -397,7 +412,7 @@ public class DistanceSurfaceTrackRecord {
         }
 
         @JsonCreator
-        private RaceDistance(String text, String compact, boolean exact, int feet, Integer runUp,
+        public RaceDistance(String text, String compact, boolean exact, int feet, Integer runUp,
                 Integer tempRail) {
             this.text = text;
             this.compact = compact;
@@ -556,6 +571,8 @@ public class DistanceSurfaceTrackRecord {
      * milliseconds) and the date when the record was set
      */
     public static class TrackRecord {
+        @JsonIgnoreProperties({"color", "sex", "sire", "dam", "damSire", "foalingDate",
+                "foalingLocation", "breeder"})
         private final Horse holder;
         private final String time;
         private final Long millis;

@@ -12,6 +12,7 @@ import com.robinhowlett.chartparser.exceptions.ChartParserException;
 import com.robinhowlett.chartparser.fractionals.FractionalTreeSet;
 import com.robinhowlett.chartparser.points_of_call.PointsOfCall;
 import com.robinhowlett.chartparser.points_of_call.PointsOfCallTreeSet;
+import com.robinhowlett.chartparser.tracks.Track;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 
@@ -23,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +50,7 @@ public class TestChartResources {
     public List<File> getPdfChartsFiles() throws URISyntaxException, IOException {
         List<Path> files = Files.list(Paths.get("src/test/resources"))
                 .filter(path -> path.toString().endsWith("pdf"))
+                .sorted()
                 .collect(Collectors.toList());
 
         List<File> csvChartsFiles = new ArrayList<>();
@@ -59,7 +62,7 @@ public class TestChartResources {
 
     public List<File> getCsvChartsFiles() throws URISyntaxException, IOException {
         URI uri = getClass().getClassLoader().getResource("csv").toURI();
-        List<Path> files = Files.list(Paths.get(uri)).collect(Collectors.toList());
+        List<Path> files = Files.list(Paths.get(uri)).sorted().collect(Collectors.toList());
 
         List<File> csvChartsFiles = new ArrayList<>();
         for (Path path : files) {
@@ -77,7 +80,7 @@ public class TestChartResources {
     }
 
     public String getFirstCsvChart() throws IOException, URISyntaxException {
-        return new String(Files.readAllBytes(getCsvChartsFiles().get(0).toPath()), UTF_8);
+        return getCsvChart(0);
     }
 
     public String getCsvChart(int chartIndex) throws IOException, URISyntaxException {
@@ -288,6 +291,17 @@ public class TestChartResources {
                 new TypeReference<PointsOfCallTreeSet>() {
                 });
         return pointsOfCall.floor(new PointsOfCall("", raceDistanceInFeet, null));
+    }
+
+    public static Track getSampleTrackAraphaoe() {
+        Track track = new Track();
+        track.setCode("ARP");
+        track.setCanonical("ARP");
+        track.setName("ARAPAHOE PARK");
+        track.setCity("AURORA");
+        track.setState("CO");
+        track.setCountry("USA");
+        return track;
     }
 
 }

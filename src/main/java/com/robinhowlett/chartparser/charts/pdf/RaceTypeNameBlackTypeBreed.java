@@ -1,7 +1,6 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.robinhowlett.chartparser.exceptions.ChartParserException;
@@ -104,11 +103,19 @@ public class RaceTypeNameBlackTypeBreed {
         this(type, name, null, blackType, breed);
     }
 
-    @JsonCreator
     public RaceTypeNameBlackTypeBreed(String type, String name, Integer grade, String blackType,
             Breed breed) {
+        this(type,
+                // code
+                RACE_TYPE_CODES.getOrDefault(type, null),
+                name, grade, blackType, breed);
+    }
+
+    @JsonCreator
+    public RaceTypeNameBlackTypeBreed(String type, String code, String name, Integer grade,
+            String blackType, Breed breed) {
         this.type = type;
-        this.code = RACE_TYPE_CODES.getOrDefault(type, null);
+        this.code = code;
         this.name = name;
         this.grade = grade;
         this.blackType = blackType;

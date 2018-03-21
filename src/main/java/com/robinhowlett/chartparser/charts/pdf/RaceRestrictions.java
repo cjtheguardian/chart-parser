@@ -1,5 +1,6 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.ArrayList;
@@ -17,6 +18,8 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  * restrictions imposed for the race
  */
 public class RaceRestrictions {
+
+    public static final int ALL_SEXES = 31;
 
     private static final Map<Integer, String> SEXES_CODES = new LinkedHashMap<Integer, String>() {{
         put(0, null);
@@ -50,7 +53,7 @@ public class RaceRestrictions {
         put(28, "H&F&M");
         put(29, "C&H&F&M");
         put(30, "G&H&F&M");
-        put(31, "A");
+        put(ALL_SEXES, "A");
     }};
 
     // matches text within parentheses e.g. "(S)", "(NW1 L)", and "( C)" etc.
@@ -58,6 +61,9 @@ public class RaceRestrictions {
     // e.g. matches "(c)", "(s)", "(snw1 y x)", "(nw2 l)" etc.
     private static final Pattern RESTRICTIONS_CODE =
             Pattern.compile("\\(\\s*([c])\\s*\\)|\\(\\s*([s])\\s*\\)|\\((s?nw[^)]+)\\)");
+    // matches "weight 120 lbs"
+    private static final Pattern WEIGHT_DETECTION =
+            Pattern.compile(".*\\bweight \\d{3}\\s?lbs\\b.*");
 
     // to catch e.g. " allowed 120 lbs", " 119 lbs)"
     private static final String FALSE_POSITIVE_DETECTION =
@@ -76,10 +82,7 @@ public class RaceRestrictions {
     4yrs & older
     4 5 6 & 7 year olds
      */
-//    private static final String AGES = "((\\d?\\d)(\\s&?\\s?(\\d?\\d))?(\\s&?\\s?(\\d?\\d))?" +
-//            "(\\s&?\\s?(\\d?\\d))?" +
-//            "(\\s&?\\s?(\\d?\\d))?(yrs?|yos?| years? olds?)?)( & (upwards?|up|olders?))?";
-    private static final String AGES = "(((\\b\\d)(\\s&?\\s?(\\d?\\d))?(\\s&?\\s?(\\d?\\d))?" +
+    private static final String AGES = "((((?<!#)\\b\\d)(\\s&?\\s?(\\d?\\d))?(\\s&?\\s?(\\d?\\d))?" +
             "(\\s&?\\s?(\\d?\\d))?(\\s&?\\s?(\\d?\\d))?(\\s?yrs? olds?|yrs?|yos?|\\s?years? " +
             "olds?))( & (upwards?|up\\b|olders?))?|(\\b\\d\\b)( & (upwards?|up\\b)))" +
             FALSE_POSITIVE_DETECTION;
@@ -134,20 +137,34 @@ public class RaceRestrictions {
                 (raceRestrictionCodes != null && raceRestrictionCodes.isStateBred()));
     }
 
-    RaceRestrictions(String code, Integer minAge, Integer maxAge, int sexes, boolean stateBred) {
-        this.code = code;
-        this.minAge = minAge;
-        // if no specified max, then assume same as the minimum
-        this.maxAge = (maxAge != null ? maxAge : minAge);
-        this.sexes = sexes;
-        this.femaleOnly = (sexes % 8 == 0); // 8 = fillies, 16 = mares, 24 = fillies & mares
-        this.stateBred = stateBred;
-
-        this.ageCode = createAgeCode(this.minAge, this.maxAge);
-        this.sexesCode = SEXES_CODES.getOrDefault(sexes, null);
+    public RaceRestrictions(String code, Integer minAge, Integer maxAge, int sexes, boolean stateBred) {
+        this(code, minAge,
+                // maxAge: if no specified max, then assume same as the minimum
+                (maxAge != null ? maxAge : minAge),
+                // ageCode
+                createAgeCode(minAge, (maxAge != null ? maxAge : minAge)),
+                sexes,
+                // sexesCode
+                SEXES_CODES.getOrDefault(sexes, null),
+                // femaleOnly: 8 = fillies, 16 = mares, 24 = fillies & mares
+                (sexes % 8 == 0),
+                stateBred);
     }
 
-    String createAgeCode(Integer minAge, Integer maxAge) {
+    @JsonCreator
+    public RaceRestrictions(String code, Integer minAge, Integer maxAge, String ageCode, int
+            sexes, String sexesCode, boolean femaleOnly, boolean stateBred) {
+        this.code = code;
+        this.minAge = minAge;
+        this.maxAge = maxAge;
+        this.ageCode = ageCode;
+        this.sexes = sexes;
+        this.sexesCode = sexesCode;
+        this.femaleOnly = femaleOnly;
+        this.stateBred = stateBred;
+    }
+
+    static String createAgeCode(Integer minAge, Integer maxAge) {
         if (minAge != null) {
             if (minAge == maxAge) {
                 return String.valueOf(minAge);
@@ -186,7 +203,7 @@ public class RaceRestrictions {
             return raceRestrictions;
         }
 
-        return new RaceRestrictions(raceRestrictionCodes, null, null, 31);
+        return new RaceRestrictions(raceRestrictionCodes, null, null, ALL_SEXES);
     }
 
     static String cleanUpText(String raceConditionsText) {
@@ -203,8 +220,9 @@ public class RaceRestrictions {
                 .replaceAll("\\btears? olds?\\b", "year olds")
                 // 3. replace punctuation with space character
                 .replaceAll("[.,:;\\[\\]\\-\"'%+\\\\/*!]", " ")
-                // 4. ensure spaces around & (ampersand character) and parentheses
+                // 4. ensure spaces around &, and parentheses; not after #
                 .replaceAll("&", " & ")
+                .replaceAll("# ", "#")
                 .replaceAll("\\(\\s*", " (")
                 .replaceAll("\\s*\\)", ") ")
                 // 5. remove text contained in angle bracket
@@ -267,10 +285,19 @@ public class RaceRestrictions {
         // 12. attempt to identify multiple conditions e.g. 3yo fillies or 4yo mares
         String[] conditions = text.split("\\bor\\b");
 
+        boolean weightDetected = false;
+
         RaceRestrictions conditionRestrictions, raceRestrictions = null;
-        for (String condition : conditions) {
+        for (int i = 0; i < conditions.length && !weightDetected; i++) {
+            String condition = conditions[i];
+
             if (condition == null || condition.isEmpty()) {
                 continue;
+            }
+
+            Matcher weightMatcher = WEIGHT_DETECTION.matcher(condition);
+            if (weightMatcher.find()) {
+                weightDetected = true;
             }
 
             // 13. check whether the age restriction comes first or the sexes restriction
@@ -431,7 +458,7 @@ public class RaceRestrictions {
                 }
             }
         } else {
-            sexes += 31;
+            sexes += ALL_SEXES;
         }
         return sexes;
     }
@@ -469,7 +496,7 @@ public class RaceRestrictions {
 
         int sexes = (raceRestrictions.getSexes() == conditionRestrictions.getSexes()) ?
                 raceRestrictions.getSexes() :
-                (Math.min(31, raceRestrictions.getSexes() + conditionRestrictions.getSexes()));
+                (Math.min(ALL_SEXES, raceRestrictions.getSexes() + conditionRestrictions.getSexes()));
 
         return new RaceRestrictions(raceRestrictionCodes, ageMin, ageMax, sexes);
     }

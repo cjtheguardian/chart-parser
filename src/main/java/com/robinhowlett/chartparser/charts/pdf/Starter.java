@@ -110,12 +110,17 @@ public class Starter {
     }
 
     @JsonCreator
-    private Starter(LastRaced lastRaced, String program, Horse horse, Jockey jockey,
-            Weight weight, MedicationEquipment medicationEquipment, Integer postPosition,
-            Double odds, Boolean favorite, String comments, List<PointOfCall> pointsOfCall) {
+    public Starter(LastRaced lastRaced, String program, String entryProgram, boolean entry,
+            Horse horse, Jockey jockey, Weight weight, MedicationEquipment medicationEquipment,
+            Integer postPosition, Double odds, Boolean favorite, String comments,
+            List<PointOfCall> pointsOfCall, Integer finishPosition, Integer officialPosition,
+            Integer wageringPosition, Trainer trainer, Owner owner, Claim claim, boolean winner,
+            Boolean disqualified, WinPlaceShowPayoff winPlaceShowPayoff, List<Rating> ratings,
+            List<Fractional> fractionals, List<Split> splits, Integer choice) {
         this.lastRaced = lastRaced;
         this.program = program;
-        this.entryProgram = program;
+        this.entryProgram = entryProgram;
+        this.entry = entry;
         this.horse = horse;
         this.jockey = jockey;
         this.weight = weight;
@@ -125,6 +130,44 @@ public class Starter {
         this.favorite = favorite;
         this.comments = comments;
         this.pointsOfCall = pointsOfCall;
+        this.finishPosition = finishPosition;
+        this.officialPosition = officialPosition;
+        this.wageringPosition = wageringPosition;
+        this.trainer = trainer;
+        this.owner = owner;
+        this.claim = claim;
+        this.winner = winner;
+        this.disqualified = disqualified;
+        this.winPlaceShowPayoff = winPlaceShowPayoff;
+        this.ratings = ratings;
+        this.fractionals = fractionals;
+        this.splits = splits;
+        this.choice = choice;
+    }
+
+    // constructor suitable for pre-race
+    public Starter(LastRaced lastRaced, String program, String entryProgram, Horse horse,
+            Jockey jockey, Weight weight, MedicationEquipment medicationEquipment,
+            Integer postPosition, Trainer trainer, Owner owner, Claim claim, List<Rating> ratings,
+            boolean entry) {
+        this.lastRaced = lastRaced;
+        this.program = program;
+        this.entryProgram = entryProgram;
+        this.horse = horse;
+        this.jockey = jockey;
+        this.weight = weight;
+        this.medicationEquipment = medicationEquipment;
+        this.postPosition = postPosition;
+        this.trainer = trainer;
+        this.owner = owner;
+        this.claim = claim;
+        this.ratings = ratings;
+        this.entry = entry;
+
+        odds = null;
+        favorite = null;
+        comments = null;
+        pointsOfCall = null;
     }
 
     public LastRaced getLastRaced() {

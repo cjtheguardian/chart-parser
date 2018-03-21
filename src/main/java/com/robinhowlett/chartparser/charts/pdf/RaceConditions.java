@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord
         .DIST_SURF_RECORD_PATTERN;
+import static com.robinhowlett.chartparser.charts.pdf.RaceRestrictions.ALL_SEXES;
 import static com.robinhowlett.chartparser.charts.pdf.RaceTypeNameBlackTypeBreed
         .RACE_TYPE_NAME_GRADE_BREED;
 
@@ -26,7 +27,7 @@ import static java.util.Locale.US;
  * and maximum claiming prices that can be availed of
  */
 @JsonPropertyOrder({"raceTypeNameBlackTypeBreed", "text", "restrictions", "purse",
-        "claimingPriceRange"})
+        "claimingPriceRange", "summary"})
 public class RaceConditions {
 
     private final String text;
@@ -44,7 +45,7 @@ public class RaceConditions {
     }
 
     @JsonCreator
-    private RaceConditions(String text, ClaimingPriceRange claimingPriceRange,
+    public RaceConditions(String text, ClaimingPriceRange claimingPriceRange,
             RaceRestrictions restrictions, RaceTypeNameBlackTypeBreed raceTypeNameBlackTypeBreed,
             Purse purse) {
         this.text = text;
@@ -110,6 +111,145 @@ public class RaceConditions {
 
     public void setPurse(Purse purse) {
         this.purse = purse;
+    }
+
+    @JsonProperty("summary")
+    public String getSummary() {
+        return buildSummary(restrictions, raceTypeNameBlackTypeBreed, claimingPriceRange, purse);
+    }
+
+    static String buildSummary(RaceRestrictions restrictions,
+            RaceTypeNameBlackTypeBreed raceTypeNameBlackTypeBreed,
+            ClaimingPriceRange claimingPriceRange, Purse purse) {
+        String code = buildAgeSexesSummary(restrictions);
+
+        code = buildStateBredSummary(code, restrictions);
+
+        boolean claimingRace = false;
+        if (raceTypeNameBlackTypeBreed != null) {
+            claimingRace = isClaimingRace(raceTypeNameBlackTypeBreed.getType());
+            code = buildCodeSummary(code, raceTypeNameBlackTypeBreed);
+        }
+
+        // for Claiming Races, use the claiming price range rather than the purse
+        if (claimingRace) {
+            code = buildClaimingPriceSummary(code, claimingPriceRange);
+        } else {
+            code = buildPurseSummary(code, purse);
+        }
+
+        code = buildRestrictionsCode(code, restrictions);
+
+        return (!code.isEmpty() ? code : null);
+    }
+
+    static String buildStateBredSummary(String code, RaceRestrictions restrictions) {
+        if (restrictions != null && restrictions.isStateBred()) {
+            if (!code.isEmpty()) {
+                code = code.concat(" ").concat("[S]");
+            } else {
+                code = "[S]";
+            }
+        }
+        return code;
+    }
+
+    static String buildAgeSexesSummary(RaceRestrictions restrictions) {
+        String code = "";
+        if (restrictions != null) {
+            if (restrictions.getAgeCode() != null) {
+                code = restrictions.getAgeCode();
+            }
+            if (restrictions.getSexesCode() != null && restrictions.getSexes() != ALL_SEXES) {
+                code = (!code.isEmpty() ?
+                        code.concat(" (").concat(restrictions.getSexesCode()) :
+                        code.concat("(").concat(restrictions.getSexesCode())).concat(")");
+            }
+        }
+        return code;
+    }
+
+    static String buildCodeSummary(String code,
+            RaceTypeNameBlackTypeBreed raceTypeNameBlackTypeBreed) {
+        Integer grade = raceTypeNameBlackTypeBreed.getGrade();
+        if (grade != null) {
+            String gradeCode = "G".concat(String.valueOf(grade));
+            if (!code.isEmpty()) {
+                return code.concat(" ").concat(gradeCode);
+            } else {
+                return gradeCode;
+            }
+        } else {
+            // e.g. ALW, CLM, AOC
+            String raceCode = raceTypeNameBlackTypeBreed.getCode();
+            if (raceCode != null) {
+                if (!code.isEmpty()) {
+                    return code.concat(" ").concat(raceCode);
+                } else {
+                    return raceCode;
+                }
+            } else {
+                return code;
+            }
+        }
+    }
+
+    static boolean isClaimingRace(String type) {
+        return (type != null) && (type.contains("CLAIM"));
+    }
+
+    static String buildClaimingPriceSummary(String code, ClaimingPriceRange claimingPriceRange) {
+        if (claimingPriceRange != null) {
+            Integer max = claimingPriceRange.getMax();
+            Integer min = claimingPriceRange.getMin();
+            if ((max != null) && (max > 0)) {
+                String shortClaim;
+                // for claiming prices less than 10000, use a single decimal point
+                if (max >= 10000) {
+                    // e.g. CLM 50K
+                    shortClaim = String.valueOf(max / 1000);
+                } else {
+                    // e.g. MCL 5.5K
+                    shortClaim = String.format("%.1f", max / (double) 1000);
+                }
+
+                // for claiming races with a range, format it as "max-minK", else "priceK"
+                if ((min != null) && (Integer.compare(min, max) != 0) && (min > 0)) {
+                    if (min >= 10000) {
+                        // e.g. CLM 50-45K
+                        shortClaim = shortClaim.concat("-")
+                                .concat(String.valueOf(min / 1000));
+                    } else {
+                        // e.g. CLM 5.5-4.5K
+                        shortClaim = shortClaim.concat("-")
+                                .concat(String.format("%.1f", min / (double) 1000));
+                    }
+                }
+
+                code = code.concat(" ").concat(shortClaim).concat("K");
+            }
+        }
+        return code;
+    }
+
+    static String buildPurseSummary(String code, Purse purse) {
+        if (purse != null && purse.getValue() != null) {
+            String shortPurse;
+            if (purse.getValue() >= 10000) {
+                shortPurse = String.valueOf(purse.getValue() / 1000);
+            } else {
+                shortPurse = String.format("%.1f", purse.getValue() / (double) 1000);
+            }
+            code = code.concat(" ").concat(shortPurse).concat("K");
+        }
+        return code;
+    }
+
+    static String buildRestrictionsCode(String code, RaceRestrictions restrictions) {
+        if ((restrictions != null) && (restrictions.getCode() != null)) {
+            code = code.concat(" (").concat(restrictions.getCode()).concat(")");
+        }
+        return code;
     }
 
     /**

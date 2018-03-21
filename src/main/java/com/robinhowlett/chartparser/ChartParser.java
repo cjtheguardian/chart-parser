@@ -1,6 +1,8 @@
 package com.robinhowlett.chartparser;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,11 +38,13 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.Link;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,6 +54,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.robinhowlett.chartparser.charts.pdf.Chart.convertToText;
 import static com.robinhowlett.chartparser.charts.pdf.TrackRaceDateRaceNumber.NoLinesToParse;
 
@@ -89,6 +94,10 @@ public class ChartParser {
         return new ChartParser(trackService, fractionalService, pointsOfCallService);
     }
 
+    public TrackService getTrackService() {
+        return trackService;
+    }
+
     public static ObjectMapper getObjectMapper() {
         if (mapper != null) {
             return mapper;
@@ -97,10 +106,14 @@ public class ChartParser {
         SimpleModule simpleLocalDateModule = new SimpleModule();
         simpleLocalDateModule.addSerializer(LocalDate.class, new SimpleLocalDateSerializer());
         simpleLocalDateModule.addDeserializer(LocalDate.class, new SimpleLocalDateDeserializer());
+
         mapper = new ObjectMapper()
                 // adds JDK 8 Parameter Name access for cleaner JSON-to-Object mapping
                 .registerModule(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES))
                 .registerModule(simpleLocalDateModule);
+
+        mapper.addMixIn(Link.class, LinkMixin.class);
+
         return mapper;
     }
 
@@ -604,6 +617,23 @@ public class ChartParser {
                 track.getCode().equals("PRX") &&
                 raceDate.isEqual(LocalDate.of(2016, 5, 7)) &&
                 raceNumber == 8);
+    }
+
+    public static String convertToMonthDayYear(LocalDate isoDate) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("M/d/yyyy");
+        return dateTimeFormatter.format(isoDate);
+    }
+
+    @JsonInclude(NON_NULL)
+    abstract class LinkMixin {
+        LinkMixin(@JsonProperty("href") String href, @JsonProperty("rel") String rel) {
+        }
+
+        @JsonProperty("href")
+        abstract int getHref();
+
+        @JsonProperty("rel")
+        abstract int getRel();
     }
 
 }

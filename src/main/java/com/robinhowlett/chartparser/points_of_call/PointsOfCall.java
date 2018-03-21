@@ -6,6 +6,7 @@ import com.robinhowlett.chartparser.charts.pdf.Chart;
 import com.robinhowlett.chartparser.charts.pdf.Starter;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -39,18 +40,24 @@ public class PointsOfCall {
         private Double furlongs;
         private RelativePosition relativePosition;
 
+        public PointOfCall(int point, String text, String compact, Integer feet) {
+            this(point, text, compact, feet, null);
+        }
+
         @JsonCreator
         public PointOfCall(
                 @JsonProperty("point") int point,
                 @JsonProperty("text") String text,
                 @JsonProperty("compact") String compact,
-                @JsonProperty("feet") Integer feet) {
+                @JsonProperty("feet") Integer feet,
+                @JsonProperty("relativePosition") RelativePosition relativePosition) {
             this.point = point;
             this.text = text;
             this.compact = compact;
             this.feet = feet;
             this.furlongs = (feet != null ?
                     Chart.round((double) feet / 660, 2).doubleValue() : null);
+            this.relativePosition = relativePosition;
         }
 
         public boolean hasKnownDistance() {
@@ -147,22 +154,29 @@ public class PointsOfCall {
         /**
          * Stores the position of the {@link Starter} at this point of call, and, if applicable, the
          * details about the number of lengths ahead of the next starter, and the total number of
-         * lengths behind the leader at this point.
+         * lengths behind the leader at this point. "Wide" tracks the position of the horse versus
+         * the rail e.g. "5-wide" would be five horse widths from the inside rail.
          */
         public static class RelativePosition {
             private final Integer position;
             private final LengthsAhead lengthsAhead;
             private TotalLengthsBehind totalLengthsBehind;
+            private Integer wide; // reserved for custom use
 
             public RelativePosition(Integer position, LengthsAhead lengthsAhead) {
-                this(position, lengthsAhead, null);
+                this(position, lengthsAhead, null, null);
             }
 
-            public RelativePosition(Integer position, LengthsAhead lengthsAhead,
-                    TotalLengthsBehind totalLengthsBehind) {
+            @JsonCreator
+            public RelativePosition(
+                    @JsonProperty("position") Integer position,
+                    @JsonProperty("lengthsAhead") LengthsAhead lengthsAhead,
+                    @JsonProperty("totalLengthsBehind") TotalLengthsBehind totalLengthsBehind,
+                    @JsonProperty("wide") Integer wide) {
                 this.position = position;
                 this.lengthsAhead = lengthsAhead;
                 this.totalLengthsBehind = totalLengthsBehind;
+                this.wide = wide;
             }
 
             public Integer getPosition() {
@@ -181,12 +195,21 @@ public class PointsOfCall {
                 this.totalLengthsBehind = totalLengthsBehind;
             }
 
+            public Integer getWide() {
+                return wide;
+            }
+
+            public void setWide(Integer wide) {
+                this.wide = wide;
+            }
+
             @Override
             public String toString() {
                 return "RelativePosition{" +
                         "position=" + position +
                         ", lengthsAhead=" + lengthsAhead +
                         ", totalLengthsBehind=" + totalLengthsBehind +
+                        ", wide=" + wide +
                         '}';
             }
 
@@ -194,25 +217,17 @@ public class PointsOfCall {
             public boolean equals(Object o) {
                 if (this == o) return true;
                 if (o == null || getClass() != o.getClass()) return false;
-
                 RelativePosition that = (RelativePosition) o;
-
-                if (position != null ? !position.equals(that.position) : that.position != null)
-                    return false;
-                if (lengthsAhead != null ? !lengthsAhead.equals(that.lengthsAhead) : that
-                        .lengthsAhead != null)
-                    return false;
-                return totalLengthsBehind != null ? totalLengthsBehind.equals(that
-                        .totalLengthsBehind) : that.totalLengthsBehind == null;
+                return Objects.equals(position, that.position) &&
+                        Objects.equals(lengthsAhead, that.lengthsAhead) &&
+                        Objects.equals(totalLengthsBehind, that.totalLengthsBehind) &&
+                        Objects.equals(wide, that.wide);
             }
 
             @Override
             public int hashCode() {
-                int result = position != null ? position.hashCode() : 0;
-                result = 31 * result + (lengthsAhead != null ? lengthsAhead.hashCode() : 0);
-                result = 31 * result + (totalLengthsBehind != null ? totalLengthsBehind.hashCode
-                        () : 0);
-                return result;
+
+                return Objects.hash(position, lengthsAhead, totalLengthsBehind, wide);
             }
 
             /**

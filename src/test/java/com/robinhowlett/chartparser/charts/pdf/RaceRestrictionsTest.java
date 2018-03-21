@@ -292,6 +292,21 @@ public class RaceRestrictionsTest {
                                 "121 older 124.",
                         new RaceRestrictions(null, 3, -1, 31, false)
                 },
+                {
+                        "Laurel Brown Derby Trial # 1 Three Year Olds and Up.",
+                        new RaceRestrictions(null, 3, -1, 31, false)
+                },
+                {
+                        "FOR THREE-YEAR-OLD FILLIES THAT WENT THROUGH AN OBS SALES RING. Weight " +
+                                "120 lbs. Sustaining payments of $100 due August 31, 2015 and " +
+                                "$250 due November 30, 2015; or $500 due November 30, 2015 for " +
+                                "three-year-old colts and geldings that went through the 2015OBS " +
+                                "October Sale or for those three-year-old colts and geldings for " +
+                                "which the first sustaining payment was not made. $500 to enter " +
+                                "and $500 to start (Supplemental nominations of $4,000 at time of" +
+                                " entry with $500 to start).",
+                        new RaceRestrictions(null, 3, 3, 8, false)
+                },
                 /* YET TO BE HANDLED IRREGULAR CONDITIONS */
                 {
                         "Fillies and Mares, Which have never won three races, Colorado Bred. " +

@@ -10,7 +10,6 @@ import com.robinhowlett.chartparser.charts.pdf.running_line.Odds;
 import com.robinhowlett.chartparser.charts.pdf.running_line.Weight;
 import com.robinhowlett.chartparser.points_of_call.PointsOfCall;
 import com.robinhowlett.chartparser.points_of_call.PointsOfCallService;
-import com.robinhowlett.chartparser.tracks.Track;
 import com.robinhowlett.chartparser.tracks.TrackService;
 
 import org.junit.Test;
@@ -80,13 +79,9 @@ public class StarterTest {
     @Test
     public void parseRunningLineData_WithSampleRunningLine_UpdatesStarterCorrectly()
             throws Exception {
-        Track track = new Track();
-        track.setCode("ARP");
-        track.setName("ARAPAHOE PARK");
-        track.setCountry("USA");
-
         trackService = mock(TrackService.class);
-        when(trackService.getTrack("ARP")).thenReturn(Optional.of(track));
+        when(trackService.getTrack("ARP"))
+                .thenReturn(Optional.of(TestChartResources.getSampleTrackAraphaoe()));
 
         pointsOfCallService = mock(PointsOfCallService.class);
         when(pointsOfCallService.getPointsOfCallForDistance(eq(breed), eq(raceDistance)))
@@ -103,12 +98,9 @@ public class StarterTest {
     }
 
     public static Starter expectedThoroughbredStarter() {
-        Track track = new Track();
-        track.setCode("ARP");
-        track.setName("ARAPAHOE PARK");
-        track.setCountry("USA");
         LocalDate lastRaceDate = LocalDate.of(2016, 6, 19);
-        LastRacePerformance lastRacePerformance = new LastRacePerformance(3, track, 6);
+        LastRacePerformance lastRacePerformance = new LastRacePerformance(3,
+                TestChartResources.getSampleTrackAraphaoe(), 6);
 
         Horse horse = new Horse("Back Stop");
         Jockey jockey = new Jockey("Dennis", "Collins");
@@ -124,7 +116,8 @@ public class StarterTest {
         expectedBuilder.odds(new Odds(3.40, false));
         expectedBuilder.comments("speed off rail 3wd tr");
         expectedBuilder.pointsOfCall(new ArrayList<PointsOfCall.PointOfCall>() {{
-            PointsOfCall.PointOfCall first = new PointsOfCall.PointOfCall(1, "Start", "Start", null);
+            PointsOfCall.PointOfCall first = new PointsOfCall.PointOfCall(1, "Start", "Start",
+                    null);
             first.setRelativePosition(new PointsOfCall.PointOfCall.RelativePosition(1, null));
             add(first);
 
@@ -134,21 +127,21 @@ public class StarterTest {
                             new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("2", 2.0)));
             add(second);
 
-            PointsOfCall.PointOfCall third = new PointsOfCall.PointOfCall(3, "1/2", "4f",2640);
+            PointsOfCall.PointOfCall third = new PointsOfCall.PointOfCall(3, "1/2", "4f", 2640);
             third.setRelativePosition(
                     new PointsOfCall.PointOfCall.RelativePosition(1,
                             new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("Head",
                                     0.1)));
             add(third);
 
-            PointsOfCall.PointOfCall fourth = new PointsOfCall.PointOfCall(5, "Str", "5f",3300);
+            PointsOfCall.PointOfCall fourth = new PointsOfCall.PointOfCall(5, "Str", "5f", 3300);
             fourth.setRelativePosition(
                     new PointsOfCall.PointOfCall.RelativePosition(1,
                             new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("1/2",
                                     0.5)));
             add(fourth);
 
-            PointsOfCall.PointOfCall fifth = new PointsOfCall.PointOfCall(6, "Fin", "6f",3960);
+            PointsOfCall.PointOfCall fifth = new PointsOfCall.PointOfCall(6, "Fin", "6f", 3960);
             fifth.setRelativePosition(
                     new PointsOfCall.PointOfCall.RelativePosition(1,
                             new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("1 1/2",
@@ -160,13 +153,10 @@ public class StarterTest {
     }
 
     public static Starter expectedQuarterHorseStarter() {
-        Track track = new Track();
-        track.setCode("ARP");
-        track.setName("ARAPAHOE PARK");
-        track.setCountry("USA");
 
         LocalDate lastRaceDate = LocalDate.of(2016, 7, 4);
-        LastRacePerformance lastRacePerformance = new LastRacePerformance(4, track, 1);
+        LastRacePerformance lastRacePerformance = new LastRacePerformance(4,
+                TestChartResources.getSampleTrackAraphaoe(), 1);
 
         Horse horse = new Horse("Acme Rocket");
         Jockey jockey = new Jockey("Edwin", "Pena");
@@ -184,7 +174,8 @@ public class StarterTest {
         expectedBuilder.speedIndex(97);
         expectedBuilder.comments("broke in best");
         expectedBuilder.pointsOfCall(new ArrayList<PointsOfCall.PointOfCall>() {{
-            PointsOfCall.PointOfCall first = new PointsOfCall.PointOfCall(1, "Start", "Start",null);
+            PointsOfCall.PointOfCall first = new PointsOfCall.PointOfCall(1, "Start", "Start",
+                    null);
             first.setRelativePosition(new PointsOfCall.PointOfCall.RelativePosition(2, null));
             add(first);
 
@@ -201,7 +192,7 @@ public class StarterTest {
                             new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("1", 1.0)));
             add(third);
 
-            PointsOfCall.PointOfCall fourth = new PointsOfCall.PointOfCall(6, "Fin", "350y",1050);
+            PointsOfCall.PointOfCall fourth = new PointsOfCall.PointOfCall(6, "Fin", "350y", 1050);
 
             PointsOfCall.PointOfCall.RelativePosition position =
                     new PointsOfCall.PointOfCall.RelativePosition(1,

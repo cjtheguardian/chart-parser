@@ -106,7 +106,7 @@ public class MedicationEquipment {
         }
 
         @JsonCreator
-        static Medication lookup(char code) throws ChartParserException {
+        public static Medication lookup(char code) throws ChartParserException {
             for (Medication medication : MEDICATIONS) {
                 if (medication.code == code) {
                     return medication;
@@ -177,7 +177,7 @@ public class MedicationEquipment {
         }
 
         @JsonCreator
-        static Equipment lookup(char code) throws ChartParserException {
+        public static Equipment lookup(char code) throws ChartParserException {
             for (Equipment equipment : EQUIPMENT) {
                 if (equipment.code == code) {
                     return equipment;

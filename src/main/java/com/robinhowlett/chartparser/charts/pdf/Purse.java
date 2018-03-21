@@ -274,6 +274,15 @@ public class Purse {
             return chartValue;
         }
 
+        public static EnhancementType forChartValue(String chartValue) {
+            for (EnhancementType enhancementType : values()) {
+                if (enhancementType.getChartValue().equals(chartValue)) {
+                    return enhancementType;
+                }
+            }
+            return null; // throw an exception perhaps...
+        }
+
         @Override
         public String toString() {
             return "EnhancementType{" +
