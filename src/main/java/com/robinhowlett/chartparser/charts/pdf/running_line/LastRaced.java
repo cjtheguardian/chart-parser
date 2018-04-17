@@ -1,12 +1,18 @@
 package com.robinhowlett.chartparser.charts.pdf.running_line;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.robinhowlett.chartparser.charts.pdf.Chart;
 import com.robinhowlett.chartparser.charts.pdf.ChartCharacter;
+import com.robinhowlett.chartparser.charts.pdf.RaceResult;
 import com.robinhowlett.chartparser.charts.pdf.Starter;
 import com.robinhowlett.chartparser.exceptions.ChartParserException;
 import com.robinhowlett.chartparser.tracks.Track;
 import com.robinhowlett.chartparser.tracks.TrackService;
+
+import org.springframework.hateoas.Link;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -17,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 import static com.robinhowlett.chartparser.charts.pdf.running_line.LastRaced.LastRacePerformance
         .parseFromLastRaced;
 
@@ -29,24 +36,31 @@ import static java.lang.Integer.parseInt;
  */
 public class LastRaced {
 
+    @JsonInclude(NON_EMPTY)
+    private final List<Link> links;
     private final LocalDate raceDate;
     private final Integer daysSince;
     @JsonUnwrapped
     private final LastRacePerformance lastRacePerformance;
 
-    public LastRaced(LocalDate raceDate, Integer daysSince, LastRacePerformance
-            lastRacePerformance) {
+    public LastRaced(LocalDate raceDate, Integer daysSince,
+            LastRacePerformance lastRacePerformance) {
+        this(raceDate, daysSince, lastRacePerformance,
+                (lastRacePerformance != null ? RaceResult.buildLinks(lastRacePerformance.getTrack(),
+                        raceDate, lastRacePerformance.getRaceNumber()) : null));
+    }
+
+    @JsonCreator
+    LastRaced(LocalDate raceDate, Integer daysSince,
+            LastRacePerformance lastRacePerformance, List<Link> links) {
         this.raceDate = raceDate;
         this.daysSince = daysSince;
         this.lastRacePerformance = lastRacePerformance;
+        this.links = links;
     }
 
     private static LastRaced noLastRace() {
         return null;
-    }
-
-    public boolean hasLastRace() {
-        return (raceDate != null);
     }
 
     /**
@@ -112,6 +126,10 @@ public class LastRaced {
         return false;
     }
 
+    public boolean hasLastRace() {
+        return (raceDate != null);
+    }
+
     public LocalDate getRaceDate() {
         return raceDate;
     }
@@ -122,6 +140,18 @@ public class LastRaced {
 
     public LastRacePerformance getLastRacePerformance() {
         return lastRacePerformance;
+    }
+
+    public List<Link> getLinks() {
+        return links;
+    }
+
+    @JsonIgnore
+    public Optional<Link> getLink(String rel) {
+        return getLinks().stream()
+                .filter(link -> link.getRel() != null &&
+                        link.getRel().equalsIgnoreCase(rel)
+                ).findAny();
     }
 
     @Override

@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -499,15 +500,28 @@ public class WagerPayoffPools {
             private final Win win;
             private final Place place;
             private final Show show;
+            @JsonIgnore
+            private final List<WinPlaceShow> winPlaceShows;
 
             @JsonCreator
-            public WinPlaceShowPayoff(String program, Horse horse, Win win, Place place, Show
-                    show) {
+            public WinPlaceShowPayoff(String program, Horse horse, Win win, Place place,
+                    Show show) {
                 this.program = program;
                 this.horse = horse;
                 this.win = win;
                 this.place = place;
                 this.show = show;
+
+                winPlaceShows = new ArrayList<>();
+                if (win != null) {
+                    winPlaceShows.add(win);
+                }
+                if (place != null) {
+                    winPlaceShows.add(place);
+                }
+                if (show != null) {
+                    winPlaceShows.add(show);
+                }
             }
 
             WinPlaceShowPayoff(String program, HorseNameWin horseNameWin, Double placePayoff,
@@ -596,40 +610,37 @@ public class WagerPayoffPools {
                 return show;
             }
 
+            public List<WinPlaceShow> getWinPlaceShows() {
+                return winPlaceShows;
+            }
+
             @Override
             public boolean equals(Object o) {
                 if (this == o) return true;
                 if (o == null || getClass() != o.getClass()) return false;
-
                 WinPlaceShowPayoff that = (WinPlaceShowPayoff) o;
-
-                if (program != null ? !program.equals(that.program) : that.program != null)
-                    return false;
-                if (horse != null ? !horse.equals(that.horse) : that.horse != null)
-                    return false;
-                if (win != null ? !win.equals(that.win) : that.win != null) return false;
-                if (place != null ? !place.equals(that.place) : that.place != null) return false;
-                return show != null ? show.equals(that.show) : that.show == null;
+                return Objects.equals(program, that.program) &&
+                        Objects.equals(horse, that.horse) &&
+                        Objects.equals(win, that.win) &&
+                        Objects.equals(place, that.place) &&
+                        Objects.equals(show, that.show) &&
+                        Objects.equals(winPlaceShows, that.winPlaceShows);
             }
 
             @Override
             public int hashCode() {
-                int result = program != null ? program.hashCode() : 0;
-                result = 31 * result + (horse != null ? horse.hashCode() : 0);
-                result = 31 * result + (win != null ? win.hashCode() : 0);
-                result = 31 * result + (place != null ? place.hashCode() : 0);
-                result = 31 * result + (show != null ? show.hashCode() : 0);
-                return result;
+                return Objects.hash(program, horse, win, place, show, winPlaceShows);
             }
 
             @Override
             public String toString() {
                 return "WinPlaceShowPayoff{" +
                         "program='" + program + '\'' +
-                        ", horse='" + horse + '\'' +
+                        ", horse=" + horse +
                         ", win=" + win +
                         ", place=" + place +
                         ", show=" + show +
+                        ", winPlaceShows=" + winPlaceShows +
                         '}';
             }
 

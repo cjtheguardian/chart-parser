@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -45,7 +46,7 @@ import static java.util.stream.Collectors.toList;
         "wagering", "fractionals", "splits", "ratings", "footnotes"})
 public class RaceResult {
 
-    @JsonInclude(NON_NULL)
+    @JsonInclude(NON_EMPTY)
     private final List<Link> links;
     @JsonProperty("cancellation") // required for property order but unwrapped
     @JsonUnwrapped
@@ -127,20 +128,54 @@ public class RaceResult {
         links = buildLinks(track, raceDate, raceNumber);
     }
 
-    static List<Link> buildLinks(Track track, LocalDate raceDate, Integer raceNumber) {
+    public RaceResult(Cancellation cancellation, LocalDate raceDate, Track track,
+            Integer raceNumber) {
+        this(cancellation, raceDate, track, raceNumber, null, null, null, null, false, null,
+                null, null, null, null, null, null);
+    }
+
+    @JsonCreator
+    public RaceResult(Cancellation cancellation, LocalDate raceDate, Track track,
+            Integer raceNumber, RaceConditions raceConditions,
+            DistanceSurfaceTrackRecord distanceSurfaceTrackRecord, Weather weather,
+            PostTimeStartCommentsTimer postTimeStartCommentsTimer, boolean deadHeat,
+            List<Starter> starters, List<Scratch> scratches, List<Fractional> fractionals,
+            List<Split> splits, WagerPayoffPools wagerPayoffPools, String footnotes,
+            List<Rating> ratings) {
+        this.cancellation = cancellation;
+        this.raceDate = raceDate;
+        this.track = track;
+        this.raceNumber = raceNumber;
+        this.raceConditions = raceConditions;
+        this.distanceSurfaceTrackRecord = distanceSurfaceTrackRecord;
+        this.weather = weather;
+        this.postTimeStartCommentsTimer = postTimeStartCommentsTimer;
+        this.deadHeat = deadHeat;
+        this.starters = starters;
+        this.scratches = scratches;
+        this.fractionals = fractionals;
+        this.splits = splits;
+        this.wagerPayoffPools = wagerPayoffPools;
+        this.footnotes = footnotes;
+        this.ratings = ratings;
+        this.links = buildLinks(track, raceDate, raceNumber);
+    }
+
+    public static List<Link> buildLinks(Track track, LocalDate raceDate, Integer raceNumber) {
         List<Link> links = new ArrayList<>();
 
         if (track != null && raceDate != null) {
             String raceDateMDY = ChartParser.convertToMonthDayYear(raceDate);
             String singleChartEmbedded =
                     String.format("https://www.equibase.com/premium/chartEmb.cfm?" +
-                            "track=%s&raceDate=%s&cy=%s&rn=%s", track.getCode(), raceDateMDY,
-                    track.getCountry(), raceNumber);
+                                    "track=%s&raceDate=%s&cy=%s&rn=%s", track.getCode(),
+                            raceDateMDY,
+                            track.getCountry(), raceNumber);
             Link embeddedChart = new Link(singleChartEmbedded, "web");
 
             String singeChartDirect =
                     String.format("https://www.equibase.com/premium/eqbPDFChartPlus.cfm?" +
-                            "RACE=%d&BorP=P&TID=%s&CTRY=%s&DT=%s&DAY=D&STYLE=EQB",
+                                    "RACE=%d&BorP=P&TID=%s&CTRY=%s&DT=%s&DAY=D&STYLE=EQB",
                             raceNumber, track.getCode(), track.getCountry(), raceDateMDY);
             Link directChart = new Link(singeChartDirect, "pdf");
 
@@ -167,6 +202,14 @@ public class RaceResult {
 
     public List<Link> getLinks() {
         return links;
+    }
+
+    @JsonIgnore
+    public Optional<Link> getLink(String rel) {
+        return getLinks().stream()
+                .filter(link -> link.getRel() != null &&
+                        link.getRel().equalsIgnoreCase(rel)
+                ).findAny();
     }
 
     public Cancellation getCancellation() {
@@ -365,39 +408,6 @@ public class RaceResult {
                 ", footnotes='" + footnotes + '\'' +
                 ", ratings=" + ratings +
                 '}';
-    }
-
-    public RaceResult(Cancellation cancellation, LocalDate raceDate, Track track,
-            Integer raceNumber) {
-        this(cancellation, raceDate, track, raceNumber, null, null, null, null, false, null,
-                null, null, null, null, null, null);
-    }
-
-    @JsonCreator
-    public RaceResult(Cancellation cancellation, LocalDate raceDate, Track track,
-            Integer raceNumber, RaceConditions raceConditions,
-            DistanceSurfaceTrackRecord distanceSurfaceTrackRecord, Weather weather,
-            PostTimeStartCommentsTimer postTimeStartCommentsTimer, boolean deadHeat,
-            List<Starter> starters, List<Scratch> scratches, List<Fractional> fractionals,
-            List<Split> splits, WagerPayoffPools wagerPayoffPools, String footnotes,
-            List<Rating> ratings) {
-        this.cancellation = cancellation;
-        this.raceDate = raceDate;
-        this.track = track;
-        this.raceNumber = raceNumber;
-        this.raceConditions = raceConditions;
-        this.distanceSurfaceTrackRecord = distanceSurfaceTrackRecord;
-        this.weather = weather;
-        this.postTimeStartCommentsTimer = postTimeStartCommentsTimer;
-        this.deadHeat = deadHeat;
-        this.starters = starters;
-        this.scratches = scratches;
-        this.fractionals = fractionals;
-        this.splits = splits;
-        this.wagerPayoffPools = wagerPayoffPools;
-        this.footnotes = footnotes;
-        this.ratings = ratings;
-        this.links = buildLinks(track, raceDate, raceNumber);
     }
 
     /**

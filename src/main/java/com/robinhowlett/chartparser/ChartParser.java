@@ -94,10 +94,6 @@ public class ChartParser {
         return new ChartParser(trackService, fractionalService, pointsOfCallService);
     }
 
-    public TrackService getTrackService() {
-        return trackService;
-    }
-
     public static ObjectMapper getObjectMapper() {
         if (mapper != null) {
             return mapper;
@@ -132,6 +128,172 @@ public class ChartParser {
                 .registerModule(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES))
                 .registerModule(simpleLocalDateModule);
         return csvMapper;
+    }
+
+    /**
+     * Uses {@link ChartStripper} (an extension of Apache PDFBox's {@link PDFTextStripper}) to
+     * extract the text from the PDF and, adding a header row, write a CSV String with each row
+     * being a character from the PDF with its location etc.
+     */
+    static String createCsvChart(PDDocument raceChart) throws IOException {
+        ChartStripper chartStripper = new ChartStripper(new StringWriter());
+        try (StringWriter writer = chartStripper.getWriter()) {
+            try (StringWriter throwawayWriter = new StringWriter()) {
+                writer.write("xDirAdj|yDirAdj|fontSize|xScale|height|widthOfSpace|widthDirAdj|" +
+                        "unicode");
+                chartStripper.writeText(raceChart, throwawayWriter);
+            }
+            return writer.getBuffer().toString();
+        }
+    }
+
+    /**
+     * Loads the file into PDFBox's PDDocument, splits it into pages, and converts to CSV strings
+     */
+    static List<String> convertToCsv(File pdfChartFile) throws ChartParserException {
+        List<String> csvCharts = new ArrayList<>();
+        try (PDDocument charts = PDDocument.load(pdfChartFile)) {
+            Splitter splitter = new Splitter();
+            List<PDDocument> raceCharts = splitter.split(charts);
+            for (int i = 0; i < raceCharts.size(); i++) {
+                try (PDDocument raceChart = raceCharts.get(i)) {
+                    String csvChart = createCsvChart(raceChart);
+                    csvCharts.add(csvChart);
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+
+        // some charts are spread over two pages; detect and combine them
+        List<String> prunedCsvCharts = new ArrayList<>();
+        String previousChart = null;
+        for (int i = 0; i < csvCharts.size(); i++) {
+            String csvChart = csvCharts.get(i);
+            List<ChartCharacter> chartCharacters = convertToChartCharacters(csvChart);
+            List<List<ChartCharacter>> lines = separateIntoLines(chartCharacters);
+
+            // if Copyright notice is not the last line, the text continued to the next page
+            List<ChartCharacter> lastLine = lines.get(lines.size() - 1);
+            String text = Chart.convertToText(lastLine);
+            Matcher matcher = COPYRIGHT_PATTERN.matcher(text);
+            if (matcher.find()) {
+                if (previousChart != null) {
+                    csvChart = csvChart.substring(csvChart.indexOf(System.lineSeparator()));
+                    previousChart = previousChart.concat(csvChart);
+                    prunedCsvCharts.add(previousChart);
+                    previousChart = null;
+                } else {
+                    prunedCsvCharts.add(csvChart);
+                }
+            } else {
+                previousChart = csvChart;
+            }
+        }
+        return prunedCsvCharts;
+    }
+
+    static List<ChartCharacter> convertToChartCharacters(String chart) throws ChartParserException {
+        return readChartCsv(chart);
+    }
+
+    static List<List<ChartCharacter>> separateIntoLines(List<ChartCharacter> data) {
+        List<List<ChartCharacter>> lines = new ArrayList<>();
+        List<ChartCharacter> line = new ArrayList<>();
+        boolean firstTime = true;
+        for (ChartCharacter d : data) {
+            if (firstTime) {
+                line.add(d);
+                firstTime = false;
+            } else {
+                // start of line or "Past Performance Running Line Preview"
+                if (d.getxDirAdj() == 9.92 ||
+                        (d.getxDirAdj() == 209.385 && d.getUnicode() == 'P')) {
+                    lines.add(line);
+                    line = new ArrayList<>();
+                }
+
+                line.add(d);
+            }
+        }
+        lines.add(line);
+        return lines;
+    }
+
+    /**
+     * Extracts the running line rows/characters
+     */
+    static List<List<ChartCharacter>> getRunningLines(List<List<ChartCharacter>> lines) {
+        List<List<ChartCharacter>> runningLines = new ArrayList<>();
+        boolean runningLineSectionsAreActive = false;
+        for (List<ChartCharacter> line : lines) {
+            String text = convertToText(line);
+            if (text.startsWith("Last Raced|Pgm")) {
+                runningLineSectionsAreActive = true;
+            } else if (text.startsWith("Run-Up:")) {
+                runningLines.add(line);
+                runningLineSectionsAreActive = false;
+            }
+
+            if (runningLineSectionsAreActive) {
+                runningLines.add(line);
+            }
+        }
+        return runningLines;
+    }
+
+    /**
+     * Uses a {@link CsvMapper} to reading a String representing a CSV representation of a PDF
+     * Chart, returning a list of {@link ChartCharacter}s
+     */
+    static List<ChartCharacter> readChartCsv(String csvChart) throws ChartParserException {
+        CsvSchema schema = CsvSchema.emptySchema()
+                .withHeader()
+                .withColumnSeparator('|')
+                .withoutQuoteChar();
+
+        try {
+            MappingIterator<ChartCharacter> mappingIterator =
+                    getCsvMapper().readerFor(ChartCharacter.class)
+                            .with(schema)
+                            .readValues(csvChart);
+            return mappingIterator.readAll();
+        } catch (Exception e) {
+            throw new ChartParserException("Error deserializing the Chart CSV data", e);
+        }
+    }
+
+    // http://www.drf.com/news/settlement-creates-two-winners-2016-parx-oaks
+    public static boolean is2016ParxOaksDebacle(Track track, LocalDate raceDate,
+            Integer raceNumber) {
+        return (track != null && track.getCode() != null && raceDate != null &&
+                raceNumber != null &&
+                track.getCode().equals("PRX") &&
+                raceDate.isEqual(LocalDate.of(2016, 5, 7)) &&
+                raceNumber == 8);
+    }
+
+    public static String convertToMonthDayYear(LocalDate isoDate) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("M/d/yyyy");
+        return dateTimeFormatter.format(isoDate);
+    }
+
+    public static String ordinal(int i) {
+        String[] suffixes =
+                new String[]{"th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"};
+        switch (i % 100) {
+            case 11:
+            case 12:
+            case 13:
+                return i + "th";
+            default:
+                return i + suffixes[i % 10];
+
+        }
+    }
+
+    public TrackService getTrackService() {
+        return trackService;
     }
 
     public List<RaceResult> parse(File pdfChartFile) {
@@ -474,154 +636,6 @@ public class ChartParser {
                 (claimingPrice.getHorse() != null &&
                         claimingPrice.getHorse().getName().equals(
                                 starter.getHorse().getName()));
-    }
-
-    /**
-     * Uses {@link ChartStripper} (an extension of Apache PDFBox's {@link PDFTextStripper}) to
-     * extract the text from the PDF and, adding a header row, write a CSV String with each row
-     * being a character from the PDF with its location etc.
-     */
-    static String createCsvChart(PDDocument raceChart) throws IOException {
-        ChartStripper chartStripper = new ChartStripper(new StringWriter());
-        try (StringWriter writer = chartStripper.getWriter()) {
-            try (StringWriter throwawayWriter = new StringWriter()) {
-                writer.write("xDirAdj|yDirAdj|fontSize|xScale|height|widthOfSpace|widthDirAdj|" +
-                        "unicode");
-                chartStripper.writeText(raceChart, throwawayWriter);
-            }
-            return writer.getBuffer().toString();
-        }
-    }
-
-    /**
-     * Loads the file into PDFBox's PDDocument, splits it into pages, and converts to CSV strings
-     */
-    static List<String> convertToCsv(File pdfChartFile) throws ChartParserException {
-        List<String> csvCharts = new ArrayList<>();
-        try (PDDocument charts = PDDocument.load(pdfChartFile)) {
-            Splitter splitter = new Splitter();
-            List<PDDocument> raceCharts = splitter.split(charts);
-            for (int i = 0; i < raceCharts.size(); i++) {
-                try (PDDocument raceChart = raceCharts.get(i)) {
-                    String csvChart = createCsvChart(raceChart);
-                    csvCharts.add(csvChart);
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-
-        // some charts are spread over two pages; detect and combine them
-        List<String> prunedCsvCharts = new ArrayList<>();
-        String previousChart = null;
-        for (int i = 0; i < csvCharts.size(); i++) {
-            String csvChart = csvCharts.get(i);
-            List<ChartCharacter> chartCharacters = convertToChartCharacters(csvChart);
-            List<List<ChartCharacter>> lines = separateIntoLines(chartCharacters);
-
-            // if Copyright notice is not the last line, the text continued to the next page
-            List<ChartCharacter> lastLine = lines.get(lines.size() - 1);
-            String text = Chart.convertToText(lastLine);
-            Matcher matcher = COPYRIGHT_PATTERN.matcher(text);
-            if (matcher.find()) {
-                if (previousChart != null) {
-                    csvChart = csvChart.substring(csvChart.indexOf(System.lineSeparator()));
-                    previousChart = previousChart.concat(csvChart);
-                    prunedCsvCharts.add(previousChart);
-                    previousChart = null;
-                } else {
-                    prunedCsvCharts.add(csvChart);
-                }
-            } else {
-                previousChart = csvChart;
-            }
-        }
-        return prunedCsvCharts;
-    }
-
-    static List<ChartCharacter> convertToChartCharacters(String chart) throws ChartParserException {
-        return readChartCsv(chart);
-    }
-
-    static List<List<ChartCharacter>> separateIntoLines(List<ChartCharacter> data) {
-        List<List<ChartCharacter>> lines = new ArrayList<>();
-        List<ChartCharacter> line = new ArrayList<>();
-        boolean firstTime = true;
-        for (ChartCharacter d : data) {
-            if (firstTime) {
-                line.add(d);
-                firstTime = false;
-            } else {
-                // start of line or "Past Performance Running Line Preview"
-                if (d.getxDirAdj() == 9.92 ||
-                        (d.getxDirAdj() == 209.385 && d.getUnicode() == 'P')) {
-                    lines.add(line);
-                    line = new ArrayList<>();
-                }
-
-                line.add(d);
-            }
-        }
-        lines.add(line);
-        return lines;
-    }
-
-    /**
-     * Extracts the running line rows/characters
-     */
-    static List<List<ChartCharacter>> getRunningLines(List<List<ChartCharacter>> lines) {
-        List<List<ChartCharacter>> runningLines = new ArrayList<>();
-        boolean runningLineSectionsAreActive = false;
-        for (List<ChartCharacter> line : lines) {
-            String text = convertToText(line);
-            if (text.startsWith("Last Raced|Pgm")) {
-                runningLineSectionsAreActive = true;
-            } else if (text.startsWith("Run-Up:")) {
-                runningLines.add(line);
-                runningLineSectionsAreActive = false;
-            }
-
-            if (runningLineSectionsAreActive) {
-                runningLines.add(line);
-            }
-        }
-        return runningLines;
-    }
-
-    /**
-     * Uses a {@link CsvMapper} to reading a String representing a CSV representation of a PDF
-     * Chart, returning a list of {@link ChartCharacter}s
-     */
-    static List<ChartCharacter> readChartCsv(String csvChart) throws ChartParserException {
-        CsvSchema schema = CsvSchema.emptySchema()
-                .withHeader()
-                .withColumnSeparator('|')
-                .withoutQuoteChar();
-
-        try {
-            MappingIterator<ChartCharacter> mappingIterator =
-                    getCsvMapper().readerFor(ChartCharacter.class)
-                            .with(schema)
-                            .readValues(csvChart);
-            return mappingIterator.readAll();
-        } catch (Exception e) {
-            throw new ChartParserException("Error deserializing the Chart CSV data", e);
-        }
-    }
-
-    // http://www.drf.com/news/settlement-creates-two-winners-2016-parx-oaks
-    public static boolean is2016ParxOaksDebacle(Track track, LocalDate raceDate,
-            Integer raceNumber) {
-        return (track != null && track.getCode() != null && raceDate != null &&
-                raceNumber != null &&
-                track.getCode().equals("PRX") &&
-                raceDate.isEqual(LocalDate.of(2016, 5, 7)) &&
-                raceNumber == 8);
-    }
-
-    public static String convertToMonthDayYear(LocalDate isoDate) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("M/d/yyyy");
-        return dateTimeFormatter.format(isoDate);
     }
 
     @JsonInclude(NON_NULL)
