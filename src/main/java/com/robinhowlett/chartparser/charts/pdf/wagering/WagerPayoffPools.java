@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -133,7 +134,7 @@ public class WagerPayoffPools {
         Map<String, ColumnRange> wageringHeaderColumns =
                 populateHeaderColumns(wageringHeaderLine, WAGERING_COLUMN_NAMES);
 
-        // the floors are used to calculate the appropriate column the associate a character with
+        // the floors are used to calculate the appropriate column to associate a character with
         WageringTreeSet wageringFloors =
                 WageringColumn.calculateColumnFloors(wageringHeaderColumns);
 
@@ -174,6 +175,14 @@ public class WagerPayoffPools {
         Map<Double, List<ChartCharacter>> wageringGridByLine = new LinkedHashMap<>();
         for (ChartCharacter chartCharacter : wageringLine) {
             double yDirAdj = chartCharacter.getyDirAdj();
+
+            // exclude lines that are not part of the wagering grid by identifying the rows that
+            // have too much white space above them to suggest they are not part of the grid
+            // e.g. 2015 KY Derby, Preakness, Belmont charts' Taylor Made sponsorships
+            Optional<Double> max = wageringGridByLine.keySet().stream().max(Double::compareTo);
+            if (max.isPresent() && (yDirAdj > (max.get() + 10d))) {
+                continue;
+            }
 
             if (!wageringGridByLine.containsKey(yDirAdj)) {
                 List<ChartCharacter> chartCharacters = new ArrayList<>();

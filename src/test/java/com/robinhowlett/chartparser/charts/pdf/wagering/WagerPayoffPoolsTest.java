@@ -44,6 +44,21 @@ public class WagerPayoffPoolsTest {
     }
 
     @Test
+    public void organizeWageringLinesByLine_WithWageringLinesAndSponsor_GroupsByLine() throws Exception {
+        Map<Double, List<ChartCharacter>> expected = SAMPLE_CHARTS.getWageringLinesByLine();
+
+        List<ChartCharacter> actual = SAMPLE_CHARTS.getGridWageringLines();
+        ChartCharacter character = new ChartCharacter();
+        character.setyDirAdj(379.248 + 15); // the sponsorship line's first character
+        actual.add(character);
+
+        Map<Double, List<ChartCharacter>> wageringLinesByLine =
+                WagerPayoffPools.organizeWageringLinesByLine(actual);
+
+        assertThat(wageringLinesByLine, equalTo(expected));
+    }
+
+    @Test
     public void populateHeaderColumns_WithSampleHeaderLine_MapsCorrectly() throws Exception {
         Map<String, ColumnRange> expected = SAMPLE_CHARTS.getWageringGridColumnRanges();
 
