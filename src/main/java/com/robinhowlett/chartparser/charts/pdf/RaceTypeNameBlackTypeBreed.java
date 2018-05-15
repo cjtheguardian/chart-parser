@@ -23,7 +23,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @JsonPropertyOrder({"breed", "type", "code", "name", "grade", "blackType"})
 public class RaceTypeNameBlackTypeBreed {
 
-    static final Map<String, String> RACE_TYPE_CODES = new LinkedHashMap<String, String>() {{
+    public static final Map<String, String> RACE_TYPE_CODES = new LinkedHashMap<String, String>() {{
         put("SPEED INDEX OPTIONAL CLAIMING", "SPO");
         put("INVITATIONAL HANDICAP STAKES", "IHS");
         put("ALLOWANCE OPTIONAL CLAIMING", "AOC");

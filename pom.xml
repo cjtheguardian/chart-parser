@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.robinhowlett</groupId>
     <artifactId>chart-parser</artifactId>
-    <version>1.0.6-SNAPSHOT</version>
+    <version>1.1.0.RC1</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
