@@ -17,7 +17,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  */
 public class PostTimeStartCommentsTimer {
     static final Pattern POST_START_TIMER_PATTERN =
-            Pattern.compile("Off at: (.+)\\|Start: ([^\\|]+)(\\|Timer: ([^\\|\\n]+))?");
+            Pattern.compile("Off at: (.+)\\|Start: ([^\\|]+)(\\|Timer: ([^\\|\\n|\\r|\\r\\n]+))?");
 
     private final String postTime;
     private final String startComments;

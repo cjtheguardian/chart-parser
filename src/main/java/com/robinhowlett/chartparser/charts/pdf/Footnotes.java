@@ -44,8 +44,8 @@ public class Footnotes {
         }
 
         String notes = Chart.convertToText(footnotes);
-        notes = notes.replaceAll("\nDenotes a Keeneland Sales Graduate", "")
-                .replaceAll("\n", " ")
+        notes = notes.replaceAll(System.lineSeparator() + "Denotes a Keeneland Sales Graduate", "")
+                .replaceAll(System.lineSeparator(), " ")
                 .replaceAll("\\|", " ");
 
         return notes;
