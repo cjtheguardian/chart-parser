@@ -551,6 +551,8 @@ public class RaceResult {
 
             updateStartersWithOddsChoiceIndicies(starters);
 
+            markPositionDeadHeats(starters);
+
             // whether the race resulted in a dead heat
             // ignore the idiotic 2016 Parx Oaks co-winner decision
             if (!ChartParser.is2016ParxOaksDebacle(track, raceDate, raceNumber)) {
@@ -560,17 +562,30 @@ public class RaceResult {
             return new RaceResult(this);
         }
 
+        List<Starter> markPositionDeadHeats(List<Starter> starters) {
+            if (starters != null && !starters.isEmpty()) {
+                starters.stream()
+                        // did finish the race
+                        .filter(starter -> starter.getFinishPosition() != null)
+                        .collect(groupingBy(Starter::getFinishPosition))
+                        .entrySet().stream()
+                        .filter(entry -> entry.getValue().size() > 1)
+                        .flatMap(entry -> entry.getValue().stream())
+                        .forEach(starter -> starter.setPositionDeadHeat(true));
+            }
+
+            return starters;
+        }
+
         List<Starter> markCoupledAndFieldEntries(List<Starter> starters) {
             if (starters != null) {
                 starters.stream()
                         .collect(groupingBy(Starter::getEntryProgram))
-                        .entrySet()
-                        .stream()
+                        .entrySet().stream()
                         .filter(entry -> entry.getValue().size() > 1)
-                        .forEach(entries -> entries.getValue()
-                                .stream()
-                                .filter(starter -> !starter.isEntry())
-                                .forEach(starter -> starter.setEntry(true)));
+                        .flatMap(entry -> entry.getValue().stream())
+                        .filter(starter -> !starter.isEntry())
+                        .forEach(starter -> starter.setEntry(true));
             }
             return starters;
         }

@@ -14,7 +14,7 @@ public class DeadHeat {
     public static boolean parse(List<List<ChartCharacter>> lines) {
         for (List<ChartCharacter> line : lines) {
             String text = Chart.convertToText(line);
-            if (parseDeadHeat(text)) return true;
+            return parseDeadHeat(text);
         }
         return false;
     }

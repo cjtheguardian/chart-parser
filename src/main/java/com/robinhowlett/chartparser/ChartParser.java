@@ -462,7 +462,8 @@ public class ChartParser {
                 if (!claimedHorses.isEmpty()) {
                     for (ClaimedHorse claimedHorse : claimedHorses) {
                         for (Starter starter : starters) {
-                            if (claimedHorse.getHorse().equals(starter.getHorse().getName())) {
+                            if (claimedHorse.getHorse().getName().equals(
+                                    starter.getHorse().getName())) {
                                 // save for later
                                 starterClaimedHorseMap.put(starter, claimedHorse);
                                 break;

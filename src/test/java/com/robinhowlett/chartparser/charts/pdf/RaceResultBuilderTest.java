@@ -7,11 +7,12 @@ import com.robinhowlett.chartparser.charts.pdf.wagering.WagerPayoffPoolsTest;
 import com.robinhowlett.chartparser.fractionals.FractionalPoint;
 import com.robinhowlett.chartparser.fractionals.FractionalPoint.Fractional;
 import com.robinhowlett.chartparser.fractionals.FractionalPoint.Split;
-import com.robinhowlett.chartparser.points_of_call.PointsOfCall;
 import com.robinhowlett.chartparser.points_of_call.PointsOfCall.PointOfCall;
 import com.robinhowlett.chartparser.points_of_call.PointsOfCall.PointOfCall.RelativePosition;
 import com.robinhowlett.chartparser.points_of_call.PointsOfCall.PointOfCall.RelativePosition
         .LengthsAhead;
+import com.robinhowlett.chartparser.points_of_call.PointsOfCall.PointOfCall.RelativePosition
+        .TotalLengthsBehind;
 
 import org.junit.Test;
 
@@ -160,39 +161,39 @@ public class RaceResultBuilderTest {
             Starter.Builder first = new Starter.Builder();
             first.horseAndJockey(new HorseJockey(new Horse("Back Stop"),
                     new Jockey("Dennis", "Collins")));
-            first.pointsOfCall(new ArrayList<PointsOfCall.PointOfCall>() {{
-                PointsOfCall.PointOfCall first = new PointsOfCall.PointOfCall(1, "Start",
+            first.pointsOfCall(new ArrayList<PointOfCall>() {{
+                PointOfCall first = new PointOfCall(1, "Start",
                         "Start", null);
-                first.setRelativePosition(new PointsOfCall.PointOfCall.RelativePosition(1, null));
+                first.setRelativePosition(new PointOfCall.RelativePosition(1, null));
                 add(first);
 
-                PointsOfCall.PointOfCall second = new PointsOfCall.PointOfCall(2, "1/4", "2f",
+                PointOfCall second = new PointOfCall(2, "1/4", "2f",
                         1320);
                 second.setRelativePosition(
-                        new PointsOfCall.PointOfCall.RelativePosition(1,
-                                new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("2",
+                        new PointOfCall.RelativePosition(1,
+                                new PointOfCall.RelativePosition.LengthsAhead("2",
                                         2.0)));
                 add(second);
 
-                PointsOfCall.PointOfCall third = new PointsOfCall.PointOfCall(3, "1/2", "4f", 2640);
+                PointOfCall third = new PointOfCall(3, "1/2", "4f", 2640);
                 third.setRelativePosition(
-                        new PointsOfCall.PointOfCall.RelativePosition(1,
-                                new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("Head",
+                        new PointOfCall.RelativePosition(1,
+                                new PointOfCall.RelativePosition.LengthsAhead("Head",
                                         0.1)));
                 add(third);
 
-                PointsOfCall.PointOfCall fourth = new PointsOfCall.PointOfCall(5, "Str", "5f",
+                PointOfCall fourth = new PointOfCall(5, "Str", "5f",
                         3300);
                 fourth.setRelativePosition(
-                        new PointsOfCall.PointOfCall.RelativePosition(1,
-                                new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("1/2",
+                        new PointOfCall.RelativePosition(1,
+                                new PointOfCall.RelativePosition.LengthsAhead("1/2",
                                         0.5)));
                 add(fourth);
 
-                PointsOfCall.PointOfCall fifth = new PointsOfCall.PointOfCall(6, "Fin", "6f", 3960);
+                PointOfCall fifth = new PointOfCall(6, "Fin", "6f", 3960);
                 fifth.setRelativePosition(
-                        new PointsOfCall.PointOfCall.RelativePosition(1,
-                                new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("1 1/2",
+                        new PointOfCall.RelativePosition(1,
+                                new PointOfCall.RelativePosition.LengthsAhead("1 1/2",
                                         1.5)));
                 add(fifth);
             }});
@@ -227,7 +228,7 @@ public class RaceResultBuilderTest {
                 PointOfCall second = new PointOfCall(2, "1/4", "2f", 1320);
                 RelativePosition relativePosition2 = new RelativePosition(2,
                         new LengthsAhead("1 1/2", 1.5));
-                relativePosition2.setTotalLengthsBehind(new RelativePosition.TotalLengthsBehind
+                relativePosition2.setTotalLengthsBehind(new TotalLengthsBehind
                         ("2", 2.0));
                 second.setRelativePosition(relativePosition2);
                 add(second);
@@ -235,7 +236,7 @@ public class RaceResultBuilderTest {
                 PointOfCall third = new PointOfCall(3, "1/2", "4f", 2640);
                 RelativePosition relativePosition3 = new RelativePosition(3,
                         new LengthsAhead("4", 4.0));
-                relativePosition3.setTotalLengthsBehind(new RelativePosition.TotalLengthsBehind
+                relativePosition3.setTotalLengthsBehind(new TotalLengthsBehind
                         ("Head", 0.1));
                 third.setRelativePosition(relativePosition3);
                 add(third);
@@ -243,7 +244,7 @@ public class RaceResultBuilderTest {
                 PointOfCall fourth = new PointOfCall(5, "Str", "5f", 3300);
                 RelativePosition relativePosition5 = new RelativePosition(2,
                         new LengthsAhead("1", 1.0));
-                relativePosition5.setTotalLengthsBehind(new RelativePosition.TotalLengthsBehind
+                relativePosition5.setTotalLengthsBehind(new TotalLengthsBehind
                         ("1/2", 0.5));
                 fourth.setRelativePosition(relativePosition5);
                 add(fourth);
@@ -251,7 +252,7 @@ public class RaceResultBuilderTest {
                 PointOfCall fifth = new PointOfCall(6, "Fin", "6f", 3960);
                 RelativePosition relativePosition6 = new RelativePosition(2,
                         new LengthsAhead("3", 3.0));
-                relativePosition6.setTotalLengthsBehind(new RelativePosition.TotalLengthsBehind
+                relativePosition6.setTotalLengthsBehind(new TotalLengthsBehind
                         ("1 1/2", 1.5));
                 fifth.setRelativePosition(relativePosition6);
                 add(fifth);
@@ -282,39 +283,39 @@ public class RaceResultBuilderTest {
             Starter.Builder first = new Starter.Builder();
             first.horseAndJockey(new HorseJockey(new Horse("Back Stop"),
                     new Jockey("Dennis", "Collins")));
-            first.pointsOfCall(new ArrayList<PointsOfCall.PointOfCall>() {{
-                PointsOfCall.PointOfCall first = new PointsOfCall.PointOfCall(1, "Start",
+            first.pointsOfCall(new ArrayList<PointOfCall>() {{
+                PointOfCall first = new PointOfCall(1, "Start",
                         "Start", null);
-                first.setRelativePosition(new PointsOfCall.PointOfCall.RelativePosition(1, null));
+                first.setRelativePosition(new PointOfCall.RelativePosition(1, null));
                 add(first);
 
-                PointsOfCall.PointOfCall second = new PointsOfCall.PointOfCall(2, "1/4", "2f",
+                PointOfCall second = new PointOfCall(2, "1/4", "2f",
                         1320);
                 second.setRelativePosition(
-                        new PointsOfCall.PointOfCall.RelativePosition(1,
-                                new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("2",
+                        new PointOfCall.RelativePosition(1,
+                                new PointOfCall.RelativePosition.LengthsAhead("2",
                                         2.0)));
                 add(second);
 
-                PointsOfCall.PointOfCall third = new PointsOfCall.PointOfCall(3, "1/2", "4f", 2640);
+                PointOfCall third = new PointOfCall(3, "1/2", "4f", 2640);
                 third.setRelativePosition(
-                        new PointsOfCall.PointOfCall.RelativePosition(1,
-                                new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("Head",
+                        new PointOfCall.RelativePosition(1,
+                                new PointOfCall.RelativePosition.LengthsAhead("Head",
                                         0.1)));
                 add(third);
 
-                PointsOfCall.PointOfCall fourth = new PointsOfCall.PointOfCall(5, "Str", "5f",
+                PointOfCall fourth = new PointOfCall(5, "Str", "5f",
                         3300);
                 fourth.setRelativePosition(
-                        new PointsOfCall.PointOfCall.RelativePosition(1,
-                                new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("1/2",
+                        new PointOfCall.RelativePosition(1,
+                                new PointOfCall.RelativePosition.LengthsAhead("1/2",
                                         0.5)));
                 add(fourth);
 
-                PointsOfCall.PointOfCall fifth = new PointsOfCall.PointOfCall(6, "Fin", "6f", 3960);
+                PointOfCall fifth = new PointOfCall(6, "Fin", "6f", 3960);
                 fifth.setRelativePosition(
-                        new PointsOfCall.PointOfCall.RelativePosition(1,
-                                new PointsOfCall.PointOfCall.RelativePosition.LengthsAhead("1 1/2",
+                        new PointOfCall.RelativePosition(1,
+                                new PointOfCall.RelativePosition.LengthsAhead("1 1/2",
                                         1.5)));
                 add(fifth);
             }});
@@ -332,7 +333,7 @@ public class RaceResultBuilderTest {
                 PointOfCall second = new PointOfCall(2, "1/4", "2f", 1320);
                 RelativePosition relativePosition2 = new RelativePosition(2,
                         new LengthsAhead("1 1/2", 1.5));
-                relativePosition2.setTotalLengthsBehind(new RelativePosition.TotalLengthsBehind
+                relativePosition2.setTotalLengthsBehind(new TotalLengthsBehind
                         ("2", 2.0));
                 second.setRelativePosition(relativePosition2);
                 add(second);
@@ -340,7 +341,7 @@ public class RaceResultBuilderTest {
                 PointOfCall third = new PointOfCall(3, "1/2", "4f", 2640);
                 RelativePosition relativePosition3 = new RelativePosition(3,
                         new LengthsAhead("4", 4.0));
-                relativePosition3.setTotalLengthsBehind(new RelativePosition.TotalLengthsBehind
+                relativePosition3.setTotalLengthsBehind(new TotalLengthsBehind
                         ("Head", 0.1));
                 third.setRelativePosition(relativePosition3);
                 add(third);
@@ -348,7 +349,7 @@ public class RaceResultBuilderTest {
                 PointOfCall fourth = new PointOfCall(5, "Str", "5f", 3300);
                 RelativePosition relativePosition5 = new RelativePosition(2,
                         new LengthsAhead("1", 1.0));
-                relativePosition5.setTotalLengthsBehind(new RelativePosition.TotalLengthsBehind
+                relativePosition5.setTotalLengthsBehind(new TotalLengthsBehind
                         ("1/2", 0.5));
                 fourth.setRelativePosition(relativePosition5);
                 add(fourth);
@@ -356,7 +357,7 @@ public class RaceResultBuilderTest {
                 PointOfCall fifth = new PointOfCall(6, "Fin", "6f", 3960);
                 RelativePosition relativePosition6 = new RelativePosition(2,
                         new LengthsAhead("3", 3.0));
-                relativePosition6.setTotalLengthsBehind(new RelativePosition.TotalLengthsBehind
+                relativePosition6.setTotalLengthsBehind(new TotalLengthsBehind
                         ("1 1/2", 1.5));
                 fifth.setRelativePosition(relativePosition6);
                 add(fifth);
@@ -415,7 +416,7 @@ public class RaceResultBuilderTest {
                 PointOfCall pointOfCall = new PointOfCall(6, "Fin", "350y", 1050);
                 RelativePosition relativePosition = new RelativePosition(2,
                         new LengthsAhead("1/2", 0.5));
-                relativePosition.setTotalLengthsBehind(new RelativePosition.TotalLengthsBehind("1" +
+                relativePosition.setTotalLengthsBehind(new TotalLengthsBehind("1" +
                         " 3/4", 1.75));
                 pointOfCall.setRelativePosition(relativePosition);
                 add(pointOfCall);
@@ -453,8 +454,8 @@ public class RaceResultBuilderTest {
                         PointOfCall pointOfCall = new PointOfCall(6, "Fin", "350y", 1050);
                         RelativePosition relativePosition = new RelativePosition(2,
                                 new LengthsAhead("1/2", 0.5));
-                        relativePosition.setTotalLengthsBehind(new RelativePosition
-                                .TotalLengthsBehind("1 3/4", 1.75));
+                        relativePosition.setTotalLengthsBehind(new TotalLengthsBehind("1 3/4",
+                                1.75));
                         pointOfCall.setRelativePosition(relativePosition);
                         add(pointOfCall);
                     }});
@@ -678,6 +679,61 @@ public class RaceResultBuilderTest {
 
         // method under test
         starters = raceBuilder.markCoupledAndFieldEntries(starters);
+
+        assertThat(starters, equalTo(expected));
+    }
+
+    @Test
+    public void markPositionDeadHeats_WithDeadHeatForSecond_MarksThosePositionDeadHeatsAsTrue() {
+        // expected (has positionDeadHeat == true for second and third)
+        List<Starter> expected = new ArrayList<Starter>() {{
+            Starter first = new Starter.Builder().program("7").horseAndJockey(new HorseJockey(
+                    new Horse("Prater Sixty Four"), new Jockey("Karlo", "Lopez"))).build();
+            first.setOfficialPosition(1);
+            first.setPositionDeadHeat(false);
+
+            Starter second = new Starter.Builder().program("8").horseAndJockey(new HorseJockey(
+                    new Horse("Candy Sweetheart"), new Jockey("Dennis", "Collins"))).build();
+            second.setOfficialPosition(2);
+            second.setPositionDeadHeat(true);
+
+            Starter third = new Starter.Builder().program("3").horseAndJockey(new HorseJockey(
+                    new Horse("Midnightwithdrawal"), new Jockey("Alfredi", "Triana Jr.")))
+                    .build();
+            third.setOfficialPosition(2);
+            third.setPositionDeadHeat(true);
+
+            add(first);
+            add(second);
+            add(third);
+        }};
+
+
+        // actual
+        List<Starter> starters = new ArrayList<Starter>() {{
+            Starter first = new Starter.Builder().program("7").horseAndJockey(new HorseJockey(
+                    new Horse("Prater Sixty Four"), new Jockey("Karlo", "Lopez"))).build();
+            first.setOfficialPosition(1);
+
+            Starter second = new Starter.Builder().program("8").horseAndJockey(new HorseJockey(
+                    new Horse("Candy Sweetheart"), new Jockey("Dennis", "Collins"))).build();
+            second.setOfficialPosition(2);
+
+            Starter third = new Starter.Builder().program("3").horseAndJockey(new HorseJockey(
+                    new Horse("Midnightwithdrawal"), new Jockey("Alfredi", "Triana Jr.")))
+                    .build();
+            third.setOfficialPosition(2);
+
+            add(first);
+            add(second);
+            add(third);
+        }};
+
+        RaceResult.Builder raceBuilder = new RaceResult.Builder();
+        starters = raceBuilder.markPositionDeadHeats(starters);
+
+        // ensure the race isn't reporting a dead heat - that's only for when winners dead heat
+        assertFalse(raceBuilder.detectDeadHeat(starters));
 
         assertThat(starters, equalTo(expected));
     }

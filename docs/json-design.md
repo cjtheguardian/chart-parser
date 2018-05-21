@@ -4,6 +4,10 @@
 
 | Field  | Type | Description | Notes | Sample Value(s) |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
+| links  | array  | A list of links to source web pages and PDFs  |  |  |
+| links[]  | object  | A link to source web pages and PDFs  |  |  |
+| links[].rel  | string  | A link relation that describes the source chart/web page |  | `web` is the web wrapper around the race chart PDF<br/>`pdf` is the raw race chart PDF file<br/>`allWeb` is the web wrapper of all races in the raceday chart PDF<br/>`allPdf` is the raw raceday chart PDF file |
+| links[].href  | string  | The link to the source chart/web page |  | `web`: `https://www.equibase.com/premium/chartEmb.cfm?track=<trackCode>&raceDate=<MM/dd/yyyy>&cy=<countryCode>&rn=<raceNumber>`<br/>`pdf`: `https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=<raceNumber>&BorP=P&TID=<trackCode>&CTRY=<countryCode>&DT=<MM/dd/yyyy>&DAY=D&STYLE=EQB`<br/>`allWeb`: `https://www.equibase.com/premium/chartEmb.cfm?track=<trackCode>&raceDate=<MM/dd/yyyy>&cy=<countryCode>`<br/>`allPdf`: `https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=A&BorP=P&TID=<trackCode>&CTRY=<countryCode>&DT=<MM/dd/yyyy>&DAY=D&STYLE=EQB` |
 | cancelled  | boolean  | `true` if the race was cancelled  |  | `true`<br/>`false`  |
 | reason  | string  | The reason behind the cancellation | Only present if `cancelled` has a value of `true` | "Track Conditions"  |
 | raceDate  | object  | | `raceDate` and all child fields are always present |  |
@@ -15,19 +19,32 @@
 | raceDate.dayOfYear  | number  | The day of the year of this race | A value between 1-365 (or 366 for leap years) | `206` |
 | track  | object  | The details of the track where the race occurred | `track` and all child fields are always present |  |
 | track.code  | string  | A short code for the track | A two- or three-character value; uppercase | "ARP" |
+| track.canonical  | string  | A canonical short code for the track when a track has had multiple codes in its history | A two- or three-character value; uppercase | "DUE" for both Dueling Grounds and Kentucky Downs |
 | track.country  | string  | A short country code | A two- or three-character value; uppercase | "USA" |
+| track.state  | string  | The two-letter state code | A two-character value; uppercase | "CO" |
+| track.city  | string  | The city the track is located | Uppercase | "AURORA" |
 | track.name  | string  | The full track name | Uppercase | "ARAPAHOE PARK" |
 | raceNumber  | number  | The official race number | Always present | `3` |
 | conditions  | object  | | `raceDate` and all child fields always present |  |
 | conditions.breed  | string  | The breed of horse this race was for | One of four possible values; uppercase | "THOROUGHBRED"<br/>"QUARTER_HORSE"<br/>"ARABIAN"<br/>"MIXED" |
 | conditions.type  | string  | The classification of the race | Always present; uppercase | "ALLOWANCE"<br/>"MAIDEN SPECIAL WEIGHT"<br/>"STAKES"<br/>"CLAIMING" |
+| conditions.code  | string  | The short code for the classification of the race | Always present; uppercase | "ALW"<br/>"MSW"<br/>"STK"<br/>"CLM" |
 | conditions.name  | string  | The name of the race (if any) |  | "Mount Elbert S."<br/>"Kentucky Derby Presented by Yum! Brands" |
 | conditions.grade  | number  | The grade of the race (if any) | A value between 1-3 | `1` |
 | conditions.blackType  | string  | The black-type description of this race (if any) | Present when the race qualifies as a black-type race | "Grade 1"<br/>"Grade 3"<br/>"Listed"<br/>"Black Type" |
 | conditions.text  | string  | The full race conditions text | | "FOR MAIDENS, TWO YEARS OLD. Weight, 120 lbs."<br/>"FOR THREE YEAR OLDS AND UPWARD WHICH HAVE NEVER WON TWO RACES. Weight, 124 lbs. (NW2 L)" |
-| conditions.claimingPriceRange  | object  | The claim price range for the starters in the race  | Only present for claiming races |  |
+| conditions.restrictions  | object  | | `distance` and all child fields are always present |  |
+| conditions.restrictions.X  | object  | | `distance` and all child fields are always present |  |
+| conditions.purse  | object  | |  |  |
+| conditions.purse.value  | number  | The value of the race | | `9700`<br/>`40000` |
+| conditions.purse.text  | string  | Text version of the race prize money | | "$9,700"<br/>"$40,000 Guaranteed" |
+| conditions.purse.availableMoney  | string  | Text of the "available money" description | | "$9,700"<br/>"$40,000" |
+| conditions.purse.enhancements  | string  | A comma-separated list of purse enhancements that applied to this race | `null` if no enhancements | "Includes: $3,000 AQHA-American Quarter Horse Association, Plus: $500 Other Sources" |
+| conditions.purse.valueOfRace  | string  | A detailed description of the prize money distribution (if any) | | "$9,700 1st $5,820, 2nd $1,940, 3rd $970, 4th $582, 5th $194, 6th $97, 7th $97" |
+| conditions.claimingPriceRange  | object  |  |  |
 | conditions.claimingPriceRange.min  | number  | The minimum claim price  |  | `5000` |
 | conditions.claimingPriceRange.max  | number  | The maximum claim price  | If equal to `min`, it means claims are only at that price | `10000` |
+| conditions.summary  | string  |  | |  |
 | distance  | object  | | `distance` and all child fields are always present |  |
 | distance.text  | string  | The distance of the race as described on the chart | | "One And One Sixteenth Miles"<br/>"Three Hundred And Fifty Yards"<br/>"Six Furlongs" |
 | distance.compact  | string  | A compact description of the race distance |  | "1 1/16m"<br/>"350y"<br/>"6f" |
@@ -37,9 +54,11 @@
 | distance.runUp  | number  | The distance between the starting stalls and the "start" electronic timer | Value is in feet | `30`<br/>`0` |
 | distance.tempRail  | number  | The distance the track rail was moved out temporariliy | Value is in feet | `20`<br/>`150` |
 | surface  | string  | The surface the race was run on |  | "Dirt"<br/>"Turf"<br/>"Inner turf" |
+| course  | string  |  |  |  |
 | trackCondition  | string  | A description of the track/surface condition |  | "Fast"<br/>"Sloppy (Sealed)"<br/>"Muddy" |
-| scheduledSurface  | string  | The surface the race was supposed to be run on |  | "Turf" |
+| scheduledSurface  | string  | The surface the race was supposed to be run on | Only present when different than `surface` | "Turf" |
 | offTurf  | boolean  | If the race was scheduled to be run on the turf, but was actually run on the main track |  | `true`<br/>`false` |
+| format  | string  |  |  |  |
 | trackRecord  | object  | The record time for this race distance and surface listed in the chart | |  |
 | trackRecord.holder  | object  | The details of the track record holder | |  |
 | trackRecord.holder.name  | string  | The track record holder's name |  | "No It Ain't" |
@@ -52,12 +71,6 @@
 | trackRecord.raceDate.day  | number  | The day of the track record race | A value between 1-31, depending on the month | `12` |
 | trackRecord.raceDate.dayOfWeek  | string  | The day of the week of the track record race | The full day name is used | "Friday" |
 | trackRecord.raceDate.dayOfYear  | number  | The day of the year of the track record race | A value between 1-365 (or 366 for leap years) | `224` |
-| purse  | object  | The prize money for this race | |  |
-| purse.value  | number  | The value of the race | | `9700`<br/>`40000` |
-| purse.text  | string  | Text version of the race prize money | | "$9,700"<br/>"$40,000 Guaranteed" |
-| purse.availableMoney  | string  | Text of the "available money" description | | "$9,700"<br/>"$40,000" |
-| purse.enhancements  | string  | A comma-separated list of purse enhancements that applied to this race | `null` if no enhancements | "Includes: $3,000 AQHA-American Quarter Horse Association, Plus: $500 Other Sources" |
-| purse.valueOfRace  | string  | A detailed description of the prize money distribution (if any) | | "$9,700 1st $5,820, 2nd $1,940, 3rd $970, 4th $582, 5th $194, 6th $97, 7th $97" |
 | weather  | object  | The weather conditions present during the race | |  |
 | weather.text  | string  | A short description of the weather conditions | | "Clear" |
 | weather.wind  | object  | The wind conditions present during the race | Only present for Quarter Horse or Mixed breed races |  |
@@ -68,6 +81,8 @@
 | timer  | string  | Description of how the race was timed | Only present for Quarter Horse or Mixed breed races | "Electronic" |
 | deadHeat  | boolean  | `true` if the race resulted in a dead-heat  |  | `true`<br/>`false`  |
 | numberOfRunners  | number  | The numbers of horses that officially ran in the race  |  | `9` |
+| finalTime  | string  |  |  |  |
+| finalMillis  | number  |  |  |  |
 | starters  | array  | The list of participants that started the race |  |  |
 | starters[]  | object  | A participant in the race |  |  |
 | starters[].lastRaced  | object  | The details of the last race this starter participated in (if any) |  |  |
@@ -211,6 +226,11 @@
 | starters[].ratings[].value | number | The numeric value for this rating  |  | `78.0` |
 | starters[].ratings[].extra  | string  | Any additional text that affects the rating e.g. "p" for "improvement likely" | Only present if not `null` | "p" |
 | starters[].comments | string | The brief race comments listed in the chart for the starter's performance |  | "speed off rail 3wd tr" |
+| scratches | array  | The horses scratched from the race and, if available, the reason why | Empty array if there were no scratches |  |
+| scratches[]  | object  | The details of a horse scratched from the race |  |  |
+| scratches[].horse  | object  | A horse scratched from the race |  |  |
+| scratches[].horse.name  | string  | The name of the horse scratched |  | "Cat With a Twist" |
+| scratches[].reason  | string  | The reason the horse was scratched | `null` if not available | "Trainer"<br/>"Veterinarian" |
 | wagering| object | The wagering details for the race (win-place-show and exotics) | Only present if the race had wagering |  |
 | wagering.winPlaceShow | object | The win-place-show details for the race | Only present if the race had a mutuel win, and/or place, and/or show payoffs |  |
 | wagering.winPlaceShow.totalWPSPool | number | The combined pool total for win, place, and show betting |  |  |
@@ -241,11 +261,6 @@
 | wagering.exotics[].odds | number | The odds equivalent for this unit and payoff | Odds are expressed as "to one (unit)" | `17` |
 | wagering.exotics[].pool | number | The gross amount bet into the pool |  | `1688` |
 | wagering.exotics[].carryover | number | The amount to be carried over into the next applicable pool | `null` if no carryover | `1335505`<br/>`null` |
-| scratches | array  | The horses scratched from the race and, if available, the reason why | Empty array if there were no scratches |  |
-| scratches[]  | object  | The details of a horse scratched from the race |  |  |
-| scratches[].horse  | object  | A horse scratched from the race |  |  |
-| scratches[].horse.name  | string  | The name of the horse scratched |  | "Cat With a Twist" |
-| scratches[].reason  | string  | The reason the horse was scratched | `null` if not available | "Trainer"<br/>"Veterinarian" |
 | fractionals | array | The list of fractional times registered by the leader at each fractional point |  |  |
 | fractionals[] | object | The details of an individual fractional |  |  |
 | fractionals[].point | number | The fractional point in question | Values range from `1` to `6` | `1` |

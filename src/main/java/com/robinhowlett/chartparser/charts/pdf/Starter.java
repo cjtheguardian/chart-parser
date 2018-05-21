@@ -44,9 +44,9 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  */
 @JsonPropertyOrder({"lastRaced", "program", "entry", "entryProgram", "horse", "jockey",
         "trainer", "owner", "weight", "medicationEquipment", "claim", "postPosition",
-        "finishPosition", "officialPosition", "wageringPosition", "winner", "disqualified", "odds",
-        "choice", "favorite", "wagering", "pointsOfCall", "fractionals", "splits", "ratings",
-        "comments"})
+        "finishPosition", "officialPosition", "positionDeadHeat", "wageringPosition", "winner",
+        "disqualified", "odds", "choice", "favorite", "wagering", "pointsOfCall", "fractionals",
+        "splits", "ratings", "comments"})
 public class Starter {
     private static final Logger LOGGER = LoggerFactory.getLogger(Starter.class);
 
@@ -64,6 +64,7 @@ public class Starter {
     private final List<PointOfCall> pointsOfCall;
     private Integer finishPosition; // unofficial finishing position
     private Integer officialPosition; // official finishing position (post DQs etc)
+    private boolean positionDeadHeat; // true if dead-heated with at least one other Starter
     @JsonInclude(NON_NULL)
     private Integer wageringPosition; // payoff finishing position (Win=1, Place=2, Show=3)
     private Trainer trainer;
@@ -114,8 +115,9 @@ public class Starter {
             Horse horse, Jockey jockey, Weight weight, MedicationEquipment medicationEquipment,
             Integer postPosition, Double odds, Boolean favorite, String comments,
             List<PointOfCall> pointsOfCall, Integer finishPosition, Integer officialPosition,
-            Integer wageringPosition, Trainer trainer, Owner owner, Claim claim, boolean winner,
-            Boolean disqualified, WinPlaceShowPayoff winPlaceShowPayoff, List<Rating> ratings,
+            boolean positionDeadHeat, Integer wageringPosition, Trainer trainer, Owner owner,
+            Claim claim, boolean winner, Boolean disqualified,
+            WinPlaceShowPayoff winPlaceShowPayoff, List<Rating> ratings,
             List<Fractional> fractionals, List<Split> splits, Integer choice) {
         this.lastRaced = lastRaced;
         this.program = program;
@@ -132,6 +134,7 @@ public class Starter {
         this.pointsOfCall = pointsOfCall;
         this.finishPosition = finishPosition;
         this.officialPosition = officialPosition;
+        this.positionDeadHeat = positionDeadHeat;
         this.wageringPosition = wageringPosition;
         this.trainer = trainer;
         this.owner = owner;
@@ -168,6 +171,165 @@ public class Starter {
         favorite = null;
         comments = null;
         pointsOfCall = null;
+    }
+
+    /**
+     * Parses the running line grid and associates the individual column data to the appropriate
+     * fields for the {@link Starter} in question
+     */
+    public static Starter parseRunningLineData(
+            Map<String, List<ChartCharacter>> runningLineCharactersByColumn,
+            LocalDate raceDate, Breed breed, RaceDistance raceDistance, TrackService trackService,
+            PointsOfCallService pointsOfCallService) throws ChartParserException {
+        Builder builder = new Builder();
+
+        List<List<ChartCharacter>> pointsOfCall = new ArrayList<>();
+
+        for (String column : runningLineCharactersByColumn.keySet()) {
+            List<ChartCharacter> chartCharacters = runningLineCharactersByColumn.get(column);
+            switch (column) {
+                case "LastRaced":
+                    builder.lastRaced(LastRaced.parse(chartCharacters, raceDate, trackService));
+                    break;
+                case "Pgm":
+                    builder.program(Chart.convertToText(chartCharacters));
+                    break;
+                case "HorseName(Jockey)":
+                    builder.horseAndJockey(HorseJockey.parse(chartCharacters));
+                    break;
+                case "Wgt":
+                    builder.weight(Weight.parse(chartCharacters));
+                    break;
+                case "PP":
+                    String postPositionText = Chart.convertToText(chartCharacters);
+                    if (!postPositionText.isEmpty()) {
+                        if (postPositionText.contains("|") || postPositionText.contains(" ")) {
+                            String[] split = postPositionText.split("\\||\\s");
+                            if (split.length == 2) {
+                                LOGGER.warn(String.format("Detected PP affected by M/E in text: " +
+                                                "%s; extracting the PP to be %s", postPositionText,
+                                        split[1]));
+                                postPositionText = split[1];
+                            }
+                        }
+                        builder.postPosition(Integer.parseInt(postPositionText));
+                    }
+                    break;
+                case "Odds":
+                    builder.odds(Odds.parse(chartCharacters));
+                    break;
+                case "Ind.Time":
+                    builder.individualTimeMillis(
+                            IndividualTime.parse(Chart.convertToText(chartCharacters)));
+                    break;
+                case "Sp.In.":
+                    String speedIndexText = Chart.convertToText(chartCharacters);
+                    if (!speedIndexText.isEmpty()) {
+                        int speedIndex = 0;
+                        try {
+                            speedIndex = Integer.parseInt(speedIndexText);
+                        } catch (NumberFormatException e) {
+
+                        }
+                        builder.speedIndex(speedIndex);
+                    }
+                    break;
+                case "M/E":
+                    builder.medicationAndEquipment(MedicationEquipment.parse(chartCharacters));
+                    break;
+                case "Comments":
+                    builder.comments(Chart.convertToText(chartCharacters));
+                    break;
+                default:
+                    pointsOfCall.add(chartCharacters);
+                    break;
+            }
+        }
+
+        int numberOfPointsOfCallInChart = pointsOfCall.size();
+
+        PointsOfCall pointsOfCallForDistance = buildPointsOfCall(breed, raceDistance,
+                pointsOfCallService, builder, numberOfPointsOfCallInChart);
+
+        // set the relative position (lengths ahead/behind) for each point of call
+        for (int i = 0; i < numberOfPointsOfCallInChart; i++) {
+            PointOfCall pointOfCall = pointsOfCallForDistance.getCalls().get(i);
+
+            List<ChartCharacter> characters = pointsOfCall.get(i);
+            RelativePosition relativePosition = PointOfCallPosition.parse(characters);
+
+            pointOfCall.setRelativePosition(relativePosition);
+        }
+
+        updateStretchAndFinishDistances(raceDistance, pointsOfCallForDistance);
+
+        List<PointOfCall> calls = pointsOfCallForDistance.getCalls();
+
+        builder.pointsOfCall(calls);
+
+        return builder.build();
+    }
+
+    static PointsOfCall buildPointsOfCall(Breed breed, RaceDistance raceDistance,
+            PointsOfCallService pointsOfCallService, Builder builder,
+            int numberOfPointsOfCallInChart) throws InvalidPointsOfCallException {
+        PointsOfCall pointsOfCallForDistance =
+                pointsOfCallService.getPointsOfCallForDistance(breed, raceDistance);
+
+        // handle Mixed/QH races with inconsistent points of call
+        // TODO this certainly could be improved
+        if (numberOfPointsOfCallInChart > 0 && pointsOfCallForDistance.getCalls() != null) {
+            if ((breed.equals(Breed.MIXED) || breed.equals(Breed.QUARTER_HORSE)) &&
+                    (numberOfPointsOfCallInChart < pointsOfCallForDistance.getCalls().size())) {
+                for (PointOfCall pointOfCall : pointsOfCallForDistance.getCalls()) {
+                    if (pointOfCall.getText().equals("Str2")) {
+                        LOGGER.warn(String.format("Removing the extraneous \"Str2\"" +
+                                        " point of call from the race of distance \"" +
+                                        "%s\" for starter \"%s\"", raceDistance.getText(),
+                                builder.horseJockey.getHorse().getName()));
+                        pointsOfCallForDistance.getCalls().remove(pointOfCall);
+                        break;
+                    }
+                }
+
+                // if still not right, give up
+                if (numberOfPointsOfCallInChart != pointsOfCallForDistance.getCalls().size()) {
+                    throw new InvalidPointsOfCallException(String.format("Unable to parse values " +
+                                    "for all of the following points of call: %s",
+                            pointsOfCallForDistance));
+                }
+            }
+        }
+        return pointsOfCallForDistance;
+    }
+
+    static void updateStretchAndFinishDistances(RaceDistance raceDistance, PointsOfCall
+            pointsOfCallForDistance) {
+        // set stretch distance if possible (as points of calls cover a variety of distances)
+        Optional<PointOfCall> stretchPointOfCall = pointsOfCallForDistance.getStretchPointOfCall();
+        if (stretchPointOfCall.isPresent()) {
+            PointOfCall stretch = stretchPointOfCall.get();
+            // stretch call is supposed to be one-furlong from the finish
+            if (!stretch.hasKnownDistance() && raceDistance.getFeet() >= 1320) {
+                int stretchFeet = raceDistance.getFeet() - 660;
+                stretch.setFeet(stretchFeet);
+                String stretchCompact = RaceDistance.lookupCompact(stretchFeet);
+                String stretchFurlongs = String.format("%.2ff", stretch.getFurlongs());
+                stretch.setCompact(stretchCompact != null ? stretchCompact : stretchFurlongs);
+            } else {
+                stretch.setCompact("Str");
+            }
+        }
+
+        // set finish distance (as points of calls cover a variety of distances)
+        Optional<PointOfCall> finishPointOfCall = pointsOfCallForDistance.getFinishPointOfCall();
+        if (finishPointOfCall.isPresent()) {
+            PointOfCall finish = finishPointOfCall.get();
+            if (!finish.hasKnownDistance()) {
+                finish.setFeet(raceDistance.getFeet());
+                finish.setCompact(raceDistance.getCompact());
+            }
+        }
     }
 
     public LastRaced getLastRaced() {
@@ -285,6 +447,17 @@ public class Starter {
 
     public void setOfficialPosition(Integer officialPosition) {
         this.officialPosition = officialPosition;
+    }
+
+    /**
+     * Returns true if at least one other Starter dead-heated for the same finishing position
+     */
+    public boolean isPositionDeadHeat() {
+        return positionDeadHeat;
+    }
+
+    public void setPositionDeadHeat(boolean positionDeadHeat) {
+        this.positionDeadHeat = positionDeadHeat;
     }
 
     public Integer getWageringPosition() {
@@ -463,164 +636,6 @@ public class Starter {
             horse.setBreeder(winner.getBreeder());
         }
         return horse;
-    }
-
-    /**
-     * Parses the running line grid and associates the individual column data to the appropriate
-     * fields for the {@link Starter} in question
-     */
-    public static Starter parseRunningLineData(
-            Map<String, List<ChartCharacter>> runningLineCharactersByColumn,
-            LocalDate raceDate, Breed breed, RaceDistance raceDistance, TrackService trackService,
-            PointsOfCallService pointsOfCallService) throws ChartParserException {
-        Builder builder = new Builder();
-
-        List<List<ChartCharacter>> pointsOfCall = new ArrayList<>();
-
-        for (String column : runningLineCharactersByColumn.keySet()) {
-            List<ChartCharacter> chartCharacters = runningLineCharactersByColumn.get(column);
-            switch (column) {
-                case "LastRaced":
-                    builder.lastRaced(LastRaced.parse(chartCharacters, raceDate, trackService));
-                    break;
-                case "Pgm":
-                    builder.program(Chart.convertToText(chartCharacters));
-                    break;
-                case "HorseName(Jockey)":
-                    builder.horseAndJockey(HorseJockey.parse(chartCharacters));
-                    break;
-                case "Wgt":
-                    builder.weight(Weight.parse(chartCharacters));
-                    break;
-                case "PP":
-                    String postPositionText = Chart.convertToText(chartCharacters);
-                    if (!postPositionText.isEmpty()) {
-                        if (postPositionText.contains("|") || postPositionText.contains(" ")) {
-                            String[] split = postPositionText.split("\\||\\s");
-                            if (split.length == 2) {
-                                LOGGER.warn(String.format("Detected PP affected by M/E in text: " +
-                                                "%s; extracting the PP to be %s", postPositionText,
-                                        split[1]));
-                                postPositionText = split[1];
-                            }
-                        }
-                        builder.postPosition(Integer.parseInt(postPositionText));
-                    }
-                    break;
-                case "Odds":
-                    builder.odds(Odds.parse(chartCharacters));
-                    break;
-                case "Ind.Time":
-                    builder.individualTimeMillis(
-                            IndividualTime.parse(Chart.convertToText(chartCharacters)));
-                    break;
-                case "Sp.In.":
-                    String speedIndexText = Chart.convertToText(chartCharacters);
-                    if (!speedIndexText.isEmpty()) {
-                        int speedIndex = 0;
-                        try {
-                            speedIndex = Integer.parseInt(speedIndexText);
-                        } catch (NumberFormatException e) {
-
-                        }
-                        builder.speedIndex(speedIndex);
-                    }
-                    break;
-                case "M/E":
-                    builder.medicationAndEquipment(MedicationEquipment.parse(chartCharacters));
-                    break;
-                case "Comments":
-                    builder.comments(Chart.convertToText(chartCharacters));
-                    break;
-                default:
-                    pointsOfCall.add(chartCharacters);
-                    break;
-            }
-        }
-
-        int numberOfPointsOfCallInChart = pointsOfCall.size();
-
-        PointsOfCall pointsOfCallForDistance = buildPointsOfCall(breed, raceDistance,
-                pointsOfCallService, builder, numberOfPointsOfCallInChart);
-
-        // set the relative position (lengths ahead/behind) for each point of call
-        for (int i = 0; i < numberOfPointsOfCallInChart; i++) {
-            PointOfCall pointOfCall = pointsOfCallForDistance.getCalls().get(i);
-
-            List<ChartCharacter> characters = pointsOfCall.get(i);
-            RelativePosition relativePosition = PointOfCallPosition.parse(characters);
-
-            pointOfCall.setRelativePosition(relativePosition);
-        }
-
-        updateStretchAndFinishDistances(raceDistance, pointsOfCallForDistance);
-
-        List<PointOfCall> calls = pointsOfCallForDistance.getCalls();
-
-        builder.pointsOfCall(calls);
-
-        return builder.build();
-    }
-
-    public static PointsOfCall buildPointsOfCall(Breed breed, RaceDistance raceDistance,
-            PointsOfCallService pointsOfCallService, Builder builder,
-            int numberOfPointsOfCallInChart) throws InvalidPointsOfCallException {
-        PointsOfCall pointsOfCallForDistance =
-                pointsOfCallService.getPointsOfCallForDistance(breed, raceDistance);
-
-        // handle Mixed/QH races with inconsistent points of call (this certainly could be improved)
-        if (numberOfPointsOfCallInChart > 0 && pointsOfCallForDistance.getCalls() != null) {
-            if ((breed.equals(Breed.MIXED) || breed.equals(Breed.QUARTER_HORSE)) &&
-                    (numberOfPointsOfCallInChart < pointsOfCallForDistance.getCalls().size())) {
-                for (PointOfCall pointOfCall : pointsOfCallForDistance.getCalls()) {
-                    if (pointOfCall.getText().equals("Str2")) {
-                        LOGGER.warn(String.format("Removing the extraneous \"Str2\"" +
-                                        " point of call from the race of distance \"" +
-                                        "%s\" for starter \"%s\"", raceDistance.getText(),
-                                builder.horseJockey.getHorse().getName()));
-                        pointsOfCallForDistance.getCalls().remove(pointOfCall);
-                        break;
-                    }
-                }
-
-                // if still not right, give up
-                if (numberOfPointsOfCallInChart != pointsOfCallForDistance.getCalls().size()) {
-                    throw new InvalidPointsOfCallException(String.format("Unable to parse values " +
-                                    "for all of the following points of call: %s",
-                            pointsOfCallForDistance));
-                }
-            }
-        }
-        return pointsOfCallForDistance;
-    }
-
-    public static void updateStretchAndFinishDistances(RaceDistance raceDistance, PointsOfCall
-            pointsOfCallForDistance) {
-        // set stretch distance if possible (as points of calls cover a variety of distances)
-        Optional<PointOfCall> stretchPointOfCall = pointsOfCallForDistance.getStretchPointOfCall();
-        if (stretchPointOfCall.isPresent()) {
-            PointOfCall stretch = stretchPointOfCall.get();
-            // stretch call is supposed to be one-furlong from the finish
-            if (!stretch.hasKnownDistance() && raceDistance.getFeet() >= 1320) {
-                int stretchFeet = raceDistance.getFeet() - 660;
-                stretch.setFeet(stretchFeet);
-                String stretchCompact = RaceDistance.lookupCompact(stretchFeet);
-                String stretchFurlongs = String.format("%.2ff", stretch.getFurlongs());
-                stretch.setCompact(stretchCompact != null ? stretchCompact : stretchFurlongs);
-            } else {
-                stretch.setCompact("Str");
-            }
-        }
-
-        // set finish distance (as points of calls cover a variety of distances)
-        Optional<PointOfCall> finishPointOfCall = pointsOfCallForDistance.getFinishPointOfCall();
-        if (finishPointOfCall.isPresent()) {
-            PointOfCall finish = finishPointOfCall.get();
-            if (!finish.hasKnownDistance()) {
-                finish.setFeet(raceDistance.getFeet());
-                finish.setCompact(raceDistance.getCompact());
-            }
-        }
     }
 
     @Override

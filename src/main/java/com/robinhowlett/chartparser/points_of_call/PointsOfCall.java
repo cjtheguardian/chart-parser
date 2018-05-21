@@ -28,6 +28,66 @@ public class PointsOfCall {
         this.calls = calls;
     }
 
+    public String getDistance() {
+        return distance;
+    }
+
+    public int getFloor() {
+        return floor;
+    }
+
+    public List<PointOfCall> getCalls() {
+        return calls;
+    }
+
+    public Optional<PointOfCall> getStretchPointOfCall() {
+        return getPointOfCall(5);
+    }
+
+    public Optional<PointOfCall> getFinishPointOfCall() {
+        return getPointOfCall(6);
+    }
+
+    private Optional<PointOfCall> getPointOfCall(int index) {
+        for (PointOfCall pointOfCall : getCalls()) {
+            if (pointOfCall.getPoint() == index) {
+                return Optional.of(pointOfCall);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public String toString() {
+        return "PointsOfCall{" +
+                "distance='" + distance + '\'' +
+                ", floor=" + floor +
+                ", calls=" + calls +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PointsOfCall that = (PointsOfCall) o;
+
+        if (floor != that.floor) return false;
+        if (distance != null ? !distance.equals(that.distance) : that.distance != null)
+            return false;
+        return calls != null ? calls.equals(that.calls) : that.calls == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = distance != null ? distance.hashCode() : 0;
+        result = 31 * result + floor;
+        result = 31 * result + (calls != null ? calls.hashCode() : 0);
+        return result;
+    }
+
     /**
      * A specific point of call for the specified {@link PointsOfCall} for the race distance in
      * question
@@ -164,7 +224,12 @@ public class PointsOfCall {
             private Integer wide; // reserved for custom use
 
             public RelativePosition(Integer position, LengthsAhead lengthsAhead) {
-                this(position, lengthsAhead, null, null);
+                this(position, lengthsAhead, null);
+            }
+
+            public RelativePosition(Integer position, LengthsAhead lengthsAhead,
+                    TotalLengthsBehind totalLengthsBehind) {
+                this(position, lengthsAhead, totalLengthsBehind, null);
             }
 
             @JsonCreator
@@ -226,7 +291,6 @@ public class PointsOfCall {
 
             @Override
             public int hashCode() {
-
                 return Objects.hash(position, lengthsAhead, totalLengthsBehind, wide);
             }
 
@@ -307,65 +371,5 @@ public class PointsOfCall {
                 }
             }
         }
-    }
-
-    public String getDistance() {
-        return distance;
-    }
-
-    public int getFloor() {
-        return floor;
-    }
-
-    public List<PointOfCall> getCalls() {
-        return calls;
-    }
-
-    public Optional<PointOfCall> getStretchPointOfCall() {
-        return getPointOfCall(5);
-    }
-
-    public Optional<PointOfCall> getFinishPointOfCall() {
-        return getPointOfCall(6);
-    }
-
-    private Optional<PointOfCall> getPointOfCall(int index) {
-        for (PointOfCall pointOfCall : getCalls()) {
-            if (pointOfCall.getPoint() == index) {
-                return Optional.of(pointOfCall);
-            }
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public String toString() {
-        return "PointsOfCall{" +
-                "distance='" + distance + '\'' +
-                ", floor=" + floor +
-                ", calls=" + calls +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        PointsOfCall that = (PointsOfCall) o;
-
-        if (floor != that.floor) return false;
-        if (distance != null ? !distance.equals(that.distance) : that.distance != null)
-            return false;
-        return calls != null ? calls.equals(that.calls) : that.calls == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = distance != null ? distance.hashCode() : 0;
-        result = 31 * result + floor;
-        result = 31 * result + (calls != null ? calls.hashCode() : 0);
-        return result;
     }
 }
