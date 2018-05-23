@@ -615,8 +615,21 @@ public class Starter {
         return Optional.empty();
     }
 
+    /**
+     * @return true if this Starter was an official winner of the race
+     */
     public boolean isWinner() {
         return (getOfficialPosition() != null && getOfficialPosition() == 1);
+    }
+
+    /**
+     * Different than {@link #isWinner()} because the horse that finished first may not have been
+     * the official winner
+     * @return true if this Starter was the unofficial winner of the race (by finishing first)
+     */
+    @JsonIgnore
+    public boolean finishedFirst() {
+        return (getFinishPosition() != null && getFinishPosition() == 1);
     }
 
     /**

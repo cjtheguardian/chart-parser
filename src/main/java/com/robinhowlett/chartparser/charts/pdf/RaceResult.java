@@ -292,12 +292,19 @@ public class RaceResult {
         return new ArrayList<>();
     }
 
+    @JsonIgnore
+    public List<Starter> firstFinishers() {
+        if (starters != null) {
+            // may have passed the post first but been disqualified
+            return starters.stream().filter(Starter::finishedFirst).collect(toList());
+        }
+        return new ArrayList<>();
+    }
+
     @JsonProperty("finalTime")
     public String getFinalTime() {
-        List<Starter> winners = getWinners();
+        List<Starter> winners = firstFinishers();
         if (winners != null && !winners.isEmpty()) {
-            // PRX 2016 Oaks potential catch
-            winners.sort(Comparator.comparingInt(Starter::getFinishPosition));
             Fractional finishFractional = winners.get(0).getFinishFractional();
             return (finishFractional != null ? finishFractional.getTime() : null);
         }
@@ -306,10 +313,8 @@ public class RaceResult {
 
     @JsonProperty("finalMillis")
     public Long getFinalMillis() {
-        List<Starter> winners = getWinners();
+        List<Starter> winners = firstFinishers();
         if (winners != null && !winners.isEmpty()) {
-            // PRX 2016 Oaks potential catch
-            winners.sort(Comparator.comparingInt(Starter::getFinishPosition));
             Fractional finishFractional = winners.get(0).getFinishFractional();
             return (finishFractional != null ? finishFractional.getMillis() : null);
         }

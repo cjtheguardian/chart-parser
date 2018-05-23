@@ -1,13 +1,17 @@
 package com.robinhowlett.chartparser.points_of_call;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.robinhowlett.chartparser.charts.pdf.Chart;
 import com.robinhowlett.chartparser.charts.pdf.Starter;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 /**
  * Stores the {@link PointOfCall} instances for a particular race distance
@@ -92,6 +96,7 @@ public class PointsOfCall {
      * A specific point of call for the specified {@link PointsOfCall} for the race distance in
      * question
      */
+    @JsonPropertyOrder({"point", "text", "compact", "feet", "furlongs", "relativePosition"})
     public static class PointOfCall {
         private final int point;
         private final String text;
@@ -217,10 +222,12 @@ public class PointsOfCall {
          * lengths behind the leader at this point. "Wide" tracks the position of the horse versus
          * the rail e.g. "5-wide" would be five horse widths from the inside rail.
          */
+        @JsonPropertyOrder({"position", "lengthsAhead", "totalLengthsBehind", "wide"})
         public static class RelativePosition {
             private final Integer position;
             private final LengthsAhead lengthsAhead;
             private TotalLengthsBehind totalLengthsBehind;
+            @JsonInclude(NON_NULL)
             private Integer wide; // reserved for custom use
 
             public RelativePosition(Integer position, LengthsAhead lengthsAhead) {
@@ -297,6 +304,7 @@ public class PointsOfCall {
             /**
              * Tracks lengths as the chart's textual description and as a Double
              */
+            @JsonPropertyOrder({"text", "lengths"})
             abstract static class Lengths {
                 protected final String text;
                 protected final Double lengths;

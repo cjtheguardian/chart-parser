@@ -1,6 +1,6 @@
 # JSON API Design
 
-> Races that are cancelled will only have the `cancelled`, `reason`, `raceDate.*`, `track.*`, and `raceNumber` properties. Everything else will be `null`.
+> Races that were cancelled will only have values for the `links.*`, `cancelled`, `reason`, `raceDate.*`, `track.*`, and `raceNumber` fields. Everything else will be `null`.
 
 | Field  | Type | Description | Notes | Sample Value(s) |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
@@ -33,18 +33,25 @@
 | conditions.grade  | number  | The grade of the race (if any) | A value between 1-3 | `1` |
 | conditions.blackType  | string  | The black-type description of this race (if any) | Present when the race qualifies as a black-type race | "Grade 1"<br/>"Grade 3"<br/>"Listed"<br/>"Black Type" |
 | conditions.text  | string  | The full race conditions text | | "FOR MAIDENS, TWO YEARS OLD. Weight, 120 lbs."<br/>"FOR THREE YEAR OLDS AND UPWARD WHICH HAVE NEVER WON TWO RACES. Weight, 124 lbs. (NW2 L)" |
-| conditions.restrictions  | object  | | `distance` and all child fields are always present |  |
-| conditions.restrictions.X  | object  | | `distance` and all child fields are always present |  |
+| conditions.restrictions  | object  | The age, sex, and state-bred restrictions (if any) | Always present |  |
+| conditions.restrictions.code  | string | The short code used in the chart to express the conditions required for entry to the race, usually for Allowance races | If the code originally was prefixed with "S", representing a state-bred condition, that is removed and denoted by the value of the `stateBred` boolean | "NW2 L" (non-winners of two races in this horse's lifetime)<br/>"NW1 3M" (non-winners of one races within the last three months)<br/>"C" (compound/multiple conditions) |
+| conditions.restrictions.minAge  | number | The minimum age allowed of the horse | `null` if unknown | `2`<br/>`3` |
+| conditions.restrictions.maxAge  | number | The maximum age allowed of the horse | `null` if unknown<br/>Will equal `minAge` is the race is restricted to a singe age.<br/>`-1` is equivalent to "and upwards/older" | `2`<br/>`-1` |
+| conditions.restrictions.ageCode | string | A short code representing the age restrictions | For a single age restriction it will just be that number<br/>An age range is represented by "X-Y"<br/>"X+" represents a specific age and older | "2"<br/>"3+" |
+| conditions.restrictions.sexes | number | A bitwise-style value representing the race's restrictions based on gender & maturity | "Colt" = 1<br/>"Gelding" = 2<br/>"Horse" = 4<br/>"Filly" = 8<br/>"Mare" = 16<br/>"All/Open" = 31<br/>Races restricted to female horses are `% 8 = 0` | `3` (meaning restricted to colts & geldings; 1 + 2)<br/> `24` (meaning restricted to Filles & Mares; 8 + 16)<br/>`31` (meaning no sex restrictions were detected) |
+| conditions.restrictions.sexesCode | string | A short code representing the gender & maturity restrictions expressed by the `sexes` value | "Colt" = "C"<br/>"Gelding" = "G"<br/>"Horse" = "H"<br/>"Filly" = "F"<br/>"Mare" = "M"<br/>"All/Open" = "A" | "C&G"<br/>"F&M"<br/>"A"<br/>"C&G&H" |
+| conditions.restrictions.femaleOnly | boolean | `true` if the race is restricted to only filles and/or mares | Always present | `true`<br/>`false` |
+| conditions.restrictions.stateBred | boolean | `true` if the race is restricted to horses bred in the state where the race track is located | Always present | `true`<br/>`false` |
 | conditions.purse  | object  | |  |  |
 | conditions.purse.value  | number  | The value of the race | | `9700`<br/>`40000` |
 | conditions.purse.text  | string  | Text version of the race prize money | | "$9,700"<br/>"$40,000 Guaranteed" |
 | conditions.purse.availableMoney  | string  | Text of the "available money" description | | "$9,700"<br/>"$40,000" |
-| conditions.purse.enhancements  | string  | A comma-separated list of purse enhancements that applied to this race | `null` if no enhancements | "Includes: $3,000 AQHA-American Quarter Horse Association, Plus: $500 Other Sources" |
+| conditions.purse.enhancements  | string  | A comma-separated list of purse enhancements that applied to this race in the format of "Type: Value" | `null` if no enhancements | "Includes: $3,000 AQHA-American Quarter Horse Association, Plus: $500 Other Sources" |
 | conditions.purse.valueOfRace  | string  | A detailed description of the prize money distribution (if any) | | "$9,700 1st $5,820, 2nd $1,940, 3rd $970, 4th $582, 5th $194, 6th $97, 7th $97" |
 | conditions.claimingPriceRange  | object  |  |  |
 | conditions.claimingPriceRange.min  | number  | The minimum claim price  |  | `5000` |
 | conditions.claimingPriceRange.max  | number  | The maximum claim price  | If equal to `min`, it means claims are only at that price | `10000` |
-| conditions.summary  | string  |  | |  |
+| conditions.summary  | string  | A print-friendly concatenation of the age, state-bred, race type, purse/claiming range (in thousands), and conditions code | Claiming races will use the claiming range instead of the purse<br/>Format: "ageCode (sexesCode) \[stateBred\] type purse/claimingRange (code)" | "3+ (F&M) \[S\] STK 50K" (three year and older fillies and mares in a state-bred Stakes race with a $50,000 purse)<br/>"3 G1 2000K" (three year olds in a Grade 1 race with a $2,000,000 purse; no age, state-bred, or allowance conditions apply)<br/>"3-5 CLM 10-8.0K (NW3 L)" (three, four, and five year olds race that may be claimed for between $8,000 to $10,000 and must be non-winners of three races in their lifetime) |
 | distance  | object  | | `distance` and all child fields are always present |  |
 | distance.text  | string  | The distance of the race as described on the chart | | "One And One Sixteenth Miles"<br/>"Three Hundred And Fifty Yards"<br/>"Six Furlongs" |
 | distance.compact  | string  | A compact description of the race distance |  | "1 1/16m"<br/>"350y"<br/>"6f" |
@@ -53,12 +60,12 @@
 | distance.exact  | boolean  | Whether the distance of the race is measured (`true`) or estimated (`false`) | `true` if the distance description starts with "About" | `true`<br/>`false` |
 | distance.runUp  | number  | The distance between the starting stalls and the "start" electronic timer | Value is in feet | `30`<br/>`0` |
 | distance.tempRail  | number  | The distance the track rail was moved out temporariliy | Value is in feet | `20`<br/>`150` |
-| surface  | string  | The surface the race was run on |  | "Dirt"<br/>"Turf"<br/>"Inner turf" |
-| course  | string  |  |  |  |
+| surface  | string  | The surface the race was run on | One of dirt, turf, or synthetic | "Dirt"<br/>"Turf"<br/>"Synthetic" |
+| course  | string  | The course configuration used | Some tracks may have multiple turf tracks; this field can be used to distinguish them | "Dirt" (Main track)<br/>"Turf"<br/>"All Weather Track"<br/>"Inner Turf"<br/>"Downhill Turf"<br/>"Steeplechase" |
 | trackCondition  | string  | A description of the track/surface condition |  | "Fast"<br/>"Sloppy (Sealed)"<br/>"Muddy" |
 | scheduledSurface  | string  | The surface the race was supposed to be run on | Only present when different than `surface` | "Turf" |
 | offTurf  | boolean  | If the race was scheduled to be run on the turf, but was actually run on the main track |  | `true`<br/>`false` |
-| format  | string  |  |  |  |
+| format  | string  | The format of the race | One of "Flat" or "Jumps" | "Flat"<br/>"Jumps" |
 | trackRecord  | object  | The record time for this race distance and surface listed in the chart | |  |
 | trackRecord.holder  | object  | The details of the track record holder | |  |
 | trackRecord.holder.name  | string  | The track record holder's name |  | "No It Ain't" |
@@ -76,13 +83,13 @@
 | weather.wind  | object  | The wind conditions present during the race | Only present for Quarter Horse or Mixed breed races |  |
 | weather.wind.speed  | number  | The wind speed | In miles-per-hour | `2` |
 | weather.wind.direction  | string  | The direction of the wind |  | "Head"  |
-| postTime  | string  | The time listed in the chart as to when the race started | | "1:50" |
+| postTime  | string | The time listed in the chart as to when the race started | | "1:50" |
 | startComments  | string  | The description listed in the chart about how well the field started | | "Good for all except 5" |
-| timer  | string  | Description of how the race was timed | Only present for Quarter Horse or Mixed breed races | "Electronic" |
-| deadHeat  | boolean  | `true` if the race resulted in a dead-heat  |  | `true`<br/>`false`  |
+| timer  | string | Description of how the race was timed | Only present for Quarter Horse or Mixed breed races | "Electronic" |
+| deadHeat  | boolean | `true` if the race resulted in a dead-heat for first place |  | `true`<br/>`false`  |
 | numberOfRunners  | number  | The numbers of horses that officially ran in the race  |  | `9` |
-| finalTime  | string  |  |  |  |
-| finalMillis  | number  |  |  |  |
+| finalTime  | string  | A print-friendly representation of the final time recorded for the race | Format: "M:ss.SSS" | "1:34.750"<br>"0:16.078" |
+| finalMillis  | number | The final time recorded for the race in milliseconds |  | `94750`<br>`16078` |
 | starters  | array  | The list of participants that started the race |  |  |
 | starters[]  | object  | A participant in the race |  |  |
 | starters[].lastRaced  | object  | The details of the last race this starter participated in (if any) |  |  |
@@ -96,31 +103,22 @@
 | starters[].lastRaced.daysSince  | number  | The number of days since the last race |  | `35` |
 | starters[].lastRaced.track  | object  | | `starters[].lastRaced.track` and all child fields are present when a last race exists |  |
 | starters[].lastRaced.track.code  | string  | A short code for the track | A two- or three-character value; uppercase | "ARP" |
+| starters[].lastRaced.track.canonical  | string  | A canonical short code for the track when a track has had multiple codes in its history | A two- or three-character value; uppercase | "DUE" (Dueling Grounds and Kentucky Downs)<br/>"ARP" |
 | starters[].lastRaced.track.country  | string  | A short country code | A two- or three-character value; uppercase | "USA" |
+| starters[].lastRaced.track.state  | string  | The two-letter state code | A two-character value; uppercase | "CO" |
+| starters[].lastRaced.track.city  | string  | The city the track is located | Uppercase | "AURORA" |
 | starters[].lastRaced.track.name  | string  | The full track name | Uppercase | "ARAPAHOE PARK" |
 | starters[].lastRaced.raceNumber  | number  | The race number of the last race | May be `null` for foreign races | `3` |
 | starters[].lastRaced.officialPosition  | number  | The official finishing position in the last race | May be `null` for foreign races | `6` |
+| starters[].lastRaced.links  | array  | A list of links to source web pages and PDFs  |  |  |
+| starters[].lastRaced.links[]  | object  | A link to source web pages and PDFs  |  |  |
+| starters[].lastRaced.links[].rel  | string  | A link relation that describes the source chart/web page |  | `web` is the web wrapper around the race chart PDF<br/>`pdf` is the raw race chart PDF file<br/>`allWeb` is the web wrapper of all races in the raceday chart PDF<br/>`allPdf` is the raw raceday chart PDF file |
+| starters[].lastRaced.links[].href  | string  | The link to the source chart/web page |  | `web`: `https://www.equibase.com/premium/chartEmb.cfm?track=<trackCode>&raceDate=<MM/dd/yyyy>&cy=<countryCode>&rn=<raceNumber>`<br/>`pdf`: `https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=<raceNumber>&BorP=P&TID=<trackCode>&CTRY=<countryCode>&DT=<MM/dd/yyyy>&DAY=D&STYLE=EQB`<br/>`allWeb`: `https://www.equibase.com/premium/chartEmb.cfm?track=<trackCode>&raceDate=<MM/dd/yyyy>&cy=<countryCode>`<br/>`allPdf`: `https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=A&BorP=P&TID=<trackCode>&CTRY=<countryCode>&DT=<MM/dd/yyyy>&DAY=D&STYLE=EQB` |
 | starters[].program  | string  | The starter's program number | | "6"<br/>"1A"<br/>"20" |
+| starters[].entry  | boolean  | Whether this starter was part of a coupled or field entry for wagering purposes | Coupled entries share the same base program number e.g "1", "1A", and "1X"<br/>Field entries share the same program number suffix of "F" | `true`<br/>`false` |
+| starters[].entryProgram  | string  | The starter's base program number | A Coupled Entry "1", "1A", and "1X" should return "1", but a Field Entry of "12F", "13F", and "14F" should return "F" | "1"<br/>"2"<br/>"F" |
 | starters[].horse  | object  | The details of the horse | |  |
 | starters[].horse.name  | string  | The horse's name | Always present | "Back Stop"<br/>"Jila (IRE)" |
-| starters[].horse.color  | string  | The horse's color | Only present for winners | "Bay" |
-| starters[].horse.sex  | string  | The horse's gender/sex | Only present for winners | "Filly" |
-| starters[].horse.sire | object | The horse's father | Only present for winners |  |
-| starters[].horse.sire.name | object | The sire's name | Only present for winners | "Blame" |
-| starters[].horse.dam | object | The horse's mother | Only present for winners |  |
-| starters[].horse.dam.name | object | The dam's name | Only present for winners | "Freeroll" |
-| starters[].horse.damSire | object | The horse's mother's father | Only present for winners |  |
-| starters[].horse.damSire.name | object | The dam sire's name | Only present for winners | "Touch Gold" |
-| starters[].horse.foalingDate  | object  | The details of the last race this starter participated in (if any) | Only present for winners |  |
-| starters[].horse.foalingDate.text  | string  | The date when the horse was born | Only present for winners<br/>Format: `"YYYY-MM-DD"` | "2012-03-30" |
-| starters[].horse.foalingDate.year  | number  | The year when the horse was born | Only present for winners<br/>A four-digit number | `2012` |
-| starters[].horse.foalingDate.month  | number  | The month when the horse was born | Only present for winners<br/>A value between 1-12 | `3` |
-| starters[].horse.foalingDate.day  | number  | The day when the horse was born | Only present for winners<br/>A value between 1-31, depending on the month | `30` |
-| starters[].horse.foalingDate.dayOfWeek  | string  | The day of the week when the horse was born | Only present for winners<br/>The full day name is used | "Friday" |
-| starters[].horse.foalingDate.dayOfYear  | number  | The day of the year when the horse was born | Only present for winners<br/>A value between 1-365 (or 366 for leap years) | `90` |
-| starters[].horse.foalingLocation  | string  | The location of where the horse was born | Only present for winners<br/>The full day name is used | "Kentucky" |
-| starters[].horse.breeder | object | The details of the horse's breeder | Only present for winners |  |
-| starters[].horse.breeder.name | string | The breeder's name | Only present for winners | "Claiborne Farm" |
 | starters[].jockey | object | The details of the horse's jockey |  |  |
 | starters[].jockey.name | string | The jockey's full name |  | "Dennis Collins" |
 | starters[].jockey.firstName | string | The jockey's first name |  | "Dennis" |
@@ -151,7 +149,9 @@
 | starters[].claim.newOwnerName | string | The name of the new owner post-claim | Only present when `claimed` is `true` | "R. Mike Scudder" |
 | starters[].postPosition | number | The starter's post position | | `6` |
 | starters[].finishPosition | number | The starter's unofficial finishing position | Can be different to `officialPosition` after disqualifications | `1` |
-| starters[].officialPosition | number | The starter's official finishing position | Should be used the final finishing position | `1` |
+| starters[].officialPosition | number | The starter's official finishing position | Should be used as the final finishing position | `1` |
+| starters[].positionDeadHeat | boolean | Whether the Starter dead-heated with another for the same official position | Can be used to detect when multiple payoffs for a particular exotics wager are possible | `true`<br/>`false` |
+| starters[].wageringPosition | number | The starter's payoff finishing position | Only present if the Starter generated a Win, Place or Show payoff, with the value of this field `1`, `2`, or `3` respectively | `1`<br/>`2`<br/>`3` |
 | starters[].winner | boolean | Whether the starter officially won the race |  | `true`<br/>`false` |
 | starters[].disqualified | boolean | Whether the starter was disqualified from their finishing position |  | `true`<br/>`false` |
 | starters[].odds | number | The starter's odds for the race | Odds are expressed as "to one (unit)" e.g. 3.4/1 | `3.4` |
@@ -231,7 +231,7 @@
 | scratches[].horse  | object  | A horse scratched from the race |  |  |
 | scratches[].horse.name  | string  | The name of the horse scratched |  | "Cat With a Twist" |
 | scratches[].reason  | string  | The reason the horse was scratched | `null` if not available | "Trainer"<br/>"Veterinarian" |
-| wagering| object | The wagering details for the race (win-place-show and exotics) | Only present if the race had wagering |  |
+| wagering | object | The wagering details for the race (win-place-show and exotics) | Only present if the race had wagering |  |
 | wagering.winPlaceShow | object | The win-place-show details for the race | Only present if the race had a mutuel win, and/or place, and/or show payoffs |  |
 | wagering.winPlaceShow.totalWPSPool | number | The combined pool total for win, place, and show betting |  |  |
 | wagering.winPlaceShow.payoffs | array | The win/place/show payoffs for the race |  |  |
@@ -258,7 +258,7 @@
 | wagering.exotics[].winningNumbers | string | The text description of the winning combination of program numbers |  | "2-1"<br/>"2-1-4-ALL"<br/>"5/13/14/15/16-1-4" |
 | wagering.exotics[].numberCorrect | number | The number of correct picks required for the exotic wager payoff | For example, `5` (consolation) or `6` in a Pick 6; `null` when not applicable | `3`<br/>`null` |
 | wagering.exotics[].payoff | number | The mutuel payoff for the above wagering unit  |  | `36` |
-| wagering.exotics[].odds | number | The odds equivalent for this unit and payoff | Odds are expressed as "to one (unit)" | `17` |
+| wagering.exotics[].odds | number | The odds ("to one") equivalent for this unit and payoff | Odds are expressed as "to one (unit)" | `17` |
 | wagering.exotics[].pool | number | The gross amount bet into the pool |  | `1688` |
 | wagering.exotics[].carryover | number | The amount to be carried over into the next applicable pool | `null` if no carryover | `1335505`<br/>`null` |
 | fractionals | array | The list of fractional times registered by the leader at each fractional point |  |  |
