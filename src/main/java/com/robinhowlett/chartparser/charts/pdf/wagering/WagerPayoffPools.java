@@ -814,7 +814,8 @@ public class WagerPayoffPools {
             // handle multi-line wager type descriptions
             if (wagerType.contains(System.lineSeparator())) {
                 int newLineIndex = wagerType.indexOf(System.lineSeparator());
-                String wagerTypeOnNewLine = wagerType.substring(newLineIndex + 1);
+                String wagerTypeOnNewLine =
+                        wagerType.substring(newLineIndex + System.lineSeparator().length());
                 wagerType = wagerType.substring(0, newLineIndex).concat(" ")
                         .concat(wagerTypeOnNewLine);
             }
@@ -839,7 +840,8 @@ public class WagerPayoffPools {
             String wnpOnNewLine = null;
             if (winningNumbersPayoffText.contains(System.lineSeparator())) {
                 int newLineIndex = winningNumbersPayoffText.indexOf(System.lineSeparator());
-                wnpOnNewLine = winningNumbersPayoffText.substring(newLineIndex + 1);
+                wnpOnNewLine = winningNumbersPayoffText.substring(newLineIndex +
+                        System.lineSeparator().length());
                 winningNumbersPayoffText = winningNumbersPayoffText.substring(0, newLineIndex);
             }
 
