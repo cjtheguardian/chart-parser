@@ -139,7 +139,7 @@
 
     <scm>
         <url>https://github.com/robinhowlett/chart-parser</url>
-        <connection>scm:git:https://github.com/robinhowlett/chart-parser</connection>
+        <connection>scm:git:https://github.com/robinhowlett/chart-parser.git</connection>
         <developerConnection>
             scm:git:git@github.com:robinhowlett/chart-parser.git
         </developerConnection>
