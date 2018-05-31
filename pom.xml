@@ -117,6 +117,7 @@
                 <artifactId>maven-scm-plugin</artifactId>
                 <version>1.10.0</version>
                 <configuration>
+                    <username>robinhowlett</username>
                     <tag>${project.artifactId}-${project.version}</tag>
                 </configuration>
             </plugin>
