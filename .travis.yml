@@ -1,5 +1,8 @@
 language: java
 jdk: oraclejdk8
+branches:
+  only:
+  - master
 notifications:
   webhooks:
     urls:
@@ -11,5 +14,5 @@ notifications:
     on_error: always
 deploy:
   provider: script
-  script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn deploy scm:tag -Drevision=$TRAVIS_BUILD_NUMBER"
+  script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn deploy scm:tag -Dusername=$GITHUB_USERNAME -Dpassword=$GITHUB_TOKEN -Drevision=$TRAVIS_BUILD_NUMBER"
   skip_cleanup: true
