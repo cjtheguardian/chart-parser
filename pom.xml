@@ -158,7 +158,7 @@
             <id>bintray-robinhowlett-maven</id>
             <name>robinhowlett-maven</name>
             <url>
-                https://api.bintray.com/maven/robinhowlett/maven/chart-parser/;publish=1;override=1
+                https://api.bintray.com/maven/robinhowlett/maven/chart-parser/;publish=1;override=1;bt_version=${project.version}
             </url>
         </repository>
     </distributionManagement>
