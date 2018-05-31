@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +37,17 @@ import static com.robinhowlett.chartparser.charts.pdf.running_line.RunningLine
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TestChartResources {
+
+    public static Track getSampleTrackAraphaoe() {
+        Track track = new Track();
+        track.setCode("ARP");
+        track.setCanonical("ARP");
+        track.setName("ARAPAHOE PARK");
+        track.setCity("AURORA");
+        track.setState("CO");
+        track.setCountry("USA");
+        return track;
+    }
 
     public File getPdfChartsFile() {
         return getPdfChartsFile("ARP_2016-07-24_race-charts.pdf");
@@ -107,7 +117,7 @@ public class TestChartResources {
     public List<List<ChartCharacter>> getSampleChartLines(int chartPageIndex) throws IOException,
             URISyntaxException, ChartParserException {
         List<ChartCharacter> chartCharacters =
-                ChartParser.convertToChartCharacters(getCsvChart(chartPageIndex));
+                ChartParser.readChartCsv(getCsvChart(chartPageIndex));
         return ChartParser.separateIntoLines(chartCharacters);
     }
 
@@ -291,17 +301,6 @@ public class TestChartResources {
                 new TypeReference<PointsOfCallTreeSet>() {
                 });
         return pointsOfCall.floor(new PointsOfCall("", raceDistanceInFeet, null));
-    }
-
-    public static Track getSampleTrackAraphaoe() {
-        Track track = new Track();
-        track.setCode("ARP");
-        track.setCanonical("ARP");
-        track.setName("ARAPAHOE PARK");
-        track.setCity("AURORA");
-        track.setState("CO");
-        track.setCountry("USA");
-        return track;
     }
 
 }

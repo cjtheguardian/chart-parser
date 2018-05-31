@@ -131,23 +131,6 @@ public class ChartParser {
     }
 
     /**
-     * Uses {@link ChartStripper} (an extension of Apache PDFBox's {@link PDFTextStripper}) to
-     * extract the text from the PDF and, adding a header row, write a CSV String with each row
-     * being a character from the PDF with its location etc.
-     */
-    static String createCsvChart(PDDocument raceChart) throws IOException {
-        ChartStripper chartStripper = new ChartStripper(new StringWriter());
-        try (StringWriter writer = chartStripper.getWriter()) {
-            try (StringWriter throwawayWriter = new StringWriter()) {
-                writer.write("xDirAdj|yDirAdj|fontSize|xScale|height|widthOfSpace|widthDirAdj|" +
-                        "unicode");
-                chartStripper.writeText(raceChart, throwawayWriter);
-            }
-            return writer.getBuffer().toString();
-        }
-    }
-
-    /**
      * Loads the file into PDFBox's PDDocument, splits it into pages, and converts to CSV strings
      */
     static List<String> convertToCsv(File pdfChartFile) throws ChartParserException {
@@ -170,7 +153,7 @@ public class ChartParser {
         String previousChart = null;
         for (int i = 0; i < csvCharts.size(); i++) {
             String csvChart = csvCharts.get(i);
-            List<ChartCharacter> chartCharacters = convertToChartCharacters(csvChart);
+            List<ChartCharacter> chartCharacters = readChartCsv(csvChart);
             List<List<ChartCharacter>> lines = separateIntoLines(chartCharacters);
 
             // if Copyright notice is not the last line, the text continued to the next page
@@ -193,8 +176,21 @@ public class ChartParser {
         return prunedCsvCharts;
     }
 
-    static List<ChartCharacter> convertToChartCharacters(String chart) throws ChartParserException {
-        return readChartCsv(chart);
+    /**
+     * Uses {@link ChartStripper} (an extension of Apache PDFBox's {@link PDFTextStripper}) to
+     * extract the text from the PDF and, adding a header row, write a CSV String with each row
+     * being a character from the PDF with its location etc.
+     */
+    static String createCsvChart(PDDocument raceChart) throws IOException {
+        ChartStripper chartStripper = new ChartStripper(new StringWriter());
+        try (StringWriter writer = chartStripper.getWriter()) {
+            try (StringWriter throwawayWriter = new StringWriter()) {
+                writer.write("xDirAdj|yDirAdj|fontSize|xScale|height|widthOfSpace|widthDirAdj|" +
+                        "unicode");
+                chartStripper.writeText(raceChart, throwawayWriter);
+            }
+            return writer.getBuffer().toString();
+        }
     }
 
     static List<List<ChartCharacter>> separateIntoLines(List<ChartCharacter> data) {
@@ -301,25 +297,35 @@ public class ChartParser {
 
         List<String> chartCsvs;
         try {
+            // for every character in the PDF file, create a pipe-delimited String noting its
+            // position, width, height, scale, font-size and unicode value, and group them into a
+            // List
             chartCsvs = convertToCsv(pdfChartFile);
         } catch (ChartParserException e) {
             LOGGER.error(fileLogMessage(e.getMessage(), pdfChartFile, 0));
             return raceResults;
         }
 
+        // for each pipe-delimited String representing a character within the PDF
         for (int index = 0; index < chartCsvs.size(); index++) {
             String chartCsv = chartCsvs.get(index);
             List<ChartCharacter> chartCharacters;
             try {
-                chartCharacters = convertToChartCharacters(chartCsv);
+                // convert the pipe-delimited String into an instance of ChartCharacter using
+                // Jackson (the CSV data format)
+                chartCharacters = readChartCsv(chartCsv);
             } catch (ChartParserException e) {
                 LOGGER.error(fileLogMessage(e.getMessage(), pdfChartFile, index));
                 continue;
             }
+
+            // further group the ChartCharacters by line
             List<List<ChartCharacter>> lines = separateIntoLines(chartCharacters);
 
             RaceResult.Builder raceResultBuilder = new RaceResult.Builder();
 
+            // use the lines of characters to extract out the specific race-related information
+            // for each field in the RaceResult domain model
             try {
                 TrackRaceDateRaceNumber trackRaceDateRaceNumber =
                         TrackRaceDateRaceNumber.parse(lines);
