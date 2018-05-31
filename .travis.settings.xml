@@ -15,7 +15,7 @@
             <repositories>
                 <repository>
                     <snapshots>
-                        <enabled>true</enabled>
+                        <enabled>false</enabled>
                     </snapshots>
                     <id>bintray-robinhowlett-maven</id>
                     <name>bintray</name>
