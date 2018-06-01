@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class RunningLineHeaderSuffix {
     // the list of valid header-columns-as-text suffixes to match against
-    public static String[] SUFFIXES = new String[]{"FinOddsComments",
+    protected static final String[] SUFFIXES = new String[]{"FinOddsComments",
             "FinOddsInd.TimeSp.In.Comments", "FinComments", "FinInd.TimeSp.In.Comments"};
 
     private String headerSuffix;
