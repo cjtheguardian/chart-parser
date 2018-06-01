@@ -65,7 +65,6 @@ Each line of text within the PDF is then tested against a series of regex matche
 
 See [`ChartParser#parse()`](https://github.com/robinhowlett/chart-parser/blob/master/src/main/java/com/robinhowlett/chartparser/ChartParser.java#L295) for more.
 
-
 ## How to use
 
 Parsing a PDF file is simple and can be done in one-line e.g.:
