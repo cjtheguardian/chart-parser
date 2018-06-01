@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.robinhowlett</groupId>
     <artifactId>chart-parser</artifactId>
-    <version>1.2.0.RELEASE</version>
+    <version>1.2.1.BUILD-SNAPSHOT</version>
 
     <name>Chart Parser</name>
     <description>Parses horse racing result PDF charts</description>

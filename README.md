@@ -1,7 +1,7 @@
 # Chart Parser
 Parses horse racing result charts into JSON/CSV/Java...
 
-[![Build Status](https://travis-ci.org/robinhowlett/chart-parser.svg?branch=master)](https://travis-ci.org/robinhowlett/chart-parser) [![sonar](https://sonarcloud.io/api/project_badges/measure?project=com.robinhowlett%3Achart-parser&metric=alert_status)](https://sonarcloud.io/dashboard?id=com.robinhowlett%3Achart-parser)
+[![Build Status](https://travis-ci.org/robinhowlett/chart-parser.svg?branch=master)](https://travis-ci.org/robinhowlett/chart-parser)
 
 ## TL;DR
 
@@ -66,6 +66,16 @@ Each line of text within the PDF is then tested against a series of regex matche
 See [`ChartParser#parse()`](https://github.com/robinhowlett/chart-parser/blob/master/src/main/java/com/robinhowlett/chartparser/ChartParser.java#L295) for more.
 
 ## How to use
+
+**Chart Parser** is available in the [Maven Central repository](http://search.maven.org/#artifactdetails|com.robinhowlett|chart-parser|1.2.0.RELEASE|jar):
+
+```xml
+<dependency>
+    <groupId>com.robinhowlett</groupId>
+    <artifactId>chart-parser</artifactId>
+    <version>1.2.0.RELEASE</version>
+</dependency>
+```
 
 Parsing a PDF file is simple and can be done in one-line e.g.:
 
