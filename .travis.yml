@@ -25,7 +25,7 @@ cache:
 install:
   - mvn install -P !build-extras -DskipTests=true -B -V
 script:
-  - mvn clean test -P !build-extras -B
+  - mvn clean test org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar -P !build-extras -B
 after_success:
   - ./.travis.before-deploy.sh
 deploy:
