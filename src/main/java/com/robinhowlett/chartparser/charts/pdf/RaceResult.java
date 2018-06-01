@@ -33,6 +33,7 @@ import java.util.Optional;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
@@ -607,12 +608,13 @@ public class RaceResult {
                             payoffPools.getWinPlaceShowPayoffs();
 
                     // group Win-Place-Show payoffs by their entry program number
-                    Map<String, List<WinPlaceShowPayoff>> wpsPayoffsByEntry =
-                            winPlaceShowPayoffs.stream().collect(
-                                    groupingBy(WinPlaceShowPayoff::getEntryProgram));
+                    Map<Optional<String>, List<WinPlaceShowPayoff>> wpsPayoffsByEntry =
+                            winPlaceShowPayoffs.stream()
+                                    .collect(groupingBy(
+                                            wpsPayoff -> ofNullable(wpsPayoff.getEntryProgram())));
 
                     // for each unique coupled program number
-                    for (String entryProgram : wpsPayoffsByEntry.keySet()) {
+                    for (Optional<String> entryProgram : wpsPayoffsByEntry.keySet()) {
                         List<WinPlaceShowPayoff> wpsPayoffsForEntry =
                                 wpsPayoffsByEntry.get(entryProgram);
                         if (wpsPayoffsForEntry != null) {
@@ -620,13 +622,14 @@ public class RaceResult {
                                     wpsPayoffsForEntry.stream().findFirst();
 
                             // group starters by their entry program number
-                            Map<String, List<Starter>> startersByEntryProgram =
-                                    starters.stream().collect(
-                                            groupingBy(Starter::getEntryProgram));
+                            Map<Optional<String>, List<Starter>> startersByEntryProgram =
+                                    starters.stream()
+                                            .collect(groupingBy(starter ->
+                                                    ofNullable(starter.getEntryProgram())));
 
                             // set the same WPS payoffs for all starters of a coupled/field
                             // entry
-                            if (entryProgram != null && payoff.isPresent() &&
+                            if (entryProgram.isPresent() && payoff.isPresent() &&
                                     startersByEntryProgram.containsKey(entryProgram)) {
                                 startersByEntryProgram.get(entryProgram).stream().forEach(
                                         starter -> starter.setWinPlaceShowPayoff(payoff.get()));
@@ -634,8 +637,7 @@ public class RaceResult {
                                 // or set the WPS payoffs for the matching starter
                                 for (Starter starter : starters) {
                                     if (payoff.isPresent() &&
-                                            matchesEntryProgramOrHorseName(payoff.get(),
-                                                    starter)) {
+                                            matchesEntryProgramOrHorseName(payoff.get(), starter)) {
                                         starter.setWinPlaceShowPayoff(payoff.get());
                                         break;
                                     }

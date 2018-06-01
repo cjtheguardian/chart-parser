@@ -72,6 +72,11 @@ public class WagerPayoffPoolsTest {
                 null), null, 3.4);
     }
 
+    public static WinPlaceShowPayoff expectedShowPayoffNullProgram() {
+        return new WinPlaceShowPayoff(null, new HorseNameWin(new Horse("Tiznow"),
+                null), null, 0.2);
+    }
+
     @Test
     public void organizeWageringLinesByLine_WithWageringLines_GroupsByLine() throws Exception {
         Map<Double, List<ChartCharacter>> expected = SAMPLE_CHARTS.getWageringLinesByLine();

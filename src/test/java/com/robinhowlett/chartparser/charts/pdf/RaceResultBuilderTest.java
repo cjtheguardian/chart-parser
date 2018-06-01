@@ -3,6 +3,7 @@ package com.robinhowlett.chartparser.charts.pdf;
 import com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.TrackRecord;
 import com.robinhowlett.chartparser.charts.pdf.running_line.HorseJockey;
 import com.robinhowlett.chartparser.charts.pdf.running_line.Odds;
+import com.robinhowlett.chartparser.charts.pdf.wagering.WagerPayoffPools;
 import com.robinhowlett.chartparser.charts.pdf.wagering.WagerPayoffPoolsTest;
 import com.robinhowlett.chartparser.fractionals.FractionalPoint;
 import com.robinhowlett.chartparser.fractionals.FractionalPoint.Fractional;
@@ -30,8 +31,7 @@ import static org.junit.Assert.assertTrue;
 public class RaceResultBuilderTest {
 
     @Test
-    public void updateStartersWithWinPlaceShowPayoffs_WithThreeStarters_UpdatesWPSForEach()
-            throws Exception {
+    public void updateStartersWithWinPlaceShowPayoffs_WithCoupledFieldEntries_UpdatesWPSForEach() {
         List<Starter> expected = new ArrayList<Starter>() {{
             Starter first = new Starter.Builder().program("7").horseAndJockey(new HorseJockey(
                     new Horse("Prater Sixty Four"), new Jockey("Karlo", "Lopez"))).build();
@@ -45,24 +45,36 @@ public class RaceResultBuilderTest {
                     new Horse("Midnightwithdrawal"), new Jockey("Alfredi", "Triana Jr."))).build();
             third.setWinPlaceShowPayoff(WagerPayoffPoolsTest.expectedShowPayoff());
 
-            Starter fourth = new Starter.Builder().program("7A").horseAndJockey(new HorseJockey(
+            // null program so payoff should be matched by name
+            Starter alsoThird = new Starter.Builder().program(null).horseAndJockey(new HorseJockey(
+                    new Horse("Tiznow"), new Jockey("Chris", "McCarron"))).build();
+            alsoThird.setWinPlaceShowPayoff(WagerPayoffPoolsTest.expectedShowPayoffNullProgram());
+
+            Starter fifth = new Starter.Builder().program("7A").horseAndJockey(new HorseJockey(
                     new Horse("Rachel Alexandra"), new Jockey("Calvin", "Borel"))).build();
-            fourth.setWinPlaceShowPayoff(WagerPayoffPoolsTest.expectedWinPlaceAndShowPayoff());
+            fifth.setWinPlaceShowPayoff(WagerPayoffPoolsTest.expectedWinPlaceAndShowPayoff());
 
-            Starter fifth = new Starter.Builder().program("4F").horseAndJockey(new HorseJockey(
+            Starter sixth = new Starter.Builder().program("4F").horseAndJockey(new HorseJockey(
                     new Horse("Zenyatta"), new Jockey("Mike", "Smith"))).build();
-            fifth.setWinPlaceShowPayoff(null);
+            sixth.setWinPlaceShowPayoff(null);
 
-            Starter sixth = new Starter.Builder().program("7B").horseAndJockey(new HorseJockey(
+            Starter seventh = new Starter.Builder().program("7B").horseAndJockey(new HorseJockey(
                     new Horse("Ghostzapper"), new Jockey("Javier", "Castellano"))).build();
-            sixth.setWinPlaceShowPayoff(WagerPayoffPoolsTest.expectedWinPlaceAndShowPayoff());
+            seventh.setWinPlaceShowPayoff(WagerPayoffPoolsTest.expectedWinPlaceAndShowPayoff());
+
+            // null program but should not have any matched payoff
+            Starter eighth = new Starter.Builder().program(null).horseAndJockey(new HorseJockey(
+                    new Horse("Arazi"), new Jockey("Pat", "Valenzuela"))).build();
+            eighth.setWinPlaceShowPayoff(null);
 
             add(first);
             add(second);
             add(third);
-            add(fourth);
+            add(alsoThird);
             add(fifth);
             add(sixth);
+            add(seventh);
+            add(eighth);
         }};
 
         RaceResult.Builder raceBuilder = new RaceResult.Builder();
@@ -73,17 +85,26 @@ public class RaceResultBuilderTest {
                     new Horse("Candy Sweetheart"), new Jockey("Dennis", "Collins"))).build());
             add(new Starter.Builder().program("3").horseAndJockey(new HorseJockey(
                     new Horse("Midnightwithdrawal"), new Jockey("Alfredi", "Triana Jr."))).build());
+            add(new Starter.Builder().program(null).horseAndJockey(new HorseJockey(
+                    new Horse("Tiznow"), new Jockey("Chris", "McCarron"))).build());
             add(new Starter.Builder().program("7A").horseAndJockey(new HorseJockey(
                     new Horse("Rachel Alexandra"), new Jockey("Calvin", "Borel"))).build());
             add(new Starter.Builder().program("4F").horseAndJockey(new HorseJockey(
                     new Horse("Zenyatta"), new Jockey("Mike", "Smith"))).build());
             add(new Starter.Builder().program("7B").horseAndJockey(new HorseJockey(
                     new Horse("Ghostzapper"), new Jockey("Javier", "Castellano"))).build());
+            add(new Starter.Builder().program(null).horseAndJockey(new HorseJockey(
+                    new Horse("Arazi"), new Jockey("Pat", "Valenzuela"))).build());
         }};
+
+        WagerPayoffPools expectedWagerPayoffPools = WagerPayoffPoolsTest.expectedWagerPayoffPools();
+        // add example to handle when starters have missing program numbers
+        expectedWagerPayoffPools.getWinPlaceShowPayoffPools().getWinPlaceShowPayoffs()
+                .add(WagerPayoffPoolsTest.expectedShowPayoffNullProgram());
 
         // method under test
         starters = raceBuilder.updateStartersWithWinPlaceShowPayoffs(starters,
-                WagerPayoffPoolsTest.expectedWagerPayoffPools());
+                expectedWagerPayoffPools);
 
         assertThat(starters, equalTo(expected));
     }

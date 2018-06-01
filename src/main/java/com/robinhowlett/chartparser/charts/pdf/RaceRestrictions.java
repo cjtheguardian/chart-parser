@@ -1,7 +1,6 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.ArrayList;
@@ -102,17 +101,17 @@ public class RaceRestrictions {
     colts
     colts & fillies
      */
-    private static final String SEXES =
+    private static final String SEXES_REGEX =
             "(colts|fillies|mares)( (geldings))?( & (geldings|mares|horses|fillies))?" +
                     FALSE_POSITIVE_DETECTION;
 
     private static final Pattern AGES_PATTERN = Pattern.compile(AGES);
-    private static final Pattern SEXES_PATTERN = Pattern.compile(SEXES);
+    private static final Pattern SEXES_PATTERN = Pattern.compile(SEXES_REGEX);
 
     private static final Pattern SEXES_THEN_AGES = Pattern.compile(
-            "^(for.+?|.+?for.+?|.*?)?" + SEXES + "[^\\d]*(" + AGES + ")?.*");
+            "^(for.+?|.+?for.+?|.*?)?" + SEXES_REGEX + "[^\\d]*(" + AGES + ")?.*");
     private static final Pattern AGES_THEN_SEXES = Pattern.compile(
-            "^(for.+?|.*?)?" + AGES + ".*?(?=" + SEXES + "|$).*");
+            "^(for.+?|.*?)?" + AGES + ".*?(?=" + SEXES_REGEX + "|$).*");
 
     @JsonInclude(NON_NULL)
     private final String code;
