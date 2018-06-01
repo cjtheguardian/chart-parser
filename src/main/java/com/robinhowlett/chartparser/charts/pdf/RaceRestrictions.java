@@ -1,9 +1,11 @@
 package com.robinhowlett.chartparser.charts.pdf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -21,40 +23,43 @@ public class RaceRestrictions {
 
     public static final int ALL_SEXES = 31;
 
-    private static final Map<Integer, String> SEXES_CODES = new LinkedHashMap<Integer, String>() {{
-        put(0, null);
-        put(1, "C");
-        put(2, "G");
-        put(3, "C&G");
-        put(4, "H");
-        put(5, "C&H");
-        put(6, "G&H");
-        put(7, "C&G&H");
-        put(8, "F");
-        put(9, "C&F");
-        put(10, "G&F");
-        put(11, "C&G&F");
-        put(12, "F&H");
-        put(13, "C&H&F");
-        put(14, "G&H&F");
-        put(15, "C&G&H&F");
-        put(16, "M");
-        put(17, "C&M");
-        put(18, "G&M");
-        put(19, "C&G&M");
-        put(20, "H&M");
-        put(21, "C&H&M");
-        put(22, "G&H&M");
-        put(23, "C&G&H&M");
-        put(24, "F&M");
-        put(25, "C&F&M");
-        put(26, "G&F&M");
-        put(27, "C&G&F&M");
-        put(28, "H&F&M");
-        put(29, "C&H&F&M");
-        put(30, "G&H&F&M");
-        put(ALL_SEXES, "A");
-    }};
+    private static final Map<Integer, String> SEXES_CODES;
+    static {
+        Map<Integer, String> sexesCodes = new LinkedHashMap<>();
+        sexesCodes.put(0, null);
+        sexesCodes.put(1, "C");
+        sexesCodes.put(2, "G");
+        sexesCodes.put(3, "C&G");
+        sexesCodes.put(4, "H");
+        sexesCodes.put(5, "C&H");
+        sexesCodes.put(6, "G&H");
+        sexesCodes.put(7, "C&G&H");
+        sexesCodes.put(8, "F");
+        sexesCodes.put(9, "C&F");
+        sexesCodes.put(10, "G&F");
+        sexesCodes.put(11, "C&G&F");
+        sexesCodes.put(12, "F&H");
+        sexesCodes.put(13, "C&H&F");
+        sexesCodes.put(14, "G&H&F");
+        sexesCodes.put(15, "C&G&H&F");
+        sexesCodes.put(16, "M");
+        sexesCodes.put(17, "C&M");
+        sexesCodes.put(18, "G&M");
+        sexesCodes.put(19, "C&G&M");
+        sexesCodes.put(20, "H&M");
+        sexesCodes.put(21, "C&H&M");
+        sexesCodes.put(22, "G&H&M");
+        sexesCodes.put(23, "C&G&H&M");
+        sexesCodes.put(24, "F&M");
+        sexesCodes.put(25, "C&F&M");
+        sexesCodes.put(26, "G&F&M");
+        sexesCodes.put(27, "C&G&F&M");
+        sexesCodes.put(28, "H&F&M");
+        sexesCodes.put(29, "C&H&F&M");
+        sexesCodes.put(30, "G&H&F&M");
+        sexesCodes.put(ALL_SEXES, "A");
+        SEXES_CODES = Collections.unmodifiableMap(sexesCodes);
+    }
 
     // matches text within parentheses e.g. "(S)", "(NW1 L)", and "( C)" etc.
     private static final Pattern PARENTHESES_TEXT = Pattern.compile("(\\s*\\([^)]+\\)\\s*)");

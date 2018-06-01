@@ -650,7 +650,7 @@ public class RaceResult {
 
         boolean matchesEntryProgramOrHorseName(WinPlaceShowPayoff payoff, Starter starter) {
             return (payoff.getHorse() != null &&
-                    payoff.getHorse().equals(starter.getHorse().getName()));
+                    payoff.getHorse().getName().equals(starter.getHorse().getName()));
         }
 
         /**

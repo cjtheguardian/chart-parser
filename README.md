@@ -1,7 +1,7 @@
 # Chart Parser
 Parses horse racing result charts into JSON/CSV/Java...
 
-*Build status:* [![Build Status](https://travis-ci.org/robinhowlett/chart-parser.svg?branch=master)](https://travis-ci.org/robinhowlett/chart-parser)
+[![Build Status](https://travis-ci.org/robinhowlett/chart-parser.svg?branch=master)](https://travis-ci.org/robinhowlett/chart-parser) ![sonar](https://sonarcloud.io/api/project_badges/measure?project=com.robinhowlett%3Achart-parser&metric=alert_status)
 
 ## TL;DR
 

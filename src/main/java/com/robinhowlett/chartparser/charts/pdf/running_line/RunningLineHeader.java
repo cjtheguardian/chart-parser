@@ -210,6 +210,10 @@ public class RunningLineHeader {
                 prev = index = curr;
             }
 
+            if (prev == null || curr == null) {
+                continue;
+            }
+
             // calculate the positional difference between the previous character and this one
             BigDecimal spacing =
                     round(curr.getxDirAdj())

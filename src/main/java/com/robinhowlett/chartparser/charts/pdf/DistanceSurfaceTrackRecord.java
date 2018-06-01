@@ -11,6 +11,7 @@ import com.robinhowlett.chartparser.fractionals.FractionalService;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,11 +20,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Format.FLAT;
+import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Format.JUMPS;
 import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Surface.DIRT;
 import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Surface.SYNTHETIC;
 import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Surface.TURF;
-import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Format.FLAT;
-import static com.robinhowlett.chartparser.charts.pdf.DistanceSurfaceTrackRecord.Format.JUMPS;
 import static com.robinhowlett.chartparser.charts.pdf.Purse.FOREIGN_CURRENCY_DISCLAIMER;
 import static com.robinhowlett.chartparser.charts.pdf.Purse.PURSE_PATTERN;
 
@@ -392,248 +393,6 @@ public class DistanceSurfaceTrackRecord {
         return new RaceDistance(distanceDescription, compact, isExact, feet);
     }
 
-    /**
-     * Stores the textual description of the race distance, the distance expressed in feet and
-     * furlongs, a compact description of the race distance and whether the distance is exact or
-     * estimated ("About")
-     */
-    @JsonPropertyOrder({"text", "compact", "feet", "furlongs", "exact", "runUp"})
-    public static class RaceDistance {
-        private final String text;
-        private final String compact;
-        private final boolean exact;
-        private final int feet;
-        private final double furlongs;
-        private Integer runUp;
-        private Integer tempRail;
-
-        RaceDistance(String text, String compact, boolean exact, int feet) {
-            this(text, compact, exact, feet, null, null);
-        }
-
-        @JsonCreator
-        public RaceDistance(String text, String compact, boolean exact, int feet, Integer runUp,
-                Integer tempRail) {
-            this.text = text;
-            this.compact = compact;
-            this.exact = exact;
-            this.feet = feet;
-            this.furlongs = Chart.round((double) feet / 660, 2).doubleValue();
-            this.runUp = runUp;
-            this.tempRail = tempRail;
-        }
-
-        public static String lookupCompact(int feet) {
-            LinkedHashMap<Integer, String> compacts = new LinkedHashMap<Integer, String>() {{
-                put(450, "150y");
-                put(660, "1f");
-                put(1320, "2f");
-                put(1650, "2 1/2f");
-                put(1980, "3f");
-                put(2145, "3 1/4f");
-                put(2310, "3 1/2f");
-                put(2475, "3 3/4f");
-                put(2640, "4f");
-                put(2970, "4 1/2f");
-                put(3000, "1000y");
-                put(3300, "5f");
-                put(3465, "5 1/4f");
-                put(3630, "5 1/2f");
-                put(3960, "6f");
-                put(4290, "6 1/2f");
-                put(4620, "7f");
-                put(4950, "7 1/2f");
-                put(5280, "1m");
-                put(5370, "1m 30y");
-                put(5400, "1m 40y");
-                put(5490, "1m 70y");
-                put(5610, "1 1/16m");
-                put(5940, "1 1/8m");
-                put(6270, "1 3/16m");
-                put(6600, "1 1/4m");
-                put(6930, "1 5/16m");
-                put(7260, "1 3/8m");
-                put(7590, "1 7/16m");
-                put(7920, "1 1/2m");
-                put(8250, "1 9/16m");
-                put(8580, "1 5/8m");
-                put(8910, "1 11/16m");
-                put(9240, "1 3/4m");
-                put(9570, "1 13/16m");
-                put(9900, "1 7/8m");
-                put(10230, "1 15/16m");
-                put(10560, "2m");
-                put(10680, "2m 40y");
-                put(10770, "2m 70y");
-                put(10890, "2 1/16m");
-                put(11220, "2 1/8m");
-                put(11550, "2 3/16m");
-                put(11880, "2 1/4m");
-                put(12210, "2 5/16m");
-                put(15840, "3m");
-                put(17160, "3 1/4f");
-                put(18480, "3 1/2f");
-                put(21120, "4m");
-            }};
-
-            if (compacts.containsKey(feet)) {
-                return compacts.get(feet);
-            }
-
-            return null;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public String getCompact() {
-            return compact;
-        }
-
-        public boolean isExact() {
-            return exact;
-        }
-
-        public int getFeet() {
-            return feet;
-        }
-
-        public double getFurlongs() {
-            return furlongs;
-        }
-
-        public Integer getRunUp() {
-            return runUp;
-        }
-
-        public void setRunUp(Integer runUp) {
-            this.runUp = runUp;
-        }
-
-        public Integer getTempRail() {
-            return tempRail;
-        }
-
-        public void setTempRail(Integer tempRail) {
-            this.tempRail = tempRail;
-        }
-
-        @Override
-        public String
-        toString() {
-            return "RaceDistance{" +
-                    "text='" + text + '\'' +
-                    ", compact='" + compact + '\'' +
-                    ", exact=" + exact +
-                    ", feet=" + feet +
-                    ", furlongs=" + furlongs +
-                    ", runUp=" + runUp +
-                    ", tempRail=" + tempRail +
-                    '}';
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            RaceDistance that = (RaceDistance) o;
-
-            if (exact != that.exact) return false;
-            if (feet != that.feet) return false;
-            if (Double.compare(that.furlongs, furlongs) != 0) return false;
-            if (text != null ? !text.equals(that.text) : that.text != null) return false;
-            if (compact != null ? !compact.equals(that.compact) : that.compact != null)
-                return false;
-            if (runUp != null ? !runUp.equals(that.runUp) : that.runUp != null) return false;
-            return tempRail != null ? tempRail.equals(that.tempRail) : that.tempRail == null;
-        }
-
-        @Override
-        public int hashCode() {
-            int result;
-            long temp;
-            result = text != null ? text.hashCode() : 0;
-            result = 31 * result + (compact != null ? compact.hashCode() : 0);
-            result = 31 * result + (exact ? 1 : 0);
-            result = 31 * result + feet;
-            temp = Double.doubleToLongBits(furlongs);
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            result = 31 * result + (runUp != null ? runUp.hashCode() : 0);
-            result = 31 * result + (tempRail != null ? tempRail.hashCode() : 0);
-            return result;
-        }
-    }
-
-    /**
-     * Stories the name of the track record holder, the track record time (as both a String and in
-     * milliseconds) and the date when the record was set
-     */
-    public static class TrackRecord {
-        @JsonIgnoreProperties({"color", "sex", "sire", "dam", "damSire", "foalingDate",
-                "foalingLocation", "breeder"})
-        private final Horse holder;
-        private final String time;
-        private final Long millis;
-        private final LocalDate raceDate;
-
-        public TrackRecord(Horse holder, String time, Long millis, LocalDate raceDate) {
-            this.holder = holder;
-            this.time = time;
-            this.millis = millis;
-            this.raceDate = raceDate;
-        }
-
-        public Horse getHolder() {
-            return holder;
-        }
-
-        public String getTime() {
-            return time;
-        }
-
-        public Long getMillis() {
-            return millis;
-        }
-
-        public LocalDate getRaceDate() {
-            return raceDate;
-        }
-
-        @Override
-        public String toString() {
-            return "TrackRecord{" +
-                    "holder='" + holder + '\'' +
-                    ", time='" + time + '\'' +
-                    ", millis=" + millis +
-                    ", raceDate=" + raceDate +
-                    '}';
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            TrackRecord that = (TrackRecord) o;
-
-            if (holder != null ? !holder.equals(that.holder) : that.holder != null) return false;
-            if (time != null ? !time.equals(that.time) : that.time != null) return false;
-            if (millis != null ? !millis.equals(that.millis) : that.millis != null) return false;
-            return raceDate != null ? raceDate.equals(that.raceDate) : that.raceDate == null;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = holder != null ? holder.hashCode() : 0;
-            result = 31 * result + (time != null ? time.hashCode() : 0);
-            result = 31 * result + (millis != null ? millis.hashCode() : 0);
-            result = 31 * result + (raceDate != null ? raceDate.hashCode() : 0);
-            return result;
-        }
-    }
-
     public String getSurface() {
         return surface;
     }
@@ -789,22 +548,282 @@ public class DistanceSurfaceTrackRecord {
         }
     }
 
+    /**
+     * Stores the textual description of the race distance, the distance expressed in feet and
+     * furlongs, a compact description of the race distance and whether the distance is exact or
+     * estimated ("About")
+     */
+    @JsonPropertyOrder({"text", "compact", "feet", "furlongs", "exact", "runUp"})
+    public static class RaceDistance {
+        private static final Map<Integer, String> COMPACTS;
+
+        static {
+            Map<Integer, String> compacts = new LinkedHashMap<>();
+            compacts.put(450, "150y");
+            compacts.put(660, "1f");
+            compacts.put(1320, "2f");
+            compacts.put(1650, "2 1/2f");
+            compacts.put(1980, "3f");
+            compacts.put(2145, "3 1/4f");
+            compacts.put(2310, "3 1/2f");
+            compacts.put(2475, "3 3/4f");
+            compacts.put(2640, "4f");
+            compacts.put(2970, "4 1/2f");
+            compacts.put(3000, "1000y");
+            compacts.put(3300, "5f");
+            compacts.put(3465, "5 1/4f");
+            compacts.put(3630, "5 1/2f");
+            compacts.put(3960, "6f");
+            compacts.put(4290, "6 1/2f");
+            compacts.put(4620, "7f");
+            compacts.put(4950, "7 1/2f");
+            compacts.put(5280, "1m");
+            compacts.put(5370, "1m 30y");
+            compacts.put(5400, "1m 40y");
+            compacts.put(5490, "1m 70y");
+            compacts.put(5610, "1 1/16m");
+            compacts.put(5940, "1 1/8m");
+            compacts.put(6270, "1 3/16m");
+            compacts.put(6600, "1 1/4m");
+            compacts.put(6930, "1 5/16m");
+            compacts.put(7260, "1 3/8m");
+            compacts.put(7590, "1 7/16m");
+            compacts.put(7920, "1 1/2m");
+            compacts.put(8250, "1 9/16m");
+            compacts.put(8580, "1 5/8m");
+            compacts.put(8910, "1 11/16m");
+            compacts.put(9240, "1 3/4m");
+            compacts.put(9570, "1 13/16m");
+            compacts.put(9900, "1 7/8m");
+            compacts.put(10230, "1 15/16m");
+            compacts.put(10560, "2m");
+            compacts.put(10680, "2m 40y");
+            compacts.put(10770, "2m 70y");
+            compacts.put(10890, "2 1/16m");
+            compacts.put(11220, "2 1/8m");
+            compacts.put(11550, "2 3/16m");
+            compacts.put(11880, "2 1/4m");
+            compacts.put(12210, "2 5/16m");
+            compacts.put(15840, "3m");
+            compacts.put(17160, "3 1/4f");
+            compacts.put(18480, "3 1/2f");
+            compacts.put(21120, "4m");
+            COMPACTS = Collections.unmodifiableMap(compacts);
+        }
+
+        private final String text;
+        private final String compact;
+        private final boolean exact;
+        private final int feet;
+        private final double furlongs;
+        private Integer runUp;
+        private Integer tempRail;
+
+        RaceDistance(String text, String compact, boolean exact, int feet) {
+            this(text, compact, exact, feet, null, null);
+        }
+
+        @JsonCreator
+        public RaceDistance(String text, String compact, boolean exact, int feet, Integer runUp,
+                Integer tempRail) {
+            this.text = text;
+            this.compact = compact;
+            this.exact = exact;
+            this.feet = feet;
+            this.furlongs = Chart.round((double) feet / 660, 2).doubleValue();
+            this.runUp = runUp;
+            this.tempRail = tempRail;
+        }
+
+        public static String lookupCompact(int feet) {
+
+
+            if (COMPACTS.containsKey(feet)) {
+                return COMPACTS.get(feet);
+            }
+
+            return null;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getCompact() {
+            return compact;
+        }
+
+        public boolean isExact() {
+            return exact;
+        }
+
+        public int getFeet() {
+            return feet;
+        }
+
+        public double getFurlongs() {
+            return furlongs;
+        }
+
+        public Integer getRunUp() {
+            return runUp;
+        }
+
+        public void setRunUp(Integer runUp) {
+            this.runUp = runUp;
+        }
+
+        public Integer getTempRail() {
+            return tempRail;
+        }
+
+        public void setTempRail(Integer tempRail) {
+            this.tempRail = tempRail;
+        }
+
+        @Override
+        public String
+        toString() {
+            return "RaceDistance{" +
+                    "text='" + text + '\'' +
+                    ", compact='" + compact + '\'' +
+                    ", exact=" + exact +
+                    ", feet=" + feet +
+                    ", furlongs=" + furlongs +
+                    ", runUp=" + runUp +
+                    ", tempRail=" + tempRail +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            RaceDistance that = (RaceDistance) o;
+
+            if (exact != that.exact) return false;
+            if (feet != that.feet) return false;
+            if (Double.compare(that.furlongs, furlongs) != 0) return false;
+            if (text != null ? !text.equals(that.text) : that.text != null) return false;
+            if (compact != null ? !compact.equals(that.compact) : that.compact != null)
+                return false;
+            if (runUp != null ? !runUp.equals(that.runUp) : that.runUp != null) return false;
+            return tempRail != null ? tempRail.equals(that.tempRail) : that.tempRail == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result;
+            long temp;
+            result = text != null ? text.hashCode() : 0;
+            result = 31 * result + (compact != null ? compact.hashCode() : 0);
+            result = 31 * result + (exact ? 1 : 0);
+            result = 31 * result + feet;
+            temp = Double.doubleToLongBits(furlongs);
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            result = 31 * result + (runUp != null ? runUp.hashCode() : 0);
+            result = 31 * result + (tempRail != null ? tempRail.hashCode() : 0);
+            return result;
+        }
+    }
+
+    /**
+     * Stories the name of the track record holder, the track record time (as both a String
+     * and in
+     * milliseconds) and the date when the record was set
+     */
+    public static class TrackRecord {
+        @JsonIgnoreProperties({"color", "sex", "sire", "dam", "damSire", "foalingDate",
+                "foalingLocation", "breeder"})
+        private final Horse holder;
+        private final String time;
+        private final Long millis;
+        private final LocalDate raceDate;
+
+        public TrackRecord(Horse holder, String time, Long millis, LocalDate raceDate) {
+            this.holder = holder;
+            this.time = time;
+            this.millis = millis;
+            this.raceDate = raceDate;
+        }
+
+        public Horse getHolder() {
+            return holder;
+        }
+
+        public String getTime() {
+            return time;
+        }
+
+        public Long getMillis() {
+            return millis;
+        }
+
+        public LocalDate getRaceDate() {
+            return raceDate;
+        }
+
+        @Override
+        public String toString() {
+            return "TrackRecord{" +
+                    "holder='" + holder + '\'' +
+                    ", time='" + time + '\'' +
+                    ", millis=" + millis +
+                    ", raceDate=" + raceDate +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            TrackRecord that = (TrackRecord) o;
+
+            if (holder != null ? !holder.equals(that.holder) : that.holder != null)
+                return false;
+            if (time != null ? !time.equals(that.time) : that.time != null) return false;
+            if (millis != null ? !millis.equals(that.millis) : that.millis != null)
+                return false;
+            return raceDate != null ? raceDate.equals(that.raceDate) : that.raceDate == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = holder != null ? holder.hashCode() : 0;
+            result = 31 * result + (time != null ? time.hashCode() : 0);
+            result = 31 * result + (millis != null ? millis.hashCode() : 0);
+            result = 31 * result + (raceDate != null ? raceDate.hashCode() : 0);
+            return result;
+        }
+    }
+
     private static class SurfaceCourseFormat {
-        private static final Map<String, SurfaceCourseFormat> SURFACE_COURSE_TYPES =
-                new LinkedHashMap<String, SurfaceCourseFormat>() {{
-                    put("Dirt", new SurfaceCourseFormat(DIRT, "Dirt", FLAT));
-                    put("Turf", new SurfaceCourseFormat(TURF, "Turf", FLAT));
-                    put("All Weather Track",
-                            new SurfaceCourseFormat(SYNTHETIC, "All Weather Track", FLAT));
-                    put("Inner track", new SurfaceCourseFormat(DIRT, "Inner Track", FLAT));
-                    put("Inner turf", new SurfaceCourseFormat(TURF, "Inner Turf", FLAT));
-                    put("Hurdle", new SurfaceCourseFormat(TURF, "Hurdle", JUMPS));
-                    put("Downhill turf", new SurfaceCourseFormat(TURF, "Downhill Turf", FLAT));
-                    put("Outer turf", new SurfaceCourseFormat(TURF, "Outer Turf", FLAT));
-                    put("Timber", new SurfaceCourseFormat(TURF, "Timber", JUMPS));
-                    put("Steeplechase", new SurfaceCourseFormat(TURF, "Steeplechase", JUMPS));
-                    put("Hunt on turf", new SurfaceCourseFormat(TURF, "Hunt On Turf", JUMPS));
-                }};
+        private static final Map<String, SurfaceCourseFormat> SURFACE_COURSE_TYPES;
+
+        static {
+            Map<String, SurfaceCourseFormat> surfaceCourseTypes = new LinkedHashMap<>();
+            surfaceCourseTypes.put("Dirt", new SurfaceCourseFormat(DIRT, "Dirt", FLAT));
+            surfaceCourseTypes.put("Turf", new SurfaceCourseFormat(TURF, "Turf", FLAT));
+            surfaceCourseTypes.put("All Weather Track",
+                    new SurfaceCourseFormat(SYNTHETIC, "All Weather Track", FLAT));
+            surfaceCourseTypes.put("Inner track",
+                    new SurfaceCourseFormat(DIRT, "Inner Track", FLAT));
+            surfaceCourseTypes.put("Inner turf", new SurfaceCourseFormat(TURF, "Inner Turf",
+                    FLAT));
+            surfaceCourseTypes.put("Hurdle", new SurfaceCourseFormat(TURF, "Hurdle", JUMPS));
+            surfaceCourseTypes.put("Downhill turf",
+                    new SurfaceCourseFormat(TURF, "Downhill Turf", FLAT));
+            surfaceCourseTypes.put("Outer turf", new SurfaceCourseFormat(TURF, "Outer Turf",
+                    FLAT));
+            surfaceCourseTypes.put("Timber", new SurfaceCourseFormat(TURF, "Timber", JUMPS));
+            surfaceCourseTypes.put("Steeplechase",
+                    new SurfaceCourseFormat(TURF, "Steeplechase", JUMPS));
+            surfaceCourseTypes.put("Hunt on turf",
+                    new SurfaceCourseFormat(TURF, "Hunt On Turf", JUMPS));
+            SURFACE_COURSE_TYPES = Collections.unmodifiableMap(surfaceCourseTypes);
+        }
 
         private final Surface surface;
         private final String course;
@@ -849,7 +868,8 @@ public class DistanceSurfaceTrackRecord {
             SurfaceCourseFormat that = (SurfaceCourseFormat) o;
 
             if (surface != that.surface) return false;
-            if (course != null ? !course.equals(that.course) : that.course != null) return false;
+            if (course != null ? !course.equals(that.course) : that.course != null)
+                return false;
             return format == that.format;
         }
 

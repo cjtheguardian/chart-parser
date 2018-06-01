@@ -70,7 +70,7 @@ public class Chart {
 
         // changed to 0.001 from ZERO; found a few occurances of when it appeared there was
         // rounding up
-        if (spacing.compareTo(new BigDecimal(0.001)) > 0 && spacing.compareTo(THREE) <= 0) {
+        if (spacing.compareTo(BigDecimal.valueOf(0.001)) > 0 && spacing.compareTo(THREE) <= 0) {
             return " "; // a space
         } else if (spacing.compareTo(THREE) > 0) {
             return "|"; // used as a CSV separator
